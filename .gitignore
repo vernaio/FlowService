@@ -1,0 +1,9 @@
+node_modules
+*-lock.json
+*.json.backup
+.config.json
+.idea
+data
+coverage
+.nyc_output
+.vscode

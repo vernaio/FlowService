@@ -1,0 +1,25 @@
+{
+    "name": "pib-flow",
+    "description": "Flow - PrintShop Integration Box",
+    "version": "1.0.0",
+    "license": "Apache-2.0",
+    "dependencies": {
+        "node-red": "^1.0.0",
+        "pretty-bytes": "*",
+        "ftp": "*",
+        "request": "*",
+        "move-file": "*",
+        "path": "*",
+        "ws": "*"
+    },
+    "repository": {
+        "type": "git",
+        "url": "http://git.perfectpattern.intra/scm/ae/pib-flow.git"
+    },
+    "scripts": {
+        "start": "npm install $INPUT_LOGIC_URL && node node_modules/node-red/red.js --userDir . --settings ./src/settings.js ./src/flows.json"
+    },
+    "engines": {
+        "node": "8.x"
+    }
+}

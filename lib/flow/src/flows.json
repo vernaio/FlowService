@@ -1,0 +1,964 @@
+[
+    {
+        "id": "d4af305b.2ea44",
+        "type": "tab",
+        "label": "PIB Flow",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "e7f7d67f.1a41a8",
+        "type": "comment",
+        "z": "d4af305b.2ea44",
+        "name": "SPO Notification Listener",
+        "info": "",
+        "x": 150,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "82805e55.e961b",
+        "type": "comment",
+        "z": "d4af305b.2ea44",
+        "name": "Version & Health-check",
+        "info": "",
+        "x": 140,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "6bee0267.d0d8ec",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "/version",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 110,
+        "y": 660,
+        "wires": [
+            [
+                "11327176.20e07f"
+            ]
+        ]
+    },
+    {
+        "id": "346c6a76.9caae6",
+        "type": "http response",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 850,
+        "y": 660,
+        "wires": []
+    },
+    {
+        "id": "11327176.20e07f",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "create version details",
+        "func": "// flow details\nvar build = {\n    version: env.get(\"BUILD_VERSION\"),\n    timestamp: env.get(\"BUILD_TIMESTAMP\"),\n    revision: env.get(\"BUILD_REVISION\")\n};\n\nmsg.payload.build = build;\n\n// input logic details\nmsg.payload.inputLogic = context.global.get('INPUT_LOGIC').getVersion();\n\n\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 660,
+        "y": 660,
+        "wires": [
+            [
+                "346c6a76.9caae6"
+            ]
+        ]
+    },
+    {
+        "id": "477f00a9.e1bb2",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "/status",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 110,
+        "y": 700,
+        "wires": [
+            [
+                "aa9f30a9.a0c99"
+            ]
+        ]
+    },
+    {
+        "id": "5a323ae1.505384",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "log details",
+        "func": "node.warn(\"PIB-Flow has started.\");\nnode.log(\"Build-Version: \" + env.get(\"BUILD_VERSION\"));\nnode.log(\"Build-Timestamp: \" + env.get(\"BUILD_TIMESTAMP\"));\nnode.log(\"Revision: \" + env.get(\"BUILD_REVISON\"));\nnode.log(\"SPO Tenant: \" + env.get(\"SPO_TENANT\"));\nnode.log(\"SPO URL: \" + env.get(\"SPO_URL\"));\nnode.log(\"SPO Workspace ID: \" + env.get(\"SPO_WORKSPACE_ID\"));\n\nilVersion = context.global.get('INPUT_LOGIC').getVersion();\nnode.log(\"Input Logic: \" + ilVersion.name + \" \" + ilVersion.versionNumber);\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 300,
+        "y": 780,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "17d91402.4fc00c",
+        "type": "inject",
+        "z": "d4af305b.2ea44",
+        "name": "start-up",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "x": 100,
+        "y": 780,
+        "wires": [
+            [
+                "5a323ae1.505384"
+            ]
+        ]
+    },
+    {
+        "id": "aa9f30a9.a0c99",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "status",
+        "func": "msg.payload.status = 'UP';\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 470,
+        "y": 700,
+        "wires": [
+            [
+                "11327176.20e07f"
+            ]
+        ]
+    },
+    {
+        "id": "4f40ddc3.c7e974",
+        "type": "comment",
+        "z": "d4af305b.2ea44",
+        "name": "Exception Handling",
+        "info": "",
+        "x": 130,
+        "y": 1340,
+        "wires": []
+    },
+    {
+        "id": "c480a3ac.02e3c",
+        "type": "catch",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "scope": null,
+        "uncaught": false,
+        "x": 100,
+        "y": 1380,
+        "wires": [
+            [
+                "6a76d426.aa179c"
+            ]
+        ]
+    },
+    {
+        "id": "6a76d426.aa179c",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "log error",
+        "func": "var errorMsg = \"\";\n\nerrorMsg += \"An error has been occured:\\n\";\nerrorMsg += \"\\n\";\nerrorMsg += \"Node ID: \" + msg.error.source.id + \"\\n\";\nerrorMsg += \"Node Type: \" + msg.error.source.type + \"\\n\";\nerrorMsg += \"Node Name: \" + msg.error.source.name + \"\\n\";\nerrorMsg += \"\\n\";\nerrorMsg += \"Error Message:\\n\";\nerrorMsg += msg. error.message + \"\\n\";\n\nnode.error(errorMsg);\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 260,
+        "y": 1380,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e87f497a.fb0198",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "InputLogic: processJob",
+        "func": "\n// get input logic\nvar il = context.global.get('INPUT_LOGIC');\n\n// process job\nnode.log(\"Process job: \" + msg.job.jobId);\n\n// set job#s storage dir\nmsg.job.storageDir = '/data/storage/' + msg.job.jobId + \"/\";\n\nil.processJob(msg.job).then((binderySignatures, assemblerTask) => {\n    msg.binderySignatures = binderySignatures\n    msg.assemblerTask = assemblerTask;\n    \n    if(msg.binderySignatures.binderySignature !== null) {\n        node.log(\"BinderySignatures have been created for job \" + msg.job.jobId);\n        node.send([msg, null]);\n        \n    } else if (msg.assemblerTask !== null) {\n        node.log(\"AssemblerTask has been created for job \" + msg.job.jobId);\n        node.send([null, msg]);\n        \n    } else {\n        throw new Error(\"Invalid result for job \" + msg.job.jobId)\n    }\n});\n\n\n\n",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 950,
+        "y": 140,
+        "wires": [
+            [
+                "4aea9cdd.9cd1a4"
+            ],
+            [
+                "8609f832.259ad8"
+            ]
+        ]
+    },
+    {
+        "id": "5172bc7b.cdc624",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "InputLogic: extractJobs",
+        "func": "\n// get input logic\nvar il = context.global.get('INPUT_LOGIC');\n\n// extract jobs\nvar jobs = il.extractJobs(\"/data/in\")\n    .then(function(jobs) {\n        node.log(\"Number of extracted jobs: \" + jobs.length)\n\n        // prepare output\n        msg.jobs = jobs;\n        node.send(msg);\n    });\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 410,
+        "y": 140,
+        "wires": [
+            [
+                "c40e83fb.5fa09"
+            ]
+        ]
+    },
+    {
+        "id": "71cf47d7.5118c8",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "PIB: moveJobFiles",
+        "func": "const moveFile = context.global.get('MOVE_FILE');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\n\nconst storageDir = msg.job.storageDir;\n\n// create directory\nif (!fs.existsSync(storageDir)){\n    fs.mkdirSync(storageDir);\n}\n\n// move files\nnode.log(\"Move file job '\" + msg.job.jobId + \"' to \" + storageDir + \" ...\")\n\nmsg.job.files.forEach(function(file) {\n    moveFile.sync(file, storageDir + path.basename(file));\n});\n\n// return message object\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 2130,
+        "y": 140,
+        "wires": [
+            [
+                "6a1f6b74.45ad84"
+            ]
+        ]
+    },
+    {
+        "id": "8609f832.259ad8",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "PIB: processAssemblerTask",
+        "func": "\n// get request\nvar request = context.global.get('REQUEST');\n\n// define options\nnode.log(\"Prepare AssemblerTask for job \" + msg.job.jobId);\n\nvar options = {\n    method: 'POST',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/assembler/',\n    json: true,\n    body: msg.assemblerTask,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to connect Assembler for job '\" + msg.job.jobId + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    \n    } else if (body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"Assembler Exception for Job '\" + msg.job.jobId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message);\n        return;\n        \n    } else {\n        msg.binderySignatures = { binderySignature: body['assembler-Root'].result.binderySignatures.binderySignature };\n        node.log(\"Assembler has been executed sucessfully for job '\" + msg.job.jobId + \"'. Number BinderySignatures: \" + msg.binderySignatures.binderySignature.length);\n        node.send(msg);\n        \n    }\n});\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1220,
+        "y": 180,
+        "wires": [
+            [
+                "4aea9cdd.9cd1a4"
+            ]
+        ]
+    },
+    {
+        "id": "4aea9cdd.9cd1a4",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "InputLogic: processJobBinderySignatures",
+        "func": "\n// get input logic\nvar il = context.global.get('INPUT_LOGIC');\n\n// process jobs bindery signatures\nil.processJobBinderySignatures(msg.binderySignatures, msg.job).then((modifiedBinderySignatures) => {\n\n    if(modifiedBinderySignatures !== null) {\n        msg.binderySignatures = modifiedBinderySignatures.binderySignatures;\n        node.log(\"Post-process BinderySignatures for job '\" + msg.job.jobId + \"'. Number of BinderySignatures: \" + msg.binderySignatures.length);\n    } else {\n        node.log(\"SKIP post-process of BinderySignatures for job \" + msg.job.jobId);\n    }\n\n    node.send(msg);\n});\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1540,
+        "y": 140,
+        "wires": [
+            [
+                "b705eaad.ac0528"
+            ]
+        ]
+    },
+    {
+        "id": "b705eaad.ac0528",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "PIB: uploadBinderySignatures",
+        "func": "\n// get request\nvar request = context.global.get('REQUEST');\n\n// define options\nnode.log(\"Prepare upload of job \" + msg.job.jobId);\n\nvar body = { \"binderySignatures-Root\" : { \"binderySignature\" : msg.binderySignatures } };\n\nvar options = {\n    method: 'POST',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/binderySignatures/',\n    json: true,\n    body: body,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to upload Job '\" + msg.job.jobId + \"'. Reason: \" + JSON.stringify(error));\n        return;\n        \n    } else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Upload Exception for Job '\" + msg.job.jobId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message);\n        return;\n    \n    } else {\n        node.log(\"Upload has been executed sucessfully for job '\" + msg.job.jobId + \"'. Number BinderySignatures: \" + msg.binderySignatures.length);\n        node.send(msg);\n        \n    }\n});",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1870,
+        "y": 140,
+        "wires": [
+            [
+                "71cf47d7.5118c8"
+            ]
+        ]
+    },
+    {
+        "id": "ea73267a.9a6b18",
+        "type": "inject",
+        "z": "d4af305b.2ea44",
+        "name": "debug trigger",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 110,
+        "y": 140,
+        "wires": [
+            [
+                "5172bc7b.cdc624"
+            ]
+        ]
+    },
+    {
+        "id": "c40e83fb.5fa09",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "PIB: prepareJobProcessing",
+        "func": "\n// get active jobs cache\nvar activeJobs = context.global.get('CACHE_ACTIVE_JOBS');\n\n// process jobs\nfor(let i = 0; i < msg.jobs.length; i ++) {\n    var job = msg.jobs[i];\n    \n    if(!(job.jobId in activeJobs)) {\n        node.log(\"Start new job: \" + job.jobId);\n        activeJobs[job.jobId] = Date.now();\n        node.send({ job: job })\n    } else {\n        node.log(\"Job '\" + job.jobId + \"' is already processing.\")\n    }\n    \n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 680,
+        "y": 140,
+        "wires": [
+            [
+                "e87f497a.fb0198"
+            ]
+        ]
+    },
+    {
+        "id": "308cafb9.d358e",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "/debug",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 110,
+        "y": 740,
+        "wires": [
+            [
+                "8b59f44e.309848"
+            ]
+        ]
+    },
+    {
+        "id": "8b59f44e.309848",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "debug info",
+        "func": "\n// get active jobs cache\nvar activeJobs = context.global.get('CACHE_ACTIVE_JOBS');\n\nvar result = [];\n\nfor(var key in activeJobs) {\n    result.push({\n        \"jobId\":key,\n        \"startTime\": activeJobs[key]\n    });\n}\n\nmsg.payload.activeJobs = result\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 310,
+        "y": 740,
+        "wires": [
+            [
+                "aa9f30a9.a0c99"
+            ]
+        ]
+    },
+    {
+        "id": "c0046fd7.f67d9",
+        "type": "watch",
+        "z": "d4af305b.2ea44",
+        "name": "DeliveryOrder Listener",
+        "files": "/data/in/",
+        "recursive": "",
+        "x": 140,
+        "y": 100,
+        "wires": [
+            [
+                "5172bc7b.cdc624"
+            ]
+        ]
+    },
+    {
+        "id": "6a1f6b74.45ad84",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "PIB: cleanUpJob",
+        "func": "\n// get jobId\nvar jobId = msg.job.jobId;\n\n// reset job\nvar activeJobs = context.global.get('CACHE_ACTIVE_JOBS');\ndelete activeJobs[jobId];\n\nnode.log(\"Processing job '\" + jobId + \"' has been completed.\")\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 2350,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "42b7b0fc.eed79",
+        "type": "comment",
+        "z": "d4af305b.2ea44",
+        "name": "RESTful Controller API",
+        "info": "",
+        "x": 140,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "84b7903e.b9ed2",
+        "type": "http response",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 630,
+        "y": 980,
+        "wires": []
+    },
+    {
+        "id": "8f2edfda.73f3a",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "/controller/active-jobs",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 150,
+        "y": 1020,
+        "wires": [
+            [
+                "12ebf0a5.49a5af"
+            ]
+        ]
+    },
+    {
+        "id": "12ebf0a5.49a5af",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "read active jobs",
+        "func": "\n// load active jobs\nvar activeJobs = context.global.get('CACHE_ACTIVE_JOBS');\n\n// prepare result\nvar result = [];\n\nfor(var key in activeJobs) {\n    result.push({\n        \"jobId\":key,\n        \"startTime\": activeJobs[key]\n    });\n}\n\nmsg.payload = result;\n\n// return message\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 440,
+        "y": 1020,
+        "wires": [
+            [
+                "84b7903e.b9ed2"
+            ]
+        ]
+    },
+    {
+        "id": "6fd34592.eb8f2c",
+        "type": "inject",
+        "z": "d4af305b.2ea44",
+        "name": "health-check",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "60",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 120,
+        "y": 820,
+        "wires": [
+            [
+                "cdee81a6.8fba1"
+            ]
+        ]
+    },
+    {
+        "id": "cdee81a6.8fba1",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "health-check",
+        "func": "node.log(\"Process health check...\")\n\n// check active jobs for timeout\nconst TIMEOUT_ACTIVE_JOBS = 60 * 1000; // 1 minute\n\nvar activeJobs = context.global.get('CACHE_ACTIVE_JOBS');\n\nfor(var key in activeJobs) {\n    if(activeJobs[key] < Date.now() - TIMEOUT_ACTIVE_JOBS) {\n        node.warn(\"Timeout of active job: \" + key)\n    }\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 310,
+        "y": 820,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "70dcefc.8a12b1",
+        "type": "http response",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 410,
+        "y": 1260,
+        "wires": []
+    },
+    {
+        "id": "9c920356.2208c",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "load asset",
+        "func": "const fs = context.global.get('FS');\nconst path = context.global.get('PATH');\n\nvar url = msg.req.url;\n\n// default entry point\nif(url === \"/\") {\n    url = \"index.html\";\n}\n\n// set asset path\nvar assetPath = path.join('./src/html/', url);\n\n// define content type\nvar contentType = \"application/octet-stream\"\n\nif(path.extname(assetPath) === \".html\" || path.extname(assetPath) === \".htm\") {\n    contentType = 'text/html';\n} else if (path.extname(assetPath) === \".js\") {\n    contentType = 'text/javascript';\n} else if (path.extname(assetPath) === \".css\") {\n    contentType = 'text/css';\n} else if (path.extname(assetPath) === \".ico\") {\n    contentType = 'image/x-icon';\n} else if (path.extname(assetPath) === \".svg\") {\n    contentType = 'image/svg+xml';\n}\n\n\n// try to deliver asset\nif(fs.existsSync(assetPath)) {\n    fs.readFile(assetPath, (err, data) => {\n        if (err) throw err;\n        \n        msg.payload = data;\n        msg.statusCode = 200;\n        msg.headers = {\n            'Content-Type': contentType\n        };\n        \n        node.send(msg);\n    });\n    \n} else {\n    node.warn(\"Asset not found: \" + assetPath + \" (\" + contentType + \")\")\n    \n    msg.payload = \"Page not found.\"\n    msg.statusCode = 404;\n    \n    node.send(msg);   \n}",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 250,
+        "y": 1260,
+        "wires": [
+            [
+                "70dcefc.8a12b1"
+            ]
+        ]
+    },
+    {
+        "id": "77d56e74.1d37",
+        "type": "comment",
+        "z": "d4af305b.2ea44",
+        "name": "User Interface (HTTP Server)",
+        "info": "",
+        "x": 160,
+        "y": 1220,
+        "wires": []
+    },
+    {
+        "id": "852b154e.c8d0f8",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "/controller/spo-settings",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 160,
+        "y": 1060,
+        "wires": [
+            [
+                "b2ed4347.33229"
+            ]
+        ]
+    },
+    {
+        "id": "b2ed4347.33229",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "read spo settings",
+        "func": "// prepare result\nmsg.payload = {\n    tenant: env.get(\"SPO_TENANT\"),\n    user: env.get(\"SPO_USER\"),\n    workspaceId: env.get(\"SPO_WORKSPACE_ID\"),\n    url: env.get(\"SPO_URL\")\n};\n\n\n// return message\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 450,
+        "y": 1060,
+        "wires": [
+            [
+                "b7ef0e77.c2a41"
+            ]
+        ]
+    },
+    {
+        "id": "b7ef0e77.c2a41",
+        "type": "http response",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 630,
+        "y": 1060,
+        "wires": []
+    },
+    {
+        "id": "84cbea2a.706988",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "controller/files/data-in",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 150,
+        "y": 1100,
+        "wires": [
+            [
+                "b4918ad2.0b3cc8"
+            ]
+        ]
+    },
+    {
+        "id": "18df55e5.bb2d6a",
+        "type": "http response",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 630,
+        "y": 1100,
+        "wires": []
+    },
+    {
+        "id": "b4918ad2.0b3cc8",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "read files data in",
+        "func": "const fs = context.global.get('FS');\n\n// read directory\nfs.readdir(\"/data/in\", function(err, files) {\n    msg.payload = files;\n    node.send(msg);\n});\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 440,
+        "y": 1100,
+        "wires": [
+            [
+                "18df55e5.bb2d6a"
+            ]
+        ]
+    },
+    {
+        "id": "45a6016e.e5ca2",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "controller/files/scan",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 150,
+        "y": 180,
+        "wires": [
+            [
+                "5172bc7b.cdc624",
+                "490c864b.ac8e98"
+            ]
+        ]
+    },
+    {
+        "id": "490c864b.ac8e98",
+        "type": "http response",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "statusCode": "204",
+        "headers": {},
+        "x": 360,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "3f8ba965.b2ff16",
+        "type": "comment",
+        "z": "d4af305b.2ea44",
+        "name": "sPrintOne Upload Process",
+        "info": "",
+        "x": 150,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "72ba88a5.0da458",
+        "type": "inject",
+        "z": "d4af305b.2ea44",
+        "name": "start-up",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "x": 100,
+        "y": 300,
+        "wires": [
+            [
+                "cc31ed7f.8dc71"
+            ]
+        ]
+    },
+    {
+        "id": "cedb6d39.38aa5",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "PIB: analyzeNotification",
+        "func": "\nif (msg.notification[\"resourceCreationNotification-Root\"] !== undefined) {\n    node.log(\"Notification 'resourceCreationNotification' has been received...\");\n    msg.resourceCreationNotification = msg.notification[\"resourceCreationNotification-Root\"];\n    return [msg,null];\n    \n} else if(msg.notification[\"resourceStateChangeNotification-Root\"] !== undefined) {\n    node.log(\"Notification 'resourceStateChangeNotification' has been received...\");\n    msg.resourceStateChangeNotification = msg.notification[\"resourceStateChangeNotification-Root\"];\n    return [null,msg];\n    \n} else if(msg.notification[\"handshakeNotification-Root\"] !== undefined) {\n    node.log(\"Notification 'handshakeNotification' has been received...\");\n    msg.handshakeNotification = msg.notification[\"handshakeNotification-Root\"];\n    return [null,msg];\n}\n\nreturn;",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 570,
+        "y": 300,
+        "wires": [
+            [
+                "254be278.6ed3de"
+            ],
+            [
+                "b8a6c851.ce01d8"
+            ]
+        ]
+    },
+    {
+        "id": "254be278.6ed3de",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "PIB: loadSheetDetails",
+        "func": "const request = context.global.get('REQUEST');\n\n// extract planned event id\nvar plannedEventId = msg.resourceCreationNotification.href.match(\"[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}\");\nnode.log(\"Load event details for plannedEvent '\" + plannedEventId + \"'...\")\n\n// define options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.resourceCreationNotification.href + '?_nodeVisibility=*/href:VISIBLE',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to connect SPO for plannedEvent '\" + plannedEventId + \"'. Reason: \" + JSON.stringify(error));\n    \n    } else if (body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Exception for plannedEvenet '\" + plannedEventId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message);\n        \n    } else if (body['events-Root'] !== undefined) {\n        var events = body['events-Root'];\n        node.log(\"Event details has been loaded sucessfully for PlannedEvent '\" + plannedEventId + \"'. Number of Events: \" + events.event.length);\n        \n        for(var i = 0; i < events.event.length; i ++) {\n            node.log(\"Process PlannedEvent '\" + plannedEventId + \"'...\")\n            node.send({event:  events.event[i]});\n        }\n    }\n});\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 820,
+        "y": 420,
+        "wires": [
+            [
+                "f7348dc4.1ae43"
+            ]
+        ]
+    },
+    {
+        "id": "bd9a7cff.06cad",
+        "type": "comment",
+        "z": "d4af305b.2ea44",
+        "name": "resourceCreation",
+        "info": "",
+        "x": 800,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "44f0a913.ba1258",
+        "type": "comment",
+        "z": "d4af305b.2ea44",
+        "name": "resourceStateChange & handshake",
+        "info": "",
+        "x": 860,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "b8a6c851.ce01d8",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "PIB: spoDebug",
+        "func": "\n\nif(msg.notification !== undefined) {\n    node.log(\"WebSockert handshake successful.\");\n    \n}\n\n\n\nreturn;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 800,
+        "y": 540,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "cc31ed7f.8dc71",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "PIB: notificationListener",
+        "func": "var WebSocket = global.get('WS');\n\n\n\n/**\n * Class for managing the websocket communication\n **/\nvar WebsocketManager = function() {\n\n    // the reconnect timeinterval in ms\n    this.reconnectInterval = 500;\n    \n    // the websocket url\n    this.websocketUrl = \"wss://\" + env.get(\"SPO_URL\") + \"/api/websocket/notifications\";\n    \n    // websocket headers\n    this.headers = {\n        'Accept': 'application/json',\n        'X-Tenant': env.get(\"SPO_TENANT\") ,\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n    \n    var tagsToReplace = {\n        '&': '&amp;',\n        '<': '&lt;',\n        '>': '&gt;'\n    };\n    \n    var replaceTag = function(tag) {\n        return tagsToReplace[tag] || tag;\n    }\n    \n    var safe_tags_replace = function(str) {\n        return str.replace(/[&<>]/g, replaceTag);\n    }\n    \n    /**\n     * Method for connecting the SPO WebSocket.\n     */ \n    this.connect = function() {\n        node.log('Connecting to SPO Websocket ' + this.websocketUrl +'...');\n        \n    \n        var manager = this;\n        \n        \n        \n        var headerLines = [];\n        for(var name in this.headers) {\n            headerLines.push(name + ': ' + this.headers[name]);\n        }\n        var headersString = Buffer.from(headerLines.join(\"\\r\\n\")).toString('base64').replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=/g, '.');\n        \n        this.websocket = new WebSocket(this.websocketUrl, ['Headers', 'Headers-' + headersString]);\n        \n        /**\n         * Function is called when connection has been established.\n         */ \n        this.websocket.onopen = function(openEvent) {\n            node.log('SPO Websocket connection ' + manager.websocketUrl +' has been established successfully.');\n        };\n        \n        /**\n         * Function is called when connection has been closed.\n         */ \n        this.websocket.onclose = function(closeEvent) {\n            node.error('Connection lost/refused, retry in ' + (manager.reconnectInterval / 1000) + ' seconds');\n\n            setTimeout(function() {\n                manager.connect();\n            }, manager.reconnectInterval);\n        };\n\n        /**\n         * Function is called in case of an error.\n         */ \n        this.websocket.onerror = function(errorEvent) {\n            node.error('Error occured: ' + errorEvent);\n        };\n        \n        /**\n         * Function is called when a message has been received.\n         */ \n        this.websocket.onmessage = function(messageEvent) {\n            node.send({\n                notification: JSON.parse(messageEvent.data)\n            });\n        };\n    \n    };\n    \n    /**\n     * Method for closing the SPO WebSocket connection.\n     */\n    this.close = function() {\n    \n        var manager = this;\n        \n        this.websocket.onclose = function(closeEvent) {\n            node.log('WebSocket connection ' + manager.websocketUrl +' has been closed.');\n        };\n        \n        this.websocket.close();\n    \n    };\n  \n};\n\n\n// if exists, close connection\nif(context.get('websocketManager')) {\n    context.get('websocketManager').close()\n}\n\n// create new websocket manager object\nvar websocketManager = new WebsocketManager();\n\n// close connection when nodered ends\nnode.on('close', function() {\n    websocketManager.close()\n});\n\n// establish connection\nwebsocketManager.connect();\n\n// keep manager in context\ncontext.set('websocketManager', websocketManager);\n\n\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 310,
+        "y": 300,
+        "wires": [
+            [
+                "cedb6d39.38aa5"
+            ]
+        ]
+    },
+    {
+        "id": "f7348dc4.1ae43",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "PIB: generateSheetId",
+        "func": "// extract details\nvar id = msg.event.id;\nvar label = msg.event.label;\n\n// generate sheet id\nmsg.sheetId = label.substring(4, label.length) + \"-\" + id.substring(0, 4).toUpperCase();\n\n// log and return\nnode.log(\"Generated SheetId '\" + msg.sheetId + \"' for event '\" + id + \"'\");\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1060,
+        "y": 420,
+        "wires": [
+            [
+                "788ebb62.fb12f4"
+            ]
+        ]
+    },
+    {
+        "id": "788ebb62.fb12f4",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "PIB: createOutputDir",
+        "func": "const path = context.global.get('PATH');\nconst fs = context.global.get('FS');\n\n// define sheets directory\nvar sheetDirectory = path.join(\"/data/out/\", msg.sheetId);\n\n// create folder\nfs.mkdir(sheetDirectory, { recursive: true }, (err) => {\n  if (err) throw err;\n  \n  node.log(\"Sheets output directory '\" + sheetDirectory + \"' has been created.\")\n  msg.sheetDirectory = sheetDirectory;\n  node.send(msg);\n});\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1300,
+        "y": 420,
+        "wires": [
+            [
+                "559cf6a4.1e9998"
+            ]
+        ]
+    },
+    {
+        "id": "b2f38747.7eb448",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "PIB: calculationReport (pdf)",
+        "func": "const request = context.global.get('REQUEST');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst pb = context.global.get('PRETTY_BYTES');\n\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent/report',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/pdf\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to load SPO Calculation Report for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n    \n    } else {\n        var filename = path.join(msg.sheetDirectory, msg.sheetId + \"-report.pdf\");\n        \n        fs.writeFile(filename, body, (err) => {\n            if (err) throw err;\n            node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\")\n            node.send(msg);\n        });\n    }\n        \n});",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1820,
+        "y": 500,
+        "wires": [
+            [
+                "eca85a85.426358"
+            ]
+        ]
+    },
+    {
+        "id": "559cf6a4.1e9998",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "PIB: loadGangJobEvent",
+        "func": "const request = context.global.get('REQUEST');\n\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent?_nodeVisibility=$GANG_JOB_EVENT_COMPLETE',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/xml\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to load GangJobEvent for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n    \n    } else {\n        // append GangJobEvent to message\n        msg.gangJobEventXml = body;\n        \n        node.log('GangJobEvent XML has been received for sheet \\'' + msg.sheetId + '\\'.');\n        node.send(msg);\n    \n    }\n        \n});",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1550,
+        "y": 420,
+        "wires": [
+            [
+                "eed5a2d7.51d2e"
+            ]
+        ]
+    },
+    {
+        "id": "eed5a2d7.51d2e",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "PIB: gangJobEvent (xml)",
+        "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\n\n// save GangJobEvent XML to output directory\nvar filename = path.join(msg.sheetDirectory, msg.sheetId + \"-gangJobEvent.xml\");\n\nfs.writeFile(filename, msg.gangJobEventXml, (err) => {\n    if (err) throw err;\n    \n    node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\");\n    node.send(msg);\n});",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1810,
+        "y": 420,
+        "wires": [
+            [
+                "aa2979c2.cae158"
+            ]
+        ]
+    },
+    {
+        "id": "aa2979c2.cae158",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "PIB: imposeSheet (xjdf)",
+        "func": "const request = context.global.get('REQUEST');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst pb = context.global.get('PRETTY_BYTES');\n\n// define request options\nvar options = {\n    method: 'POST',\n    url: env.get(\"IMPOSITION_URL\") + '/impose/sheet',\n    body: msg.gangJobEventXml,\n    headers: {\n        \"accept\" : \"application/zip\",\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to load Impose Sheet '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n    \n    } else {\n        var filename = path.join(msg.sheetDirectory, msg.sheetId + \".xjdf.zip\");\n        \n        fs.writeFile(filename, body, (err) => {\n            if (err) throw err;\n            node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\")\n            node.send(msg);\n        });\n    }\n        \n});",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1810,
+        "y": 460,
+        "wires": [
+            [
+                "b2f38747.7eb448"
+            ]
+        ]
+    },
+    {
+        "id": "4ec5e078.76e06",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "/controller/imposition",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 150,
+        "y": 1140,
+        "wires": [
+            [
+                "1ba0b50c.4454cb"
+            ]
+        ]
+    },
+    {
+        "id": "daa38e03.6825",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "*",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 90,
+        "y": 1260,
+        "wires": [
+            [
+                "9c920356.2208c"
+            ]
+        ]
+    },
+    {
+        "id": "1ba0b50c.4454cb",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "read imposition",
+        "func": "const request = context.global.get('REQUEST');\n\n// define options\nvar options = {\n    method: 'GET',\n    url: env.get(\"IMPOSITION_URL\") + '/version',\n    timeout: 500,\n    json: true,\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.warn(\"Unable to connect Imposition Service. Reason: \" + JSON.stringify(error));\n    \n        msg.payload = {\n            status: 'Unavailable',\n            version: \"\",\n            timestamp: \"\",\n            revision: \"\"\n        }\n    \n    } else if (body['appName'] !== undefined) {\n        msg.payload = {\n            status: 'Online',\n            version: body['appVersion'],\n            timestamp: body['buildTime'],\n            revision: body['commitId']\n        }\n        \n        \n    } \n    \n    node.send(msg);\n});",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 440,
+        "y": 1140,
+        "wires": [
+            [
+                "db0181c9.88bf5"
+            ]
+        ]
+    },
+    {
+        "id": "db0181c9.88bf5",
+        "type": "http response",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 630,
+        "y": 1140,
+        "wires": []
+    },
+    {
+        "id": "a31e82ad.c8ada",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "reset jobs",
+        "func": "const activeJobs = context.global.get('CACHE_ACTIVE_JOBS');\n\n// get jobId\nvar jobId = msg.req.params.jobId;\n\n\nif(jobId !== undefined) {\n    \n    // reset specific job\n    delete activeJobs[jobId];\n    \n    node.warn(\"Job '\" + jobId + \"' has been resetted.\")\n    \n} else {\n    \n    // reset all jobs\n    var numberJobs = Object.keys(activeJobs).length;\n    \n    for(var key in activeJobs) {\n        delete activeJobs[key];\n        node.warn(\"Job '\" + key + \"' has been resetted.\")\n    }\n    \n    node.warn(\"All Jobs have been resetted. Number Jobs: \" + numberJobs);\n}\n\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 420,
+        "y": 980,
+        "wires": [
+            [
+                "84b7903e.b9ed2"
+            ]
+        ]
+    },
+    {
+        "id": "8b52a903.256918",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "/controller/active-jobs/:jobId",
+        "method": "delete",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 180,
+        "y": 940,
+        "wires": [
+            [
+                "a31e82ad.c8ada"
+            ]
+        ]
+    },
+    {
+        "id": "2ea43179.659ffe",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "/controller/active-jobs",
+        "method": "delete",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 160,
+        "y": 980,
+        "wires": [
+            [
+                "a31e82ad.c8ada"
+            ]
+        ]
+    },
+    {
+        "id": "eca85a85.426358",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "InputLogic: processSheet",
+        "func": "\n// get input logic\nvar il = context.global.get('INPUT_LOGIC');\n\nnode.log(\"Process sheet '\" + msg.sheetId + \"'...\")\n\n// process jobs bindery signatures\nil.processSheet(msg.sheetDirectory).then(() => {\n    node.log(\"Process sheet '\" + msg.sheetId + \"' successful.\")\n    node.send(msg);\n});\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 2090,
+        "y": 420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d26a4dcd.fc43c",
+        "type": "comment",
+        "z": "d4af305b.2ea44",
+        "name": "File Output:",
+        "info": "",
+        "x": 1770,
+        "y": 380,
+        "wires": []
+    }
+]
