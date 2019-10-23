@@ -8,7 +8,9 @@ if test -z "$VERSION"
 then
       VERSION="DEVELOPMENT"
 else
+      cd lib/flow
       npm version $VERSION
+      cd ../..
 fi
 
 # generate version properties
