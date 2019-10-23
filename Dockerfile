@@ -5,7 +5,7 @@ RUN mkdir -p /work/flow && chown node:node /work/flow
 
 COPY --chown=node:node [".git", "/work/flow/.git"]
 COPY --chown=node:node ["lib", "/work/flow/lib"]
-COPY --chown=node:node [".gitignore", "Dockerfile", "README.md", "start-dev.sh", "/work/flow/"]
+COPY --chown=node:node [".gitignore", "Dockerfile", "README.md", "start-dev.sh", "version.sh", "/work/flow/"]
 
 WORKDIR /work/flow
 
