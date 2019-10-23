@@ -4,6 +4,7 @@ FROM node:12-stretch AS builder
 RUN mkdir -p /opt/flow && chown node:node /opt/flow
 
 # copy files
+COPY --chown=node:node ["lib/flow/.git", "/opt/flow/.git"]
 COPY --chown=node:node ["lib/flow/package.json", "/opt/flow/"]
 COPY --chown=node:node ["lib/flow/src", "/opt/flow/src/"]
 
@@ -36,8 +37,8 @@ ENV SPO_PASSWORD=undefined
 ENV SPO_WORKSPACE_ID=undefined
 
 # settings
-ENV INPUT_LOGIC_NAME=undefined
-ENV INPUT_LOGIC_URL=undefined
+ENV INPUT_LOGIC_NAME=default-flow-logic
+ENV INPUT_LOGIC_URL=https://github.com/perfectpattern/DefaultFlowLogic/archive/0.5.tar.gz
 ENV IMPOSITION_URL=http://imposition:4200
 
 # create folders
