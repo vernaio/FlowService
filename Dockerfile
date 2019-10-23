@@ -1,13 +1,13 @@
 ### BUILD IMAGE ###
 FROM node:12-stretch AS builder
 
-RUN mkdir -p /opt/flow && chown node:node /opt/flow
+RUN mkdir -p /work/flow && chown node:node /work/flow
 
-COPY --chown=node:node [".git", "/opt/flow/.git"]
-COPY --chown=node:node ["lib/flow/package.json", "lib/flow/version.sh", "/opt/flow/"]
-COPY --chown=node:node ["lib/flow/src", "/opt/flow/src/"]
+COPY --chown=node:node [".git", "/work/flow/.git"]
+COPY --chown=node:node ["lib", "/work/flow/lib"]
+COPY --chown=node:node [".gitignore", "Dockerfile", "README.md", "start-dev.sh", "/work/flow/"]
 
-WORKDIR /opt/flow
+WORKDIR /work/flow
 
 USER node
 
@@ -15,19 +15,11 @@ RUN sh version.sh \
     && rm -rf .git \
     && rm version.sh
 
-RUN npm install --build-from-source
+RUN cd lib/flow && npm install --build-from-source
 
 
 ### PRODUCTIVE IMAGE ###
 FROM node:12-alpine
-
-# build params
-ARG BUILD_VERSION
-ARG BUILD_TIMESTAMP=UNKNOWN
-ARG BUILD_REVISION=UNKNWON
-ENV BUILD_VERSION=${BUILD_VERSION}
-ENV BUILD_TIMESTAMP=${BUILD_TIMESTAMP}
-ENV BUILD_REVISION=${BUILD_REVISION}
 
 # implementation specific environment variables
 ENV SPO_URL=undefined
@@ -48,7 +40,8 @@ RUN mkdir -p /opt/flow && chown node:node /opt/flow \
     && mkdir -p /data/storage && chown node:node /data/storage
 
 # copy files
-COPY --chown=node:node --from=builder /opt/flow /opt/flow
+COPY --chown=node:node --from=builder /work/flow/lib/flow /opt/flow
+COPY --chown=node:node --from=builder /work/flow/version.properties /opt/flow/version.properties
 
 # change working directory
 WORKDIR /opt/flow
