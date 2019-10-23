@@ -734,11 +734,11 @@
         "id": "f7348dc4.1ae43",
         "type": "function",
         "z": "d4af305b.2ea44",
-        "name": "PIB: generateSheetId",
-        "func": "// extract details\nvar id = msg.event.id;\nvar label = msg.event.label;\n\n// generate sheet id\nmsg.sheetId = label.substring(4, label.length) + \"-\" + id.substring(0, 4).toUpperCase();\n\n// log and return\nnode.log(\"Generated SheetId '\" + msg.sheetId + \"' for event '\" + id + \"'\");\nreturn msg;\n",
+        "name": "InputLogic: generateSheetId",
+        "func": "\n// get input logic\nvar il = context.global.get('INPUT_LOGIC');\n\n// process jobs bindery signatures\nil.generateSheetId(msg.event).then((sheetId) => {\n    msg.sheetId = sheetId\n    node.log(\"Generated SheetId '\" + msg.sheetId + \"' for event '\" + msg.event.id + \"'\");\n    node.send(msg);\n});\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 1060,
+        "x": 1080,
         "y": 420,
         "wires": [
             [
@@ -754,7 +754,7 @@
         "func": "const path = context.global.get('PATH');\nconst fs = context.global.get('FS');\n\n// define sheets directory\nvar sheetDirectory = path.join(\"/data/out/\", msg.sheetId);\n\n// create folder\nfs.mkdir(sheetDirectory, { recursive: true }, (err) => {\n  if (err) throw err;\n  \n  node.log(\"Sheets output directory '\" + sheetDirectory + \"' has been created.\")\n  msg.sheetDirectory = sheetDirectory;\n  msg.output = {}\n  node.send(msg);\n});\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 1300,
+        "x": 1340,
         "y": 420,
         "wires": [
             [
@@ -770,7 +770,7 @@
         "func": "const request = context.global.get('REQUEST');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst pb = context.global.get('PRETTY_BYTES');\n\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent/report',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/pdf\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// define target file\nvar filename = path.join(msg.sheetDirectory, msg.sheetId + \"-report.pdf\");\n\n// execute request\nrequest(options)\n    .on('error', function(err) {\n        node.error(\"Unable to load SPO Calculation Report for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(err));\n    })\n    .pipe(fs.createWriteStream(filename))\n    .on('finish', () => {\n        msg.output.report = path.basename(filename);\n        \n        node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\")\n        node.send(msg);\n    });\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 1820,
+        "x": 1860,
         "y": 500,
         "wires": [
             [
@@ -786,7 +786,7 @@
         "func": "const request = context.global.get('REQUEST');\n\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent?_nodeVisibility=$GANG_JOB_EVENT_COMPLETE',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/xml\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to load GangJobEvent for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n    \n    } else {\n        // append GangJobEvent to message\n        msg.gangJobEventXml = body;\n        \n        node.log('GangJobEvent XML has been received for sheet \\'' + msg.sheetId + '\\'.');\n        node.send(msg);\n    \n    }\n        \n});",
         "outputs": 1,
         "noerr": 0,
-        "x": 1550,
+        "x": 1590,
         "y": 420,
         "wires": [
             [
@@ -802,7 +802,7 @@
         "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\n\n// save GangJobEvent XML to output directory\nvar filename = path.join(msg.sheetDirectory, msg.sheetId + \"-gangJobEvent.xml\");\n\nfs.writeFile(filename, msg.gangJobEventXml, (err) => {\n    if (err) throw err;\n    \n    msg.output.event = path.basename(filename);\n    \n    node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\");\n    node.send(msg);\n});",
         "outputs": 1,
         "noerr": 0,
-        "x": 1810,
+        "x": 1850,
         "y": 420,
         "wires": [
             [
@@ -818,7 +818,7 @@
         "func": "const request = context.global.get('REQUEST');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst pb = context.global.get('PRETTY_BYTES');\n\n// define request options\nvar options = {\n    method: 'POST',\n    url: env.get(\"IMPOSITION_URL\") + '/impose/sheet',\n    body: msg.gangJobEventXml,\n}\n\n// define target file\nvar filename = path.join(msg.sheetDirectory, msg.sheetId + \".xjdf.zip\");\n\n// execute request\nrequest(options)\n    .on('error', function(err) {\n        node.error(\"Unable to impose sheet '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(err));\n    })\n    .pipe(fs.createWriteStream(filename))\n    .on('finish', () => {\n        msg.output.xjdf = path.basename(filename);\n        \n        node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\")\n        node.send(msg);\n    });\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 1810,
+        "x": 1850,
         "y": 460,
         "wires": [
             [
@@ -945,7 +945,7 @@
         "func": "\n// get input logic\nvar il = context.global.get('INPUT_LOGIC');\n\nnode.log(\"Process sheet '\" + msg.sheetId + \"'...\")\n\n// process jobs bindery signatures\nil.processSheet(msg.sheetDirectory, msg.output).then(() => {\n    node.log(\"Process sheet '\" + msg.sheetId + \"' successful.\")\n    node.send(msg);\n});\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 2090,
+        "x": 2130,
         "y": 420,
         "wires": [
             []
@@ -957,7 +957,7 @@
         "z": "d4af305b.2ea44",
         "name": "File Output:",
         "info": "",
-        "x": 1770,
+        "x": 1810,
         "y": 380,
         "wires": []
     }
