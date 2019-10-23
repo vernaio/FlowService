@@ -92,7 +92,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "log details",
-        "func": "node.warn(\"PIB-Flow has started.\");\nnode.log(\"Build-Version: \" + env.get(\"BUILD_VERSION\"));\nnode.log(\"Build-Timestamp: \" + env.get(\"BUILD_TIMESTAMP\"));\nnode.log(\"Revision: \" + env.get(\"BUILD_REVISON\"));\nnode.log(\"SPO Tenant: \" + env.get(\"SPO_TENANT\"));\nnode.log(\"SPO URL: \" + env.get(\"SPO_URL\"));\nnode.log(\"SPO Workspace ID: \" + env.get(\"SPO_WORKSPACE_ID\"));\n\nilVersion = context.global.get('INPUT_LOGIC').getVersion();\nnode.log(\"Input Logic: \" + ilVersion.name + \" \" + ilVersion.versionNumber);\n\nreturn msg;\n",
+        "func": "node.warn(\"PIB-Flow has started.\");\n\n// log version details\nvd = context.global.get('VERSION_DETAILS')\nnode.log(\"Version: \" + vd.version);\nnode.log(\"Release-Time: \" + vd.releaseTime);\nnode.log(\"Revision: \" + vd.revisionAbbrev);\n\n// log credentials\nnode.log(\"SPO Tenant: \" + env.get(\"SPO_TENANT\"));\nnode.log(\"SPO URL: \" + env.get(\"SPO_URL\"));\nnode.log(\"SPO Workspace ID: \" + env.get(\"SPO_WORKSPACE_ID\"));\n\n// log input logic details\nilVersion = context.global.get('INPUT_LOGIC').getVersion();\nnode.log(\"Input Logic: \" + ilVersion.name + \" \" + ilVersion.versionNumber);\n\nreturn msg;\n",
         "outputs": 1,
         "noerr": 0,
         "x": 300,
@@ -960,5 +960,19 @@
         "x": 1810,
         "y": 380,
         "wires": []
+    },
+    {
+        "id": "fd1dcde7.5ba31",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "func": "\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 740,
+        "y": 860,
+        "wires": [
+            []
+        ]
     }
 ]

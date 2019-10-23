@@ -1,28 +1,28 @@
+### BUILD IMAGE ###
 FROM node:12-stretch AS builder
 
-# create folders
 RUN mkdir -p /opt/flow && chown node:node /opt/flow
 
-# copy files
-COPY --chown=node:node ["lib/flow/.git", "/opt/flow/.git"]
-COPY --chown=node:node ["lib/flow/package.json", "/opt/flow/"]
+COPY --chown=node:node [".git", "/opt/flow/.git"]
+COPY --chown=node:node ["lib/flow/package.json", "lib/flow/version.sh", "/opt/flow/"]
 COPY --chown=node:node ["lib/flow/src", "/opt/flow/src/"]
 
-# change working directory
 WORKDIR /opt/flow
 
-# change user
 USER node
 
-# install pib 
+RUN sh version.sh \
+    && rm -rf .git \
+    && rm version.sh
+
 RUN npm install --build-from-source
 
 
-# FROM node:12.8.1-stretch-slim
+### PRODUCTIVE IMAGE ###
 FROM node:12-alpine
 
 # build params
-ARG BUILD_VERSION=DEVELOPMENT
+ARG BUILD_VERSION
 ARG BUILD_TIMESTAMP=UNKNOWN
 ARG BUILD_REVISION=UNKNWON
 ENV BUILD_VERSION=${BUILD_VERSION}
@@ -41,7 +41,7 @@ ENV INPUT_LOGIC_NAME=default-flow-logic
 ENV INPUT_LOGIC_URL=https://github.com/perfectpattern/DefaultFlowLogic/archive/0.5.tar.gz
 ENV IMPOSITION_URL=http://imposition:4200
 
-# create folders
+# create folder interface
 RUN mkdir -p /opt/flow && chown node:node /opt/flow \
     && mkdir -p /data/in && chown node:node /data/in \
     && mkdir -p /data/out && chown node:node /data/out \

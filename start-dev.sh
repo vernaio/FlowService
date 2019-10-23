@@ -18,9 +18,6 @@ then
         --no-cache \
         -t pib-flow:$version \
         -t pib-flow:latest \
-        --build-arg BUILD_VERSION=$version \
-        --build-arg "BUILD_TIMESTAMP=$timestamp" \
-        --build-arg BUILD_REVISION=UNDEFINED \
         . 
 else
     echo "Use latest Docker image..."
@@ -38,7 +35,6 @@ mkdir -p ./data/storage
 # execute
 docker run \
     -p 1881:1881 \
-    -p 8080:8080 \
     -v $PWD/lib/flow/src:/opt/flow/src \
     -v $PWD/data/in:/data/in \
     -v $PWD/data/out:/data/out \
@@ -49,8 +45,8 @@ docker run \
     -e SPO_PASSWORD=$password \
     -e SPO_WORKSPACE_ID=test \
     -e INPUT_LOGIC_NAME=default-flow-logic \
-    -e INPUT_LOGIC_URL=https://github.com/perfectpattern/DefaultFlowLogic/archive/0.4.tar.gz \
-    -e IMPOSITION_URL=http://imposition:4200 \
+    -e INPUT_LOGIC_URL=https://github.com/perfectpattern/DefaultFlowLogic/archive/0.5.tar.gz \
+    -e IMPOSITION_URL=http://192.168.0.233:4200 \
     -it \
     --entrypoint sh \
     pib-flow:$version

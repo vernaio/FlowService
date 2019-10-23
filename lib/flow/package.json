@@ -1,7 +1,7 @@
 {
     "name": "pib-flow",
-    "description": "Flow - PrintShop Integration Box",
-    "version": "1.0.0",
+    "description": "Flow Service (PIB)",
+    "version": "0.0.0-dev",
     "license": "Apache-2.0",
     "dependencies": {
         "node-red": "^1.0.0",
@@ -10,7 +10,8 @@
         "request": "*",
         "move-file": "*",
         "path": "*",
-        "ws": "*"
+        "ws": "*",
+        "properties-reader": "*"
     },
     "repository": {
         "type": "git",
@@ -18,8 +19,5 @@
     },
     "scripts": {
         "start": "npm install $INPUT_LOGIC_URL && node node_modules/node-red/red.js --userDir . --settings ./src/settings.js ./src/flows.json"
-    },
-    "engines": {
-        "node": "8.x"
     }
 }
