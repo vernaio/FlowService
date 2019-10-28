@@ -18,6 +18,6 @@
         "url": "http://git.perfectpattern.intra/scm/ae/pib-flow.git"
     },
     "scripts": {
-        "start": "npm install $INPUT_LOGIC_URL && node node_modules/node-red/red.js --userDir . --settings ./src/settings.js ./src/flows.json"
+        "start": "npm install $INTEGRATION_LOCATION && node node_modules/node-red/red.js --userDir . --settings ./src/settings.js ./src/flows.json"
     }
 }

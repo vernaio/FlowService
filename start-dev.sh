@@ -44,8 +44,8 @@ docker run \
     -e SPO_USER=vorstufe \
     -e SPO_PASSWORD=$password \
     -e SPO_WORKSPACE_ID=test \
-    -e INPUT_LOGIC_NAME=default-flow-logic \
-    -e INPUT_LOGIC_URL=https://github.com/perfectpattern/DefaultFlowLogic/archive/0.5.tar.gz \
+    -e INTEGRATION_NAME=default-pdf-integration \
+    -e INTEGRATION_LOCATION=https://github.com/perfectpattern/DefaultPdfIntegration/archive/1.0.0.tar.gz \
     -e IMPOSITION_URL=http://192.168.0.233:4200 \
     -it \
     --entrypoint sh \
