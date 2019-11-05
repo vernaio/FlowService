@@ -29,8 +29,8 @@ ENV SPO_PASSWORD=undefined
 ENV SPO_WORKSPACE_ID=undefined
 
 # settings
-ENV INPUT_LOGIC_NAME=default-flow-logic
-ENV INPUT_LOGIC_URL=https://github.com/perfectpattern/DefaultFlowLogic/archive/0.5.tar.gz
+ENV INTEGRATION_NAME=default-flow-logic
+ENV INTEGRATION_LOCATION=https://github.com/perfectpattern/DefaultFlowLogic/archive/0.5.tar.gz
 ENV IMPOSITION_URL=http://imposition:4200
 
 # create folder interface

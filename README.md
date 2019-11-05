@@ -1,51 +1,119 @@
 # FlowService (PIB Flow)
+The FlowService is a workflow integration framework which integrates sPrintOne into a print production line. The service
+takes print jobs from any sources, prepare and import them to sPrintOne. Further, approved  
+gang forms are being received from sPrintOne and will be converted to PDF, so that they can be easily processed by subsequenting applications such as 
+prepress workflows etc.
 
 
 ## Flow Customization
-The FlowService is a workflow framework which is intended to be customized for each installation. A reference implementation of the customization is the "DefaultFlowLogic" which is available on github: https://github.com/perfectpattern/DefaultFlowLogic).
+In order to achieve a maximum level of integration, the FlowService provides several functions needed to be customize:
+
+* **extractJobs()** - Extraction of jobs from any source.
+* **processJob()** - Analyze Job Information and create BinderySignatures or an AssemblerTask.
+* **processJobBinderySignatures()** - Post process generated BinderySignatures.
+* **generateSheetId()** - Generate a sheetId for a sheet.
+* **processSheet()** - Post processing of a generated sheet.
+* **getVersion()** - Version details about this implementation.
+
+All customizations have to be done in an external node library which will be automatically imported to FlowService at start up.
+One reference implementation of such a customization is the "DefaultPdfIntegration" which is available on github: https://github.com/perfectpattern/DefaultPdfIntegration.
 
 ### Function: extractJobs()
+The function _extractJobs()_ extract complete jobs from any source needed.
 
 #### Input (Parameters):
-The function extractJobs() requires the following input parameters:
-| Parameter    | Description | Example  |
-| -------------|-------------| -----    |
+The function _extractJobs()_ requires the following input parameters:
+
+| Parameter | Description | Example |
+| --------- |-------------| ------- |
 | pathDataIn   | The path of the data input directory which is being scanned periodically for new jobs. | /data/in |
 
 #### Output (JSON Object):
-The function extractJobs() returns a list all complete jobs in the data in directory. Each job object SHALL include a attribute 'jobId' as well as a files array, which contains the list of files belonging to that job. Additional fields are optional.
+The function extractJobs() returns an array of complete jobs ready to be processed. Each job object SHALL include at
+least an attribute 'jobId' as well as a files array, which contains the list of files belonging to that job. 
+Additional fields are optional.
 
 ```json 'job array'
 [
     {
         jobId: "job-1",
-        files: ["/data/in/file-1-1.pdf", "/data/in/file-1-2.xml"]
+        files: ["/data/in/file-1-1.pdf", "/data/in/file-1-2.xml"],
+        custom-field: "optional custom-field",
     },
     {
         jobId: "job-2",
-        files: ["/data/in/file-2-1.pdf", "/data/in/file-2-2.xml"]
+        files: ["/data/in/file-2-1.pdf", "/data/in/file-2-2.xml"],
+        custom-field: "optional custom-field",
     }
 ]
 ```
 
 ### Function: processJob()
+The function _processJob_ analyze the job information and create BinderySignatures or an AssemblerTask.
+
 #### Input (Parameters):
-The function processJob() requires the following input parameters:
-| Parameter    | Description | Example  |
-| -------------|-------------| -----    |
-| job   | The path of the data input directory which is being scanned periodically for new jobs. | *see below* |
+The function _processJob()_ requires the following input parameters:
+
+| Parameter | Description | Example  |
+| ------------- | ------------- | ----- |
+| job   | One Job object of the job array extracted by _extractJobs()_ before. <br><br>**NOTE:** The attribute 'storageDir' defines the folder where all the input files are going to be stored after successful import. | *see below* |
 
 ```json 'job object'
 {
     jobId: "job-1",
     files: ["/data/in/file-1-1.pdf", "/data/in/file-1-2.xml"],
+    custom-field: "optional custom-field",
     storageDir: "/data/storage/job-1/"
 }
 ```
 
 #### Output (JSON Object):
-TBD
+The output is either a BinderySignature JSON or a AssemblerTask JSON as defined in the sPrintOne API.
 
+
+### Function: processJobBinderySignatures()
+Post process of generated BinderySignatures.
+
+#### Input (Parameters):
+The function _processJobBinderySignatures()_ requires the following input parameters:
+
+| Parameter | Description | Example  |
+| ------------- | ------------- | ----- |
+| binderySignatures | List of BinderySignatures generated either from _processJob()_ before or from the Assembler. | |
+| job | The job object. | |
+
+
+#### Output (JSON Object):
+The modified list of BinderySignatures.
+
+
+### Function: generateSheetId()
+The function _generateSheetId()_ generates a sheet's identifier based on the event XML.
+
+#### Input (Parameters):
+The function _generateSheetId()_ requires the following input parameters:
+
+| Parameter | Description | Example  |
+| ------------- | ------------- | ----- |
+| event | The sheets Event XML ||
+
+#### Output (String):
+The output is a single string representing the sheet's identifier.
+
+### Function: processSheet()
+The function _processSheet_ is the last one called in the process. This method can be used to
+integrate MIS Systems as well as copy files to subsequenting applications hotfolder.
+ 
+#### Input (Parameters):
+The function _processSheet()_ requires the following input parameters:
+ 
+| Parameter | Description | Example  |
+| ------------- | ------------- | ----- |
+| sheetDirectory | The directory where all the sheet files are stored. ||
+| outputFiles | JSON Object containing the files contained by the sheetDirectory ||
+ 
+#### Output (none):
+The function _processSheet()_ has no output.
 
 ## Development Infos
 
