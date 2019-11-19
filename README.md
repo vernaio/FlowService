@@ -1,12 +1,11 @@
 # FlowService (PIB Flow)
 The FlowService is a workflow integration framework which integrates sPrintOne into a print production line. The service
-takes print jobs from any sources, prepare and import them to sPrintOne. Further, approved  
-gang forms are being received from sPrintOne and will be converted to PDF, so that they can be easily processed by subsequenting applications such as 
-prepress workflows etc.
+takes print jobs from any source and prepares and imports them to sPrintOne. Further more, approved  
+gang forms are being received from sPrintOne and will be converted to PDF, so that they can be easily processed by subsequenting applications such as prepress workflows etc.
 
 
 ## Flow Customization
-In order to achieve a maximum level of integration, the FlowService provides several functions needed to be customize:
+In order to achieve a maximum level of integration, the FlowService provides several functions needed to be customized:
 
 * **extractJobs()** - Extraction of jobs from any source.
 * **processJob()** - Analyze Job Information and create BinderySignatures or an AssemblerTask.
@@ -19,7 +18,7 @@ All customizations have to be done in an external node library which will be aut
 One reference implementation of such a customization is the "DefaultPdfIntegration" which is available on github: https://github.com/perfectpattern/DefaultPdfIntegration.
 
 ### Function: extractJobs()
-The function _extractJobs()_ extract complete jobs from any source needed.
+The function _extractJobs()_ extract completes jobs from any source needed.
 
 #### Input (Parameters):
 The function _extractJobs()_ requires the following input parameters:
@@ -49,7 +48,7 @@ Additional fields are optional.
 ```
 
 ### Function: processJob()
-The function _processJob_ analyze the job information and create BinderySignatures or an AssemblerTask.
+The function _processJob_ analyzes the job information and creates BinderySignatures or an AssemblerTask.
 
 #### Input (Parameters):
 The function _processJob()_ requires the following input parameters:
