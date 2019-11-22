@@ -7,9 +7,9 @@ docker build ^
     -t pib-flow:%version% ^
     .
 
-mkdir data/in
-mkdir data/storage
-mkdir data/out
+mkdir data\in
+mkdir data\storage
+mkdir data\out
 
 docker run ^
     -p 1881:1881 ^
