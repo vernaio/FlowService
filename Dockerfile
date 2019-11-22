@@ -5,15 +5,11 @@ RUN mkdir -p /work/flow && chown node:node /work/flow
 
 COPY --chown=node:node [".git", "/work/flow/.git"]
 COPY --chown=node:node ["lib", "/work/flow/lib"]
-COPY --chown=node:node [".gitignore", "Dockerfile", "README.md", "start-dev.sh", "version.sh", "/work/flow/"]
+COPY --chown=node:node ["README.md", "/work/flow/"]
 
 WORKDIR /work/flow
 
 USER node
-
-RUN sh version.sh \
-    && rm -rf .git \
-    && rm version.sh
 
 RUN cd lib/flow && npm install --build-from-source
 
@@ -41,7 +37,6 @@ RUN mkdir -p /opt/flow && chown node:node /opt/flow \
 
 # copy files
 COPY --chown=node:node --from=builder /work/flow/lib/flow /opt/flow
-COPY --chown=node:node --from=builder /work/flow/version.properties /opt/flow/version.properties
 
 # change working directory
 WORKDIR /opt/flow
