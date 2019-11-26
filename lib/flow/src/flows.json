@@ -144,7 +144,7 @@
         "name": "Exception Handling",
         "info": "",
         "x": 130,
-        "y": 1340,
+        "y": 1380,
         "wires": []
     },
     {
@@ -155,7 +155,7 @@
         "scope": null,
         "uncaught": false,
         "x": 100,
-        "y": 1380,
+        "y": 1420,
         "wires": [
             [
                 "6a76d426.aa179c"
@@ -171,7 +171,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 260,
-        "y": 1380,
+        "y": 1420,
         "wires": [
             []
         ]
@@ -469,7 +469,7 @@
         "statusCode": "",
         "headers": {},
         "x": 410,
-        "y": 1260,
+        "y": 1300,
         "wires": []
     },
     {
@@ -481,7 +481,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 250,
-        "y": 1260,
+        "y": 1300,
         "wires": [
             [
                 "70dcefc.8a12b1"
@@ -495,7 +495,7 @@
         "name": "User Interface (HTTP Server)",
         "info": "",
         "x": 160,
-        "y": 1220,
+        "y": 1260,
         "wires": []
     },
     {
@@ -705,7 +705,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: spoDebug",
-        "func": "\n\nif(msg.notification !== undefined) {\n    node.log(\"WebSockert handshake successful.\");\n    \n}\n\n\n\nreturn;",
+        "func": "\n\nif(msg.notification !== undefined) {\n    node.log(\"WebSocket handshake successful.\");\n    \n}\n\n\n\nreturn;",
         "outputs": 1,
         "noerr": 0,
         "x": 800,
@@ -844,23 +844,6 @@
         ]
     },
     {
-        "id": "daa38e03.6825",
-        "type": "http in",
-        "z": "d4af305b.2ea44",
-        "name": "",
-        "url": "*",
-        "method": "get",
-        "upload": false,
-        "swaggerDoc": "",
-        "x": 90,
-        "y": 1260,
-        "wires": [
-            [
-                "9c920356.2208c"
-            ]
-        ]
-    },
-    {
         "id": "1ba0b50c.4454cb",
         "type": "function",
         "z": "d4af305b.2ea44",
@@ -962,15 +945,96 @@
         "wires": []
     },
     {
-        "id": "fd1dcde7.5ba31",
-        "type": "function",
+        "id": "3f2d07af.306e28",
+        "type": "http in",
         "z": "d4af305b.2ea44",
         "name": "",
-        "func": "\nreturn msg;",
+        "url": "/controller/messages",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 150,
+        "y": 1180,
+        "wires": [
+            [
+                "a8581f33.20014"
+            ]
+        ]
+    },
+    {
+        "id": "4d7c32a6.c1cb0c",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "/*",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 90,
+        "y": 1300,
+        "wires": [
+            [
+                "9c920356.2208c"
+            ]
+        ]
+    },
+    {
+        "id": "1b619dfe.86e262",
+        "type": "http response",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 630,
+        "y": 1180,
+        "wires": []
+    },
+    {
+        "id": "a8581f33.20014",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "read messages",
+        "func": "const messages = context.global.get('CACHE_MESSAGES');\n\nmsg.payload = messages;\nnode.send(msg);",
         "outputs": 1,
         "noerr": 0,
-        "x": 740,
-        "y": 860,
+        "x": 440,
+        "y": 1180,
+        "wires": [
+            [
+                "1b619dfe.86e262"
+            ]
+        ]
+    },
+    {
+        "id": "68cfcdf9.f85194",
+        "type": "inject",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 840,
+        "y": 1180,
+        "wires": [
+            [
+                "b3e04a2b.fe6788"
+            ]
+        ]
+    },
+    {
+        "id": "b3e04a2b.fe6788",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "test",
+        "func": "const messages = context.global.get('CACHE_MESSAGES');\nmessages.push({\n    severity : \"info\",\n    timestamp : new Date().getTime(),\n    message : \"Hello world!\"\n    \n});\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1010,
+        "y": 1180,
         "wires": [
             []
         ]
