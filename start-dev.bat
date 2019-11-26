@@ -17,13 +17,14 @@ docker run ^
     -v %cd%/data/in:/data/in ^
     -v %cd%/data/out:/data/out ^
     -v %cd%/data/storage:/data/storage ^
+	-v C:\dev\pib-flows\rindt-integration:/opt/custom-integration ^
     -e SPO_URL=spo-v3.web-apps.opti-beta.cloud ^
     -e SPO_TENANT=spodemo ^
     -e SPO_USER=admin ^
     -e SPO_PASSWORD=%password% ^
     -e SPO_WORKSPACE_ID=pib-demo-1 ^
-    -e INPUT_LOGIC_NAME=default-pdf-integration ^
-    -e INPUT_LOGIC_URL=https://github.com/perfectpattern/DefaultPdfIntegration/archive/1.0.0.tar.gz ^
+    -e INTEGRATION_NAME=rindt-integration ^
+    -e INTEGRATION_LOCATION=/opt/custom-integration ^
     -e IMPOSITION_URL=http://192.168.0.224:4200 ^
     -it ^
     --entrypoint sh ^
