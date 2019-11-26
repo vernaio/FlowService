@@ -12,6 +12,7 @@ In order to achieve a maximum level of integration, the FlowService provides sev
 * **processJobBinderySignatures()** - Post process generated BinderySignatures.
 * **generateSheetId()** - Generate a sheetId for a sheet.
 * **processSheet()** - Post processing of a generated sheet.
+* **moveFiles()** - Move files from the storage folder to the sheet folder.
 * **getVersion()** - Version details about this implementation.
 
 All customizations have to be done in an external node library which will be automatically imported to FlowService at start up.
@@ -101,7 +102,7 @@ The output is a single string representing the sheet's identifier.
 
 ### Function: processSheet()
 The function _processSheet_ is the last one called in the process. This method can be used to
-integrate MIS Systems as well as copy files to subsequenting applications hotfolder.
+integrate MIS Systems.
  
 #### Input (Parameters):
 The function _processSheet()_ requires the following input parameters:
@@ -113,6 +114,22 @@ The function _processSheet()_ requires the following input parameters:
  
 #### Output (none):
 The function _processSheet()_ has no output.
+
+### Function: moveFiles()
+The function _moveFiles_ is called parallel to the function _processSheet_. This method can be used to
+copy files to subsequenting applications hotfolder.
+ 
+#### Input (Parameters):
+The function _moveFiles()_ requires the following input parameters:
+ 
+| Parameter | Description | Example  |
+| ------------- | ------------- | ----- |
+| sheetDirectory | The directory where all the sheet files are stored. ||
+| jobInfos | JSON Object containing infos about the gangJobEvent ||
+| storageFolder | path to the storage folder
+ 
+#### Output:
+The function _moveFiles()_ returns a error message on error containing a list of missing file ids.
 
 ## Development Infos
 

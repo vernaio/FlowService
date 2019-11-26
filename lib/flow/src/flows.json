@@ -705,7 +705,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: spoDebug",
-        "func": "\n\nif(msg.notification !== undefined) {\n    node.log(\"WebSockert handshake successful.\");\n    \n}\n\n\n\nreturn;",
+        "func": "\n\nif(msg.notification !== undefined) {\n    node.log(\"WebSocket handshake successful.\");\n    \n}\n\n\n\nreturn;",
         "outputs": 1,
         "noerr": 0,
         "x": 800,
@@ -758,7 +758,8 @@
         "y": 420,
         "wires": [
             [
-                "559cf6a4.1e9998"
+                "559cf6a4.1e9998",
+                "884c8dea.93d93"
             ]
         ]
     },
@@ -770,7 +771,7 @@
         "func": "const request = context.global.get('REQUEST');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst pb = context.global.get('PRETTY_BYTES');\n\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent/report',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/pdf\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// define target file\nvar filename = path.join(msg.sheetDirectory, msg.sheetId + \"-report.pdf\");\n\n// execute request\nrequest(options)\n    .on('error', function(err) {\n        node.error(\"Unable to load SPO Calculation Report for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(err));\n    })\n    .pipe(fs.createWriteStream(filename))\n    .on('finish', () => {\n        msg.output.report = path.basename(filename);\n        \n        node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\")\n        node.send(msg);\n    });\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 1860,
+        "x": 1960,
         "y": 500,
         "wires": [
             [
@@ -782,11 +783,11 @@
         "id": "559cf6a4.1e9998",
         "type": "function",
         "z": "d4af305b.2ea44",
-        "name": "Flow: loadGangJobEvent",
+        "name": "Flow: loadGangJobEventXML",
         "func": "const request = context.global.get('REQUEST');\n\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent?_nodeVisibility=$GANG_JOB_EVENT_COMPLETE',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/xml\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to load GangJobEvent for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n    \n    } else {\n        // append GangJobEvent to message\n        msg.gangJobEventXml = body;\n        \n        node.log('GangJobEvent XML has been received for sheet \\'' + msg.sheetId + '\\'.');\n        node.send(msg);\n    \n    }\n        \n});",
         "outputs": 1,
         "noerr": 0,
-        "x": 1590,
+        "x": 1610,
         "y": 420,
         "wires": [
             [
@@ -802,7 +803,7 @@
         "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\n\n// save GangJobEvent XML to output directory\nvar filename = path.join(msg.sheetDirectory, msg.sheetId + \"-gangJobEvent.xml\");\n\nfs.writeFile(filename, msg.gangJobEventXml, (err) => {\n    if (err) throw err;\n    \n    msg.output.event = path.basename(filename);\n    \n    node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\");\n    node.send(msg);\n});",
         "outputs": 1,
         "noerr": 0,
-        "x": 1850,
+        "x": 1950,
         "y": 420,
         "wires": [
             [
@@ -818,7 +819,7 @@
         "func": "const request = context.global.get('REQUEST');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst pb = context.global.get('PRETTY_BYTES');\n\n// define request options\nvar options = {\n    method: 'POST',\n    url: env.get(\"IMPOSITION_URL\") + '/impose/sheet',\n    body: msg.gangJobEventXml,\n}\n\n// define target file\nvar filename = path.join(msg.sheetDirectory, msg.sheetId + \".xjdf.zip\");\n\n// execute request\nrequest(options)\n    .on('error', function(err) {\n        node.error(\"Unable to impose sheet '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(err));\n    })\n    .pipe(fs.createWriteStream(filename))\n    .on('finish', () => {\n        msg.output.xjdf = path.basename(filename);\n        \n        node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\")\n        node.send(msg);\n    });\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 1850,
+        "x": 1950,
         "y": 460,
         "wires": [
             [
@@ -945,7 +946,7 @@
         "func": "\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\nnode.log(\"Process sheet '\" + msg.sheetId + \"'...\")\n\n// process jobs bindery signatures\nintegration.processSheet(msg.sheetDirectory, msg.output).then(() => {\n    node.log(\"Process sheet '\" + msg.sheetId + \"' successful.\")\n    node.send(msg);\n});\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 2130,
+        "x": 2250,
         "y": 420,
         "wires": [
             []
@@ -957,7 +958,7 @@
         "z": "d4af305b.2ea44",
         "name": "File Output:",
         "info": "",
-        "x": 1810,
+        "x": 1910,
         "y": 380,
         "wires": []
     },
@@ -974,5 +975,67 @@
         "wires": [
             []
         ]
+    },
+    {
+        "id": "884c8dea.93d93",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: loadGangJobEventJSON",
+        "func": "const request = context.global.get('REQUEST');\n\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent?_nodeVisibility=$GANG_JOB_EVENT_COMPLETE',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to load GangJobEvent JSON for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n    \n    } else {\n        // append GangJobEvent to message\n        msg.gangJobEventJson = body;\n        \n        node.log('GangJobEvent JSON has been received for sheet \\'' + msg.sheetId + '\\'.');\n        node.send(msg);\n    \n    }\n        \n});",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1610,
+        "y": 600,
+        "wires": [
+            [
+                "f076011.b2542"
+            ]
+        ]
+    },
+    {
+        "id": "c4125dcd.1043",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Integration: moveFiles",
+        "func": "\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\nnode.log(\"Move files for '\" + msg.sheetId + \"'...\")\n\n// process jobs bindery signatures\nintegration.moveFiles(msg.sheetDirectory, msg.job, \"/data/storage\")\n.then(() => {\n    node.log(\"Move files for '\" + msg.sheetId + \"' successful.\")\n    node.send(msg);\n})\n.catch((error) =>{\n    node.log(error); \n});\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 2220,
+        "y": 600,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f076011.b2542",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: extractJobInfos",
+        "func": "//Create an internal job object for this flow\n\n\n//data source\nvar gangJobEvent = msg.gangJobEventJson[\"gangJobEvent-Root\"];\nvar gangJob = gangJobEvent.gangJob;\nvar media = gangJob.media;\nvar binderySignatures = gangJob.binderySignatures.binderySignature;\n\n//write to data target\n\n//for each bindery signature of the gangJobEvent\nvar bindSigs = [];\nbinderySignatures.forEach(function(binderySignature){\n  bindSigs.push({\n      id : binderySignature.id,\n      orderRef : binderySignature.orderRef\n  })\n});\n\n//create job object\nmsg.job = {\n    duration : gangJobEvent.plannedDuration,\n    workstyle : gangJob.workStyle,\n    mediaLabel : media.label,\n    mediaId : media.id,\n    mediaFormat : media.format,\n    binderySignatures : bindSigs\n};\n\nnode.send(msg);",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1940,
+        "y": 600,
+        "wires": [
+            [
+                "c4125dcd.1043",
+                "11c32dbf.d52ce2"
+            ]
+        ]
+    },
+    {
+        "id": "11c32dbf.d52ce2",
+        "type": "debug",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "x": 2190,
+        "y": 660,
+        "wires": []
     }
 ]
