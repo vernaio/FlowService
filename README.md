@@ -57,7 +57,7 @@ The function _processJob()_ requires the following input parameters:
 | Parameter | Description | Example  |
 | ------------- | ------------- | ----- |
 | job   | One Job object of the job array extracted by _extractJobs()_ before. <br><br>**NOTE:** The attribute 'storageDir' defines the folder where all the input files are going to be stored after successful import. | *see below* |
-| mediaList   | A json list of SPOV3 media entities provided by the PIB-Flows media retrieval . <br><br>**NOTE:** The attribute 'storageDir' defines the folder where all the input files are going to be stored after successful import. | *see below* |
+| mediaList   | A json list of SPOV3 media entities provided by the PIB-Flows media retrieval. | *see below* |
 
 ```json 'job object'
 {
