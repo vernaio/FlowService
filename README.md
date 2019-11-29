@@ -57,6 +57,7 @@ The function _processJob()_ requires the following input parameters:
 | Parameter | Description | Example  |
 | ------------- | ------------- | ----- |
 | job   | One Job object of the job array extracted by _extractJobs()_ before. <br><br>**NOTE:** The attribute 'storageDir' defines the folder where all the input files are going to be stored after successful import. | *see below* |
+| mediaList   | A json list of SPOV3 media entities provided by the PIB-Flows media retrieval . <br><br>**NOTE:** The attribute 'storageDir' defines the folder where all the input files are going to be stored after successful import. | *see below* |
 
 ```json 'job object'
 {
@@ -67,6 +68,30 @@ The function _processJob()_ requires the following input parameters:
 }
 ```
 
+```member json object in json 'mediaList'
+{   
+    "description:"",
+    "id:"2.68545200106530644530971",
+    "label:"Bilderdruck glänzend 170g 880x630 mm Breitbahn",
+    "active":true,
+    "dryingDuration":0,
+    "grade":1,
+    "grainDirection":"Y",
+    "mediaType":"SHEET",
+    "model":"Gloss",
+    "producer":"RockPaperScissorsLizardSpock",
+    "purpose":"Offset",
+    "series":"Series-1",
+    "surface":"glossy",
+    "thickness":121,
+    "weight":170,
+    "categories": {
+        "category":["Offset_glossy_170g"]},
+    "format":{
+        "height":630000,
+        "width":880000}
+}
+```
 #### Output (JSON Object):
 The output is either a BinderySignature JSON or a AssemblerTask JSON as defined in the sPrintOne API.
 
