@@ -181,7 +181,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Integration: processJob",
-        "func": "\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// process job\nnode.log(\"Process job: \" + msg.job.jobId);\n\n// set job#s storage dir\nmsg.job.storageFolder = msg.job.jobId + \"/\";\n\nintegration.processJob(msg.job).then((result) => {\n    msg.binderySignatures = result.binderySignatures\n    msg.assemblerTask = result.assemblerTask;\n    \n    if(msg.binderySignatures !== null) {\n        node.log(\"BinderySignatures have been created for job \" + msg.job.jobId);\n        node.send([msg, null]);\n        \n    } else if (msg.assemblerTask !== null) {\n        node.log(\"AssemblerTask has been created for job \" + msg.job.jobId);\n        node.send([null, msg]);\n        \n    } else {\n        throw new Error(\"Invalid result for job \" + msg.job.jobId)\n    }\n});\n\n\n\n",
+        "func": "\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// process job\nnode.log(\"Process job: \" + msg.job.jobId);\n\n// set job#s storage dir\nmsg.job.storageFolder = msg.job.jobId + \"/\";\n\nintegration.processJob(msg.job,msg.mediaList)\n    .then(\n    ((result) => {\n        msg.binderySignatures = result.binderySignatures\n        msg.assemblerTask = result.assemblerTask;\n    \n        node.log(\"BS\"+msg.binderySignatures);\n        node.log(\"AT\"+msg.assemblerTask);\n    \n        if(msg.binderySignatures !== null) {\n            node.log(\"BinderySignatures have been created for job \" + msg.job.jobId);\n            node.send([msg, null]);\n        \n        } else if (msg.assemblerTask !== null) {\n            node.log(\"AssemblerTask has been created for job \" + msg.job.jobId);\n            node.send([null, msg]);\n        } else {\n            throw new Error(\"Invalid result for job \" + msg.job.jobId)\n        }\n    }),\n    ((reject)=>{\n        node.warn(reject)}))\n    .catch((error)=> { node.error(error)});\n\n\n\n",
         "outputs": 2,
         "noerr": 0,
         "x": 950,
@@ -232,7 +232,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: processAssemblerTask",
-        "func": "\n// get request\nvar request = context.global.get('REQUEST');\n\n// define options\nnode.log(\"Prepare AssemblerTask for job \" + msg.job.jobId);\n\nvar options = {\n    method: 'POST',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/assembler/',\n    json: true,\n    body: msg.assemblerTask,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to connect Assembler for job '\" + msg.job.jobId + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    \n    } else if (body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"Assembler Exception for Job '\" + msg.job.jobId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message);\n        return;\n        \n    } else {\n        msg.binderySignatures = body['assembler-Root'].result.binderySignatures.binderySignature;\n        node.log(\"Assembler has been executed sucessfully for job '\" + msg.job.jobId + \"'. Number BinderySignatures: \" + msg.binderySignatures.length);\n        node.send(msg);\n        \n    }\n});\n\n\n",
+        "func": "\n// get request\nvar request = context.global.get('REQUEST');\n\n// define options\nnode.log(\"Prepare AssemblerTask for job \" + msg.job.jobId);\n\nvar options = {\n    method: 'POST',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/assembler/',\n    json: true,\n    body: msg.assemblerTask,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to connect Assembler for job '\" + msg.job.jobId + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    \n    } else if (body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"Assembler Parse Exception for Job '\" + msg.job.jobId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message);\n        return;\n        \n    } else {\n        if (body['assembler-Root'].exceptionInfo!==undefined) {\n            console.dir(body['assembler-Root']);\n          var errMessage = body['assembler-Root'].exceptionInfo.message;\n          node.error(\"Assembler Task Exception for Job '\" + msg.job.jobId + \"': \" + errMessage);\n          return;\n        } else {\n          msg.binderySignatures = body['assembler-Root'].result.binderySignatures.binderySignature;\n          node.log(\"Assembler has been executed sucessfully for job '\" + msg.job.jobId + \"'. Number BinderySignatures: \" + msg.binderySignatures.length);\n          node.send(msg);\n        }\n        \n    }\n});\n\n\n",
         "outputs": 1,
         "noerr": 0,
         "x": 1220,
@@ -307,7 +307,7 @@
         "y": 140,
         "wires": [
             [
-                "e87f497a.fb0198"
+                "ea59f95b.d9cec8"
             ]
         ]
     },
@@ -1037,5 +1037,35 @@
         "x": 2190,
         "y": 660,
         "wires": []
+    },
+    {
+        "id": "63b6e661.723d98",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: retrieveMedias",
+        "func": "// get request\nvar request = context.global.get('REQUEST');\n\n// define options\nnode.log(\"Prepare media retrieval from workspace with id='\" + env.get('SPO_WORKSPACE_ID')+\"'\");\n\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/medias/',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve medias from workspace with id='\" + env.get('SPO_WORKSPACE_ID') + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for Medias in workspace with id='\" + env.get('SPO_WORKSPACE_ID') + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message);\n        return;\n    } else {\n        msg.mediaList=body['medias-Root'].media;\n        node.log(\"Media retrieval from workspace with id='\"+env.get('SPO_WORKSPACE_ID')+\"' has been sucessful. Number Medias: \" + msg.mediaList.length);\n        node.send(msg);\n        \n    }\n});\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 380,
+        "y": 20,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ea59f95b.d9cec8",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: retrieveMedias",
+        "func": "// get request\nvar request = context.global.get('REQUEST');\n\n// define options\nnode.log(\"Prepare media retrieval from workspace with id='\" + env.get('SPO_WORKSPACE_ID')+\"'\");\n\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/medias/',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve medias from workspace with id='\" + env.get('SPO_WORKSPACE_ID') + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for Medias in workspace with id='\" + env.get('SPO_WORKSPACE_ID') + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message);\n        return;\n    } else {\n        msg.mediaList=body['medias-Root'].media;\n        node.log(\"Media retrieval from workspace with id='\"+env.get('SPO_WORKSPACE_ID')+\"' has been sucessful. Number Medias: \" + msg.mediaList.length);\n        node.send(msg);\n        \n    }\n});\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 840,
+        "y": 220,
+        "wires": [
+            [
+                "e87f497a.fb0198"
+            ]
+        ]
     }
 ]
