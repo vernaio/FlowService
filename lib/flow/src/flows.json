@@ -181,7 +181,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Integration: processJob",
-        "func": "\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// process job\nnode.log(\"Process job: \" + msg.job.jobId);\n\n// set job#s storage dir\nmsg.job.storageFolder = msg.job.jobId + \"/\";\n\nintegration.processJob(msg.job,msg.mediaList)\n    .then(\n    ((result) => {\n        msg.binderySignatures = result.binderySignatures\n        msg.assemblerTask = result.assemblerTask;\n    \n        node.log(\"BS\"+msg.binderySignatures);\n        node.log(\"AT\"+msg.assemblerTask);\n    \n        if(msg.binderySignatures !== null) {\n            node.log(\"BinderySignatures have been created for job \" + msg.job.jobId);\n            node.send([msg, null]);\n        \n        } else if (msg.assemblerTask !== null) {\n            node.log(\"AssemblerTask has been created for job \" + msg.job.jobId);\n            node.send([null, msg]);\n        } else {\n            throw new Error(\"Invalid result for job \" + msg.job.jobId)\n        }\n    }),\n    ((reject)=>{\n        node.warn(reject)}))\n    .catch((error)=> { node.error(error)});\n\n\n\n",
+        "func": "\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// process job\nnode.log(\"Process job: \" + msg.job.jobId);\n\n// set job#s storage dir\nmsg.job.storageFolder = msg.job.jobId + \"/\";\n\nintegration.processJob(msg.job,msg.mediaList)\n    .then(\n    ((result) => {\n        msg.binderySignatures = result.binderySignatures\n        msg.assemblerTask = result.assemblerTask;\n    \n        if(msg.binderySignatures !== null) {\n            node.log(\"BinderySignatures have been created for job \" + msg.job.jobId);\n            node.send([msg, null]);\n        \n        } else if (msg.assemblerTask !== null) {\n            node.log(\"AssemblerTask has been created for job \" + msg.job.jobId);\n            node.send([null, msg]);\n        } else {\n            throw new Error(\"Invalid result for job \" + msg.job.jobId)\n        }\n    }),\n    ((reject)=>{\n        node.warn(reject)}))\n    .catch((error)=> { node.error(error)});\n\n\n\n",
         "outputs": 2,
         "noerr": 0,
         "x": 950,
@@ -1061,7 +1061,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 840,
-        "y": 220,
+        "y": 200,
         "wires": [
             [
                 "e87f497a.fb0198"
