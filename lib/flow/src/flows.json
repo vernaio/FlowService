@@ -758,8 +758,8 @@
         "y": 420,
         "wires": [
             [
-                "559cf6a4.1e9998",
-                "884c8dea.93d93"
+                "884c8dea.93d93",
+                "559cf6a4.1e9998"
             ]
         ]
     },
@@ -787,7 +787,7 @@
         "func": "const request = context.global.get('REQUEST');\n\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent?_nodeVisibility=$GANG_JOB_EVENT_COMPLETE',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/xml\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to load GangJobEvent for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n    \n    } else {\n        // append GangJobEvent to message\n        msg.gangJobEventXml = body;\n        \n        node.log('GangJobEvent XML has been received for sheet \\'' + msg.sheetId + '\\'.');\n        node.send(msg);\n    \n    }\n        \n});",
         "outputs": 1,
         "noerr": 0,
-        "x": 1610,
+        "x": 1670,
         "y": 420,
         "wires": [
             [
@@ -816,7 +816,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: imposeSheet (xjdf)",
-        "func": "const request = context.global.get('REQUEST');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst pb = context.global.get('PRETTY_BYTES');\n\n// define request options\nvar options = {\n    method: 'POST',\n    url: env.get(\"IMPOSITION_URL\") + '/impose/sheet',\n    body: msg.gangJobEventXml,\n}\n\n// define target file\nvar filename = path.join(msg.sheetDirectory, msg.sheetId + \".xjdf.zip\");\n\n// execute request\nrequest(options)\n    .on('error', function(err) {\n        node.error(\"Unable to impose sheet '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(err));\n    })\n    .pipe(fs.createWriteStream(filename))\n    .on('finish', () => {\n        msg.output.xjdf = path.basename(filename);\n        \n        node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\")\n        node.send(msg);\n    });\n",
+        "func": "const request = context.global.get('REQUEST');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst pb = context.global.get('PRETTY_BYTES');\n\n// define request options\nvar options = {\n    method: 'POST',\n    url: env.get(\"IMPOSITION_URL\") + '/impose/sheet',\n    body: msg.gangJobEventXml,\n}\n\n// define target file\nvar filename = path.join(msg.sheetDirectory, msg.sheetId + \".xjdf.zip\");\n\n// execute request\nrequest(options)\n    .on('error', function(err) {\n        node.error(\"Unable to impose sheet '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(err));\n    })\n    .pipe(fs.createWriteStream(filename))\n    .on('finish', () => {\n        fs.closeSync(filename.fd);\n        msg.output.xjdf = path.basename(filename);\n        node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\")\n        node.send(msg);\n    });\n",
         "outputs": 1,
         "noerr": 0,
         "x": 1950,
@@ -963,31 +963,18 @@
         "wires": []
     },
     {
-        "id": "fd1dcde7.5ba31",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "",
-        "func": "\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 740,
-        "y": 860,
-        "wires": [
-            []
-        ]
-    },
-    {
         "id": "884c8dea.93d93",
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: loadGangJobEventJSON",
-        "func": "const request = context.global.get('REQUEST');\n\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent?_nodeVisibility=$GANG_JOB_EVENT_COMPLETE',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to load GangJobEvent JSON for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n    \n    } else {\n        // append GangJobEvent to message\n        msg.gangJobEventJson = body;\n        \n        node.log('GangJobEvent JSON has been received for sheet \\'' + msg.sheetId + '\\'.');\n        node.send(msg);\n    \n    }\n        \n});",
+        "func": "const request = context.global.get('REQUEST');\n\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent?_nodeVisibility=/auditLog:VISIBLE&_nodeVisibility=$GANG_JOB_EVENT_COMPLETE',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to load GangJobEvent JSON for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n    \n    } else {\n        // append GangJobEvent to message\n        msg.gangJobEventJson = body;\n        node.log('GangJobEvent JSON has been received for sheet \\'' + msg.sheetId + '\\'.');\n        node.send(msg);\n    \n    }\n        \n});",
         "outputs": 1,
         "noerr": 0,
-        "x": 1610,
+        "x": 1670,
         "y": 600,
         "wires": [
             [
+                "89651d3e.7370a",
                 "f076011.b2542"
             ]
         ]
@@ -1034,23 +1021,9 @@
         "tostatus": false,
         "complete": "true",
         "targetType": "full",
-        "x": 2190,
-        "y": 660,
+        "x": 2170,
+        "y": 640,
         "wires": []
-    },
-    {
-        "id": "63b6e661.723d98",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "Flow: retrieveMedias",
-        "func": "// get request\nvar request = context.global.get('REQUEST');\n\n// define options\nnode.log(\"Prepare media retrieval from workspace with id='\" + env.get('SPO_WORKSPACE_ID')+\"'\");\n\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/medias/',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve medias from workspace with id='\" + env.get('SPO_WORKSPACE_ID') + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for Medias in workspace with id='\" + env.get('SPO_WORKSPACE_ID') + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message);\n        return;\n    } else {\n        msg.mediaList=body['medias-Root'].media;\n        node.log(\"Media retrieval from workspace with id='\"+env.get('SPO_WORKSPACE_ID')+\"' has been sucessful. Number Medias: \" + msg.mediaList.length);\n        node.send(msg);\n        \n    }\n});\n",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 380,
-        "y": 20,
-        "wires": [
-            []
-        ]
     },
     {
         "id": "ea59f95b.d9cec8",
@@ -1067,5 +1040,79 @@
                 "e87f497a.fb0198"
             ]
         ]
+    },
+    {
+        "id": "2faf1e31.d1b5b2",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow; jobTicketCreation",
+        "func": "// get input logic\nvar jobTicketGenerator = context.global.get('JOB_TICKET_GENERATOR');\n\n// job ticket creation\nmsg.fullSheetGangJobEvent=\njobTicketGenerator.generateFullSheetGangJobEvent(msg.gangJobEventJson['gangJobEvent-Root'],msg.sheetId)\nnode.log(JSON.stringify(msg.fullSheetGangJobEvent))\n/*\n//.then((fullSheetGangJobEvent) => {\n//    msg.fullSheetGangJobEvent = fullSheetGangJobEvent\n    node.log(\"Generated (Pre)JobTicket(fullSheetGangJobEvent)'\" + msg.fullSheetGangJobEvent + \"' for event '\" + msg.event.id + \"'\");\n    node.send(msg);\n});\n*/\nnode.log(\"fullSheetGJE done.\")\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1710,
+        "y": 900,
+        "wires": [
+            [
+                "f7f4f1e7.9a5b2"
+            ]
+        ]
+    },
+    {
+        "id": "f7f4f1e7.9a5b2",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: jobTicketRetrieval",
+        "func": "const request = context.global.get('REQUEST');\n\nnode.log(\"upload fsgje\")\n// define request options\nvar options = {\n    method: 'POST',\n    url: \"https://\" + env.get(\"SPO_URL\")+\"/api/rest/workspaces/id=pib_phantom/plannedEvents/\",\n    body: { \"events-Root\" : { \"event\" : [ msg.fullSheetGangJobEvent ] }},\n    json : true,\n    headers: {\n        \"X-Tenant\" : \"pibPhantom\",\n        \"accept\" : \"application/json\",\n        \"Content-Type\": \"application/json\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\")+\"@\"+env.get(\"SPO_TENANT\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\nnode.log(\"upload fsgje\")\n\nfunction getApogeeJdf(option) {\n    request(option,(error, response, body) => {\n    if (error) {\n        node.error(\"Unable to get Apogee Jdf '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n    } else {\n        // append GangJobEvent to message\n        msg.apogeeJDF = body;\n        node.log('Apogee JDF has been received for sheet \\'' + msg.sheetId + '\\'.');\n        node.send(msg);\n    }});\n}\n\n// execute request\nrequest(options,(error,response,body)=>{\n    if (error) {\n        node.error(\"unable to upload fsgje.\");\n    }else {\n        node.log(JSON.stringify(response));\n    var ao = \n    {\n    method: 'GET',\n    url: \"https://\" + env.get(\"SPO_URL\")+\"/api/rest/workspaces/id=pib_phantom/plannedEvents/id=\"+msg.sheetId+\"/@GangJobEvent/apogeeJdfV9_0\",\n    json : false,\n    headers: {\n        \"X-Tenant\" : \"pibPhantom\",\n        \"accept\" : \"application/jdf\",\n        \"Content-Type\" : \"application/jdf\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\")+\"@\"+env.get(\"SPO_TENANT\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n    };\n    getApogeeJdf(ao);    \n    //node.send(msg);\n    }});\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1710,
+        "y": 960,
+        "wires": [
+            [
+                "f0b6c5c0.3617c8",
+                "18e83e6.5959cc2"
+            ]
+        ]
+    },
+    {
+        "id": "f0b6c5c0.3617c8",
+        "type": "debug",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "x": 1910,
+        "y": 960,
+        "wires": []
+    },
+    {
+        "id": "18e83e6.5959cc2",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: gangJobEvent (xml)",
+        "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\n\n// save Apogee JDF to output directory\nvar filename = path.join(msg.sheetDirectory, msg.sheetId + \"-apogee.jdf\");\n\nfs.writeFile(filename, msg.apogeeJDF, (err) => {\n    if (err) throw err;\n    \n    msg.output.event = path.basename(filename);\n    \n    node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\");\n    node.send(msg);\n});",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1710,
+        "y": 1020,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "89651d3e.7370a",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: writeApogeeJobTicket_(beta))",
+        "func": "const path = context.global.get('PATH');\n\nconst jobTicketGenerator = context.global.get('JOB_TICKET_GENERATOR');\nconst apogeeJobTicketLocation = path.join(msg.sheetDirectory,msg.sheetId+\"_apogeeV9_JobTicket.jdf\");\n\nif (!context.global.get(\"apogeeJdfModel\")) {\n    const fs = context.global.get('FS');\n    fs.readFile('jobTicketGenerator/apogee/model/ApogeeJdfV9_model.jdf',\n        function (err, data) {\n            if (err) throw \"Apogee Jdf Model file could not be read - Error message: \" + err;\n            var lineArray = data.toString().split(\"\\n\");\n            context.global.set(\"apogeeJdfModel\",lineArray);        \n            jobTicketGenerator.writeApogeeJdf(\n                apogeeJobTicketLocation,\n                msg.sheetId,\n                msg.gangJobEventJson[\"gangJobEvent-Root\"],\n                0,\n                context.global.get(\"apogeeJdfModel\"));\n        }\n    );    \n} else {\n    jobTicketGenerator.writeApogeeJdf(\n        apogeeJobTicketLocation,\n        msg.sheetId,\n        msg.gangJobEventJson[\"gangJobEvent-Root\"],\n        0,\n        context.global.get(\"apogeeJdfModel\"));\n}\n",
+        "outputs": 0,
+        "noerr": 0,
+        "x": 1990,
+        "y": 700,
+        "wires": []
     }
 ]

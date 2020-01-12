@@ -11,7 +11,8 @@
         "move-file": "*",
         "path": "*",
         "ws": "*",
-        "properties-reader": "*"
+        "properties-reader": "*",
+        "job-ticket-generator": "./jobTicketGenerator"
     },
     "repository": {
         "type": "git",
