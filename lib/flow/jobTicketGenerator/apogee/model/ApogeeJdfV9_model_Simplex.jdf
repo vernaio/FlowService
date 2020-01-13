@@ -72,12 +72,7 @@
                     </ColorantControl>
                     <ColorantControl ProcessColorModel="DeciveCMYK" Side="Back">
                         <ColorantParams/>
-                        <ColorantOrder>
-                            <SeparationSpec Name="Cyan"/>
-                            <SeparationSpec Name="Magenta"/>
-                            <SeparationSpec Name="Yellow"/>
-                            <SeparationSpec Name="Black"/>
-                        </ColorantOrder>
+                        <ColorantOrder/>
                     </ColorantControl>
                 </ColorantControl>
             </ColorantControl>
@@ -91,7 +86,6 @@
                 SignatureName   =   "SignatureID_INJECT(pib.sheet.id)">
                 <Layout SheetName   =   "SheetID_INJECT(pib.sheet.id)">
                     <Layout Side="Front"/>
-                    <Layout Side="Back"/>
                 </Layout>
             </Layout>
         </Layout>
@@ -122,12 +116,6 @@
                         <ExposedMedia ProductID="2" Separation="Magenta"/>
                         <ExposedMedia ProductID="3" Separation="Yellow"/>
                         <ExposedMedia ProductID="4" Separation="Black"/>
-                    </ExposedMedia>
-                    <ExposedMedia Side="Back">
-                        <ExposedMedia ProductID="5" Separation="Cyan"/>
-                        <ExposedMedia ProductID="6" Separation="Magenta"/>
-                        <ExposedMedia ProductID="7" Separation="Yellow"/>
-                        <ExposedMedia ProductID="8" Separation="Black"/>
                     </ExposedMedia>
                 </ExposedMedia>
             </ExposedMedia>
@@ -161,7 +149,7 @@
                 <StrippingParams 
                     AssemblyIDs =   "AssemblyIDs_INJECT(pib.sheet.id)" 
                     SheetName   =   "SheetID_INJECT(pib.sheet.id)" 
-                    WorkStyle   =   "INJECT(apogee.job.workStyle)">
+                    WorkStyle   =   "Simplex">
                     <MediaRef rRef="MediaPrintingPaperID">
                         <Part 
                             SheetName       =   "SheetID_INJECT(pib.sheet.id)" 
