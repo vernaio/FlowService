@@ -575,7 +575,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "read files data in",
-        "func": "const fs = context.global.get('FS');\n\n// read directory\nfs.readdir(\"/data/in\", function(err, files) {\n    msg.payload = files;\n    node.send(msg);\n});\n",
+        "func": "const fs = context.global.get('FS');\nconst root = \"/data/in\";\n\nfunction getFileInfos(root, filename) {\n    var stats = fs.statSync(root + \"/\" + filename);\n    var fileSizeInKiloBytes = Math.ceil(stats[\"size\"] / 1024);\n    var i = filename.lastIndexOf('.');\n    return {\n        name : filename,\n        type : (i < 0) ? '' : filename.substr(i+1),\n        size : fileSizeInKiloBytes\n    }\n}\n\n// read directory\nfs.readdir(root, function(err, files) {\n    msg.payload = [];\n    files.forEach(function(file){\n        msg.payload.push(getFileInfos(root, file));\n    })\n    node.send(msg);\n});\n",
         "outputs": 1,
         "noerr": 0,
         "x": 440,
