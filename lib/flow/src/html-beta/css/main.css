@@ -216,8 +216,14 @@ footer a{
 	margin: 0 -10px;
 }
 
-.flex-container.flex-3 .flex-item{
-	min-width: 350px;
+.flex-container.flex-2 .flex-item{
+	width: calc(50% - 20px);
+}
+
+@media only screen and (max-width: 900px) {
+	.flex-container.flex-2 .flex-item{
+		width: calc(100% - 20px);
+	}
 }
 
 .flex-item{
@@ -225,10 +231,6 @@ footer a{
 	margin: 10px;
 	padding: 0px;
 	white-space: normal;
-}
-
-.flex-item{
-	text-align: center;
 }
 
 .flex-content{
@@ -241,6 +243,10 @@ footer a{
 div.workflow-container{
 	max-width: 900px;
 	margin: 0 auto;
+	text-align: center;
+}
+
+div.workflow-container .flex-item{
 	text-align: center;
 }
 
