@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <JDF xmlns="http://www.CIP4.org/JDFSchema_1_1" 
     xmlns:agfa="http://www.agfa.com/w3c/gs/jdf/agfaextensions.xsd" 
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Activation="Active" DescriptiveName="Stripping of single GangJob INJECT(pib.sheet.id) - sPrint One (PerfectPattern)" ID="INJECT(pib.sheet.id)" JobID="INJECT(pib.sheet.id)" JobPartID="INJECT(pib.sheet.id)" Status="Ready" Type="Product" Version="1.5">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Activation="Active" DescriptiveName="INJECT(pib.sheet.id)" ID="INJECT(pib.sheet.id)" JobID="INJECT(pib.sheet.id)" JobPartID="INJECT(pib.sheet.id)" Status="Ready" Type="Product" Version="1.5">
     <Comment AgentName="PIB" DescriptiveName="FullSheetPdf of Gang Job INJECT(pib.sheet.id)" />
     <AuditPool>
         <Created AgentName="PIB" ID="CreatedID" TimeStamp="INJECT(pib.sheet.createdOn)" />
