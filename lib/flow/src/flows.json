@@ -144,7 +144,7 @@
         "name": "Exception Handling",
         "info": "",
         "x": 130,
-        "y": 1340,
+        "y": 1400,
         "wires": []
     },
     {
@@ -155,7 +155,7 @@
         "scope": null,
         "uncaught": false,
         "x": 100,
-        "y": 1380,
+        "y": 1440,
         "wires": [
             [
                 "6a76d426.aa179c"
@@ -171,7 +171,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 260,
-        "y": 1380,
+        "y": 1440,
         "wires": [
             []
         ]
@@ -469,7 +469,7 @@
         "statusCode": "",
         "headers": {},
         "x": 410,
-        "y": 1260,
+        "y": 1320,
         "wires": []
     },
     {
@@ -481,7 +481,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 250,
-        "y": 1260,
+        "y": 1320,
         "wires": [
             [
                 "70dcefc.8a12b1"
@@ -852,7 +852,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 90,
-        "y": 1260,
+        "y": 1320,
         "wires": [
             [
                 "9c920356.2208c"
@@ -1049,6 +1049,33 @@
         "noerr": 0,
         "x": 1990,
         "y": 700,
+        "wires": []
+    },
+    {
+        "id": "6540c97b.74e5d8",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "load asset (beta)",
+        "func": "const fs = context.global.get('FS');\nconst path = context.global.get('PATH');\n\nvar root = './src/html-beta/';\nvar url = msg.req.url;\n\nif(url.substr(url.length - 5).indexOf(\".\") === -1){\n    url = path.join(url, \"index.html\");\n}\n\n// set asset path\nvar assetPath = path.join(root, url);\n\n// define content type\nvar contentType = \"application/octet-stream\"\n\nif(path.extname(assetPath) === \".html\" || path.extname(assetPath) === \".htm\") {\n    contentType = 'text/html';\n} else if (path.extname(assetPath) === \".js\") {\n    contentType = 'text/javascript';\n} else if (path.extname(assetPath) === \".css\") {\n    contentType = 'text/css';\n} else if (path.extname(assetPath) === \".ico\") {\n    contentType = 'image/x-icon';\n} else if (path.extname(assetPath) === \".svg\") {\n    contentType = 'image/svg+xml';\n}\n\n\n// try to deliver asset\nif(fs.existsSync(assetPath)) {\n    fs.readFile(assetPath, (err, data) => {\n        if (err) throw err;\n        \n        msg.payload = data;\n        msg.statusCode = 200;\n        msg.headers = {\n            'Content-Type': contentType\n        };\n        \n        node.send(msg);\n    });\n    \n} else {\n    node.warn(\"Asset not found: \" + assetPath + \" (\" + contentType + \")\")\n    \n    assetPath = path.join(root, \"404.html\");\n    fs.readFile(assetPath, (err, data) => {\n        if (err) throw err;\n        \n        msg.payload = data;\n        msg.statusCode = 404;\n        msg.headers = {\n            'Content-Type': contentType\n        };\n        \n        node.send(msg);\n    });\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 270,
+        "y": 1280,
+        "wires": [
+            [
+                "7e8fdeb4.45173"
+            ]
+        ]
+    },
+    {
+        "id": "7e8fdeb4.45173",
+        "type": "http response",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 450,
+        "y": 1280,
         "wires": []
     }
 ]
