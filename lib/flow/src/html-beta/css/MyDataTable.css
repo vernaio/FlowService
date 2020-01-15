@@ -1,0 +1,118 @@
+.MyDataTable-parent{
+    overflow-y: hidden;
+    display: inline-block;
+    border: solid 1px #ddd;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-rendering: geometricPrecision;
+    color: #555;
+    transition : border 250ms ease-in-out;
+}
+
+.MyDataTable-parent.loading{
+    border-color: rgb(147, 175, 236);
+}
+
+.MyDataTable-parent.error{
+    border-color: rgb(209, 65, 65);
+}
+
+div.MyDataTable-headerWrapper{
+    padding-right: 20px;
+    overflow: hidden;
+    user-select: none;
+    background: #eee;
+}
+
+div.MyDataTable-bodyWrapper{
+    height: calc(100% - 33px);
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+table.MyDataTable-header, 
+table.MyDataTable-body{
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+table.MyDataTable-body{
+    width: 100%;
+}
+
+table.MyDataTable-header th{
+    text-align: left;
+    background-color: #eee;
+    font-weight: 400;
+}
+
+table.MyDataTable-header th:hover,table.MyDataTable-body tr:hover td{
+    background-color: rgb(184, 214, 231);
+}
+
+table.MyDataTable-header th{
+    position: relative;
+    line-height: 30px;
+}
+
+table.MyDataTable-header th.sorted_asc:after, 
+table.MyDataTable-header th.sorted_desc:after{
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 3px;
+    width: 4px;
+    height: 4px;
+    border: solid #3e3e3e;
+    border-width: 0 1px 1px 0;
+    display: inline-block;
+    padding: 0px;
+}
+
+table.MyDataTable-header th.sorted_asc:after {
+    transform: rotate(-135deg) translateX(-50%);
+    -webkit-transform: rotate(-135deg) translateX(-50%);
+  }
+  
+  table.MyDataTable-header th.sorted_desc:after {
+    transform: rotate(45deg) translateX(-50%);
+    -webkit-transform: rotate(45deg) translateX(-50%);
+  }
+
+.MyDataTable-header-grabber{
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    height: 100%;
+    width: 5px;
+    cursor: col-resize;
+}
+
+.MyDataTable-header-grabber:after{
+    content: "";
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    height: 100%;    
+    width: 1px;
+    background-color: #ccc;
+}
+
+.MyDataTable-header-label{
+    display: inline;
+    white-space: nowrap;
+}
+
+table.MyDataTable-header th, table.MyDataTable-body td{
+    padding: 2px 5px;
+}
+
+table.MyDataTable-body{
+    table-layout: fixed;
+}
+
+table.MyDataTable-body td{
+    overflow: hidden;
+    white-space: nowrap;
+    line-height: 1.3rem;
+}
