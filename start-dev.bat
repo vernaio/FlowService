@@ -17,15 +17,15 @@ docker run ^
     -v %cd%/data/in:/data/in ^
     -v %cd%/data/out:/data/out ^
     -v %cd%/data/storage:/data/storage ^
-	-v C:\dev\rindt-integration:/opt/custom-integration ^
-    -e SPO_URL=spo-v3.web-apps.opti-beta.cloud ^
-    -e SPO_TENANT=spodemo ^
-    -e SPO_USER=admin ^
+	-v C:\dev\projects\rindt-integration:/opt/custom-integration ^
+    -e SPO_URL=spo-v3.web-apps.wmdTest.tryout.zone ^
+    -e SPO_TENANT=pib ^
+    -e SPO_USER=vorstufe ^
     -e SPO_PASSWORD=%password% ^
-    -e SPO_WORKSPACE_ID=pib-demo-1 ^
-    -e INTEGRATION_NAME=rindt-integration ^
+    -e SPO_WORKSPACE_ID=test ^
+    -e INTEGRATION_NAME=default-pdf-integration ^
     -e INTEGRATION_LOCATION=/opt/custom-integration ^
-    -e IMPOSITION_URL=http://192.168.0.237:4200 ^
+    -e IMPOSITION_URL=http://192.168.0.242:4200 ^
     -it ^
     --entrypoint sh ^
     pib-flow:%version%
