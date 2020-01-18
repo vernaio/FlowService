@@ -46,8 +46,16 @@ table.MyDataTable-header th{
     font-weight: 400;
 }
 
+table.MyDataTable-header th:hover,table.MyDataTable-body tr td{
+    user-select: none;
+}
+
 table.MyDataTable-header th:hover,table.MyDataTable-body tr:hover td{
     background-color: rgb(184, 214, 231);
+}
+
+table.MyDataTable-header th:hover,table.MyDataTable-body tr.selected td{
+    background-color: rgb(155, 194, 216);
 }
 
 table.MyDataTable-header th{
@@ -112,7 +120,82 @@ table.MyDataTable-body{
 }
 
 table.MyDataTable-body td{
+    position: relative;
     overflow: hidden;
     white-space: nowrap;
     line-height: 1.3rem;
+}
+
+table.MyDataTable-body td.filename:before,
+table.MyDataTable-body td.order:before,
+table.MyDataTable-body td.status:before,
+table.MyDataTable-body td.log:before{
+    content:"";
+    position: absolute;
+    left: 2px;
+    top:0px;
+    height: 100%;
+    width: 20px;
+    background-image: url(/img/files/unknown.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: auto 72%;
+}
+
+
+
+table.MyDataTable-body td.filename.pdf:before{background-image: url(/img/files/pdf.svg);}
+table.MyDataTable-body td.filename.xml:before{background-image: url(/img/files/xml.svg);}
+table.MyDataTable-body td.filename.txt:before{background-image: url(/img/files/txt.svg);}
+
+table.MyDataTable-body td.order:before{background-size: auto 65%;}
+table.MyDataTable-body td.order:before{background-image: url(/img/files/folder.svg);}
+
+table.MyDataTable-body td.status:before{background-size: auto 50%;}
+table.MyDataTable-body td.status.pending:before{background-image: url(/img/pending.svg);}
+table.MyDataTable-body td.status.canceled:before{background-image: url(/img/canceled.svg);}
+table.MyDataTable-body td.status.success:before{background-image: url(/img/success.svg);}
+
+table.MyDataTable-body td.log:before{background-size: auto 60%;}
+table.MyDataTable-body td.log.warning:before{background-image: url(/img/warning.svg);}
+table.MyDataTable-body td.log.info:before{background-image: url(/img/info.svg);}
+table.MyDataTable-body td.log.error:before{background-image: url(/img/error.svg);}
+
+table.MyDataTable-body div.button{
+    position: relative;
+    width: 30px;
+    height: 18px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: auto 60%;
+    border: solid 1px #d0d0d0;;
+    cursor: pointer;
+    border-radius: 4px;
+    background-color: #eaeaea;
+}
+
+table.MyDataTable-body div.button:before{
+    content: "";
+    position: absolute;
+    left: 0;
+    top:0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255,255,255,0.4);
+}
+
+table.MyDataTable-body div.button.reset{
+    background-image: url(/img/reset.svg);
+}
+
+table.MyDataTable-body div.button.delete{
+    background-image: url(/img/delete.svg);
+}
+
+table.MyDataTable-body div.button:hover{
+    border-color: #aaa;
+}
+
+table.MyDataTable-body div.button:hover:before{
+    background-color: rgba(255,255,255,0.2);
 }

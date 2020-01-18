@@ -7,12 +7,14 @@
 
 		<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600&display=swap" rel="stylesheet">
 		<link rel="stylesheet" type="text/css" href="/css/MyDataTable.css"/>
+		<link rel="stylesheet" type="text/css" href="/css/MsgBar.css"/>
 		<link rel="stylesheet" type="text/css" href="/css/main.css"/>
 
 		<script src="/js/jquery-3.4.1.min.js"></script>
 
 		<script src="/js/util.js"></script>
 		<script src="/js/MyDataTable.js"></script>
+		<script src="/js/MsgBar.js"></script>
 		<script src="/js/main.js"></script>
 	</head>
 	<body>
@@ -23,22 +25,26 @@
 				<p>Hier werden die Druckbestellungen aus dem EIngangsordner ausgelesen und an sPrint One übermittelt.</p>
 				<div class="flex-container flex-2">
 					<div class="flex-item">
-						<h3>Dateieingang</h3>
+						<h3>Dateneingang</h3>
 						<div id="wrapper-files-input"></div>
 						<button id="fetch-jobs">Holen</button>
 					</div>
 					<div class="flex-item">
-						<h3>Bearbeitete Druckbestellungen</h3>
+						<h3>Erkannte Druckbestellungen</h3>
 						<div id="wrapper-processed-orders"></div>
 						<button id="reset-active-jobs">reset active jobs</button>
 					</div>
 				</div>
 
-				<div class="flex-container">
+				<div class="flex-container flex-2">
 					<div class="flex-item">
-						<h3>Logs</h3>
+						<h4>Log / Dateneingang</h4>
 						<div id="wrapper-logs"></div>
 					</div>
+					<div class="flex-item">
+						<h4>Log / Druckbestellung <span id="orderId">-</span></h4>
+						<div id="wrapper-order-logs"></div>
+					</div>					
 				</div>
 
 			</div>

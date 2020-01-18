@@ -42,6 +42,7 @@ p{
 }
 
 .header-title-wrapper{
+	user-select: none;
 	position: relative;
 	display: inline-block;
 	height: 100%;

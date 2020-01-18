@@ -1,0 +1,52 @@
+#msgBar{
+	position: absolute;
+    width: 100%;
+    left: 0px;
+    height: 0;
+    background: #fff;
+    z-index: 1;
+    top: 100%;
+    transition: height 1s ease;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+#msgBar.info{background: #5892d4;}
+#msgBar.warning{background: #eb9a63;}
+#msgBar.error{background: #e25757;}
+
+#msgBar.out{
+    height: 35px;
+}
+
+#msgBar div.wrapper{
+    position: absolute;
+    width: 100%;
+    height: 35px;
+    left: 0;
+    bottom: 0;
+    
+}
+
+#msgBar div.wrapper div.innerArea{
+    position: relative;
+    max-width: 1200px;
+    padding: 0 30px;
+    line-height: 35px;
+    height: 100%;
+    margin: 0 auto;
+}
+
+#msgBar div.wrapper div.closer{
+    position: absolute;
+    right: 15px;
+    top: 2px;
+    height: 30px;
+    width: 30px;
+    background-image: url("/img/x.svg");
+    background-repeat: no-repeat;
+    background-size: auto 50%;
+    background-position: 50%;
+    cursor: pointer;
+}
