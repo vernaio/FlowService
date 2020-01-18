@@ -200,7 +200,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Integration: extractJobs",
-        "func": "\n// get integration logic\nvar integration = context.global.get('INTEGRATION');\n\n//get MESSAGES\nvar messages = context.global.get('CACHE_MESSAGES');\nif(!messages.hasOwnProperty('arr')) messages['arr'] = [];\n\n/*messages.arr.push({\n    \"on\" : Date.now(),\n    \"msg\" : \"extraction...\" \n});*/\n        \n// extract jobs\nvar jobs = integration.extractJobs(\"/data/in\")\n    .then(function(jobs) {\n        node.log(\"Number of extracted jobs: \" + jobs.length)\n        messages.arr.push({\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Found \" + jobs.length + \" order(s). Start processing orders...\" \n        });\n        // prepare output\n        msg.jobs = jobs;\n        node.send(msg);\n    });\n",
+        "func": "\n// get integration logic\nvar integration = context.global.get('INTEGRATION');\n\n//get MESSAGES\nvar messages = context.global.get('CACHE_MESSAGES');\nif(!messages.hasOwnProperty('arr')) messages['arr'] = [];\n        \n// extract jobs\nvar jobs = integration.extractJobs(\"/data/in\")\n    .then(function(jobs) {\n        node.log(\"Number of extracted jobs: \" + jobs.length)\n        messages.arr.push({\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Found \" + jobs.length + \" order(s). Start processing orders...\" \n        });\n        // prepare output\n        msg.jobs = jobs;\n        node.send(msg);\n    });\n",
         "outputs": 1,
         "noerr": 0,
         "x": 410,
@@ -300,7 +300,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: prepareJobProcessing",
-        "func": "// get jobs caches\nvar activeJobs = context.global.get('CACHE_ACTIVE_JOBS');\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\n//get MESSAGES\nvar messages = context.global.get('CACHE_MESSAGES');\nif(!messages.hasOwnProperty('arr')) messages['arr'] = [];\n\nfunction processJob(job){\n    if(!(job.jobId in activeJobs)) {\n        node.log(\"Start new job: \" + job.jobId);\n\n        activeJobs[job.jobId] = Date.now();\n        \n        processedJobs[job.jobId] = {\n            \"id\"        : job.jobId,\n            \"startedOn\" : Date.now(),\n            \"status\"    : \"pending\",\n            \"audit\"     : [\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"Order has beew was prepared.\"\n                }    \n            ],\n        };\n        \n        node.send({ job: job })\n    } else {\n        node.log(\"Job '\" + job.jobId + \"' is already processing.\")\n        messages.arr.push({\n            \"type\" : \"warning\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Order '\" + job.jobId + \"' was already processed. Please reset first.\" \n        });\n    }    \n}\n\nvar i = 0;\n\nfunction myLoop () {\n    setTimeout(function () {\n        var job = msg.jobs[i];\n        processJob(job);\n        i++;\n        if (i < msg.jobs.length){\n            myLoop();\n        }\n   }, 5)\n}\n\nmyLoop();",
+        "func": "// get jobs caches\nvar activeJobs = context.global.get('CACHE_ACTIVE_JOBS');\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\n//get MESSAGES\nvar messages = context.global.get('CACHE_MESSAGES');\nif(!messages.hasOwnProperty('arr')) messages['arr'] = [];\n\nfunction processJob(job){\n    if(job === undefined) return;\n    if(!(job.jobId in activeJobs)) {\n        node.log(\"Start new job: \" + job.jobId);\n\n        activeJobs[job.jobId] = Date.now();\n        \n        processedJobs[job.jobId] = {\n            \"id\"        : job.jobId,\n            \"startedOn\" : Date.now(),\n            \"status\"    : \"pending\",\n            \"audit\"     : [\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"Order has beew was prepared.\"\n                }    \n            ],\n        };\n        \n        node.send({ job: job })\n    } \n    \n    else {\n        node.log(\"Job '\" + job.jobId + \"' is already processing.\")\n        messages.arr.push({\n            \"type\" : \"warning\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Order '\" + job.jobId + \"' was already processed. Please reset first.\" \n        });\n    }    \n}\n\nfor(var i = 0; i < msg.jobs.length; i++){\n    var job = msg.jobs[i];\n    processJob(job);\n}\n/*var i = 0;\n\nfunction myLoop () {\n    setTimeout(function () {\n        var job = msg.jobs[i];\n        processJob(job);\n        i++;\n        if (i < msg.jobs.length){\n            myLoop();\n        }\n   }, 200)\n}\n\nmyLoop();*/",
         "outputs": 1,
         "noerr": 0,
         "x": 680,
@@ -600,7 +600,8 @@
         "wires": [
             [
                 "5172bc7b.cdc624",
-                "490c864b.ac8e98"
+                "490c864b.ac8e98",
+                "7d77da1c.521994"
             ]
         ]
     },
@@ -1199,5 +1200,19 @@
                 "956c0415.832b18"
             ]
         ]
+    },
+    {
+        "id": "7d77da1c.521994",
+        "type": "debug",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "x": 400,
+        "y": 240,
+        "wires": []
     }
 ]
