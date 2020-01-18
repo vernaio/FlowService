@@ -26,7 +26,7 @@ div.MyDataTable-headerWrapper{
 
 div.MyDataTable-bodyWrapper{
     height: calc(100% - 33px);
-    overflow-y: auto;
+    overflow-y: scroll;
     overflow-x: auto;
 }
 

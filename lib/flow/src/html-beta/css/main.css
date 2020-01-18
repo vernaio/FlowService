@@ -248,6 +248,11 @@ div.workflow-container{
 
 div.workflow-container .flex-item{
 	text-align: center;
+	padding: 20px 0;
+}
+
+div.workflow-container .flex-item:hover{
+	box-shadow: 1px 1px 3px 3px #ccc;
 }
 
 div.workflow-container .flex-content{
