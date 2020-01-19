@@ -1,0 +1,37 @@
+------MUST HAVE-----
+/- Wrong warning: ...was already processed... because [function:Integration: extractJobs] Number of extracted jobs: 0 is called more than once sometimes.
+- Upload Bug bei mehreren Jobs gleichzeitig: Error: ENOENT: no such file or directory, stat '/data/in/11936900-13.pdf'
+	- Warum wird der Flow während der Abarbeitung mehrmals gestartet?
+	- Warum funktioniert plötzlich der "Active Jobs" Mechanismus nicht mehr als Blocker gegen Neueinlesen, obwohl der Job noch nicht cleanedUp ist?
+	- Der Fehler ist, dass eine Datei gelesen werden soll, die bereits verschoben wurde:
+		Die Dateien sind bereits imStorrage und hocgeladen, aber noch nicht aus activeJobs raus. Trotzdem wurde eine Neubearbeitung gestartet.
+	- Mgliche Lösungen:
+		1. Mehrere Trigger von "Scan" verhindern
+		2. Try/catch um Daten einlesen ,machen
+		3. Active Jobs Mechanismus überprüfen
+		
+	. Ist es möglich, dass der Job bereits aus den acitve gestrichen wurde, dies jedoch nicht in den Liogs auftaucht, da kurz vorher der Fehler produziert wurde?
+	Kombination aus active/processed jobs?
+	
+	Lösung: Aktive Jobs weg, dafür nur processJobs:
+		- eine Neuscan darf nur dann passieren, wenn alle processed jobs terminiert sind (canceled, oder success)
+		- eine Job wird nur eingelesen, wenn er nicht unter processed jobs zu finden ist
+		- damit wird verhindert, dass ein Jon doppelt eingelesen wird und dass eine Neuscan gestartet wird ohne dass der alte abgearbeitet ist.
+		- um einen canceled job neu einzulesen, muss er erst aus den processed jobs entfernt werden.
+	
+	
+	
+/- Time bug in "Eingelesen" Erkannte Druckbestellungen
+- Buttons:
+	- reset all canceled jobs
+	- delete all successfull jobs
+- Credential information
+- Flow Information
+- Impositioner/Datadownload area
+	- Messages generieren
+	
+-----NICE TO HAVE------
+- Deselection on clicking somewhere for selected table rows
+- Order log should reset at certain points, if parent is deleted
+- FileDropZone for drag'n'drop input files: Copy or move
+- Table: Bulk functions

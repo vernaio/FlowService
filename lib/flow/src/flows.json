@@ -200,7 +200,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Integration: extractJobs",
-        "func": "\n// get integration logic\nvar integration = context.global.get('INTEGRATION');\n\n//get MESSAGES\nvar messages = context.global.get('CACHE_MESSAGES');\nif(!messages.hasOwnProperty('arr')) messages['arr'] = [];\n        \n// extract jobs\nvar jobs = integration.extractJobs(\"/data/in\")\n    .then(function(jobs) {\n        node.log(\"Number of extracted jobs: \" + jobs.length)\n        messages.arr.push({\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Found \" + jobs.length + \" order(s). Start processing orders...\" \n        });\n        // prepare output\n        msg.jobs = jobs;\n        node.send(msg);\n    });\n",
+        "func": "\n// get integration logic\nvar integration = context.global.get('INTEGRATION');\n\n//get MESSAGES\nvar messages = context.global.get('CACHE_MESSAGES');\n\nmessages.arr.push({\n    \"type\" : \"info\",\n    \"on\" : Date.now(),\n    \"msg\" : \"Scanning of input folder started...\" \n});\n        \n// extract jobs\nvar jobs = integration.extractJobs(\"/data/in\")\n    .then(function(jobs) {\n        node.log(\"Number of extracted jobs: \" + jobs.length)\n        messages.arr.push({\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Found \" + jobs.length + \" order(s). Start processing orders...\" \n        });\n        // prepare output\n        msg.jobs = jobs;\n        node.send(msg);\n    });\n",
         "outputs": 1,
         "noerr": 0,
         "x": 410,
@@ -216,7 +216,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: moveJobFiles",
-        "func": "const moveFile = context.global.get('MOVE_FILE');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\n\nconst storageDir = \"/data/storage/\" + msg.job.storageFolder;\n\n// create directory\nif (!fs.existsSync(storageDir)){\n    fs.mkdirSync(storageDir);\n}\n\n// move files\nnode.log(\"Move file job '\" + msg.job.jobId + \"' to \" + storageDir + \" ...\")\n\nmsg.job.files.forEach(function(file) {\n    moveFile.sync(file, storageDir + path.basename(file));\n});\n\n// return message object\nreturn msg;",
+        "func": "const moveFile = context.global.get('MOVE_FILE');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\n\nconst storageDir = \"/data/storage/\" + msg.job.storageFolder;\n\n// create directory\nif (!fs.existsSync(storageDir)){\n    fs.mkdirSync(storageDir);\n}\n\n// move files\nnode.log(\"Move files of job '\" + msg.job.jobId + \"' to \" + storageDir + \" ...\")\n\nmsg.job.files.forEach(function(file) {\n    node.log(\"Move file '\" + file + \"' to \" + storageDir + path.basename(file) + \" ...\")\n    moveFile.sync(file, storageDir + path.basename(file));\n});\n\n// return message object\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "x": 2320,
@@ -600,8 +600,7 @@
         "wires": [
             [
                 "5172bc7b.cdc624",
-                "490c864b.ac8e98",
-                "7d77da1c.521994"
+                "490c864b.ac8e98"
             ]
         ]
     },
@@ -642,7 +641,8 @@
         "y": 420,
         "wires": [
             [
-                "cc31ed7f.8dc71"
+                "cc31ed7f.8dc71",
+                "92cf1fae.901e3"
             ]
         ]
     },
@@ -1202,17 +1202,17 @@
         ]
     },
     {
-        "id": "7d77da1c.521994",
-        "type": "debug",
+        "id": "92cf1fae.901e3",
+        "type": "function",
         "z": "d4af305b.2ea44",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "x": 400,
-        "y": 240,
-        "wires": []
+        "name": "Init Messages Array",
+        "func": "//init MESSAGES\nvar messages = context.global.get('CACHE_MESSAGES');\nif(!messages.hasOwnProperty('arr')) messages['arr'] = [];\nnode.log(\"Messages array was initialized.\");\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 290,
+        "y": 480,
+        "wires": [
+            []
+        ]
     }
 ]
