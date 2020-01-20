@@ -9,14 +9,17 @@
 /- Buttons:
 	- reset all canceled jobs
 	- delete all successfull jobs
-- Credential information
-- Flow Information
+/- Credential information
+/- Flow Information
 - Impositioner/Datadownload area
 	- Messages generieren
 - einheitliche Sprache
-- change event for orderLog refresh
+
 	
 -----NICE TO HAVE------
+
+- change event for orderLog refresh
+- short navigation
 - check storrage files
 - Deselection on clicking somewhere for selected table rows
 - Order log should reset at certain points, if parent is deleted

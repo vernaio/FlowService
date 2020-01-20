@@ -327,3 +327,16 @@ div.button-wrapper > div.icon.success:before{background-image: url("/img/success
 div.button-wrapper > div.icon.canceled:before{background-image: url("/img/canceled.svg");}
 div.button-wrapper > div.icon.pending:before{background-image: url("/img/pending.svg");}
 div.button-wrapper > div.icon.play:before{background-image: url("/img/play.svg");}
+
+div.pile{
+	padding: 20px;
+	border: solid 1px #ddd;
+	margin-bottom: 20px;
+}
+
+p.title{
+	text-transform: uppercase;
+	font-size: 0.7rem;
+	font-weight: 700;
+	margin-bottom: 0px;
+}

@@ -144,7 +144,7 @@
         "name": "Exception Handling",
         "info": "",
         "x": 130,
-        "y": 1740,
+        "y": 1800,
         "wires": []
     },
     {
@@ -155,7 +155,7 @@
         "scope": null,
         "uncaught": false,
         "x": 100,
-        "y": 1780,
+        "y": 1840,
         "wires": [
             [
                 "6a76d426.aa179c"
@@ -171,7 +171,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 260,
-        "y": 1780,
+        "y": 1840,
         "wires": [
             []
         ]
@@ -410,7 +410,7 @@
         "statusCode": "",
         "headers": {},
         "x": 410,
-        "y": 1660,
+        "y": 1720,
         "wires": []
     },
     {
@@ -422,7 +422,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 250,
-        "y": 1660,
+        "y": 1720,
         "wires": [
             [
                 "70dcefc.8a12b1"
@@ -436,7 +436,7 @@
         "name": "User Interface (HTTP Server)",
         "info": "",
         "x": 160,
-        "y": 1560,
+        "y": 1620,
         "wires": []
     },
     {
@@ -449,7 +449,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 160,
-        "y": 1420,
+        "y": 1480,
         "wires": [
             [
                 "b2ed4347.33229"
@@ -465,7 +465,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 530,
-        "y": 1420,
+        "y": 1480,
         "wires": [
             [
                 "b7ef0e77.c2a41"
@@ -480,7 +480,7 @@
         "statusCode": "",
         "headers": {},
         "x": 830,
-        "y": 1420,
+        "y": 1480,
         "wires": []
     },
     {
@@ -493,7 +493,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 150,
-        "y": 1460,
+        "y": 1520,
         "wires": [
             [
                 "b4918ad2.0b3cc8"
@@ -508,7 +508,7 @@
         "statusCode": "",
         "headers": {},
         "x": 830,
-        "y": 1460,
+        "y": 1520,
         "wires": []
     },
     {
@@ -520,7 +520,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 520,
-        "y": 1460,
+        "y": 1520,
         "wires": [
             [
                 "18df55e5.bb2d6a"
@@ -660,7 +660,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: notificationListener",
-        "func": "var WebSocket = global.get('WS');\n\n/**\n * Class for managing the websocket communication\n **/\nvar WebsocketManager = function() {\n\n    // the reconnect timeinterval in ms\n    this.reconnectInterval = 500;\n    \n    // the websocket url\n    this.websocketUrl = \"wss://\" + env.get(\"SPO_URL\") + \"/api/websocket/notifications\";\n    \n    // websocket headers\n    this.headers = {\n        'Accept': 'application/json',\n        'X-Tenant': env.get(\"SPO_TENANT\") ,\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n    \n    var tagsToReplace = {\n        '&': '&amp;',\n        '<': '&lt;',\n        '>': '&gt;'\n    };\n    \n    var replaceTag = function(tag) {\n        return tagsToReplace[tag] || tag;\n    }\n    \n    var safe_tags_replace = function(str) {\n        return str.replace(/[&<>]/g, replaceTag);\n    }\n    \n    /**\n     * Method for connecting the SPO WebSocket.\n     */ \n    this.connect = function() {\n        node.log('Connecting to SPO Websocket ' + this.websocketUrl +'...');\n        \n    \n        var manager = this;\n        \n        \n        \n        var headerLines = [];\n        for(var name in this.headers) {\n            headerLines.push(name + ': ' + this.headers[name]);\n        }\n        var headersString = Buffer.from(headerLines.join(\"\\r\\n\")).toString('base64').replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=/g, '.');\n        \n        this.websocket = new WebSocket(this.websocketUrl, ['Headers', 'Headers-' + headersString]);\n        \n        /**\n         * Function is called when connection has been established.\n         */ \n        this.websocket.onopen = function(openEvent) {\n            node.log('SPO Websocket connection ' + manager.websocketUrl +' has been established successfully.');\n        };\n        \n        /**\n         * Function is called when connection has been closed.\n         */ \n        this.websocket.onclose = function(closeEvent) {\n            node.error('Connection lost/refused, retry in ' + (manager.reconnectInterval / 1000) + ' seconds');\n            setTimeout(function() {\n                manager.connect();\n            }, manager.reconnectInterval);\n        };\n\n        /**\n         * Function is called in case of an error.\n         */ \n        this.websocket.onerror = function(errorEvent) {\n            node.error('Error occured: ' + errorEvent);\n        };\n        \n        /**\n         * Function is called when a message has been received.\n         */ \n        this.websocket.onmessage = function(messageEvent) {\n            node.send({\n                notification: JSON.parse(messageEvent.data)\n            });\n        };\n    \n    };\n    \n    /**\n     * Method for closing the SPO WebSocket connection.\n     */\n    this.close = function() {\n    \n        var manager = this;\n        \n        this.websocket.onclose = function(closeEvent) {\n            node.log('WebSocket connection ' + manager.websocketUrl +' has been closed.');\n        };\n        \n        this.websocket.close();\n    \n    };\n  \n};\n\n\n// if exists, close connection\nif(context.get('websocketManager')) {\n    context.get('websocketManager').close()\n}\n\n// create new websocket manager object\nvar websocketManager = new WebsocketManager();\n\n// close connection when nodered ends\nnode.on('close', function() {\n    websocketManager.close()\n});\n\n// establish connection\nwebsocketManager.connect();\n\n// keep manager in context\ncontext.set('websocketManager', websocketManager);\n\n\n\n\n",
+        "func": "var WebSocket = global.get('WS');\nflow.set('websocket',false);\n\n/**\n * Class for managing the websocket communication\n **/\nvar WebsocketManager = function() {\n\n    // the reconnect timeinterval in ms\n    this.reconnectInterval = 500;\n    \n    // the websocket url\n    this.websocketUrl = \"wss://\" + env.get(\"SPO_URL\") + \"/api/websocket/notifications\";\n    \n    // websocket headers\n    this.headers = {\n        'Accept': 'application/json',\n        'X-Tenant': env.get(\"SPO_TENANT\") ,\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n    \n    var tagsToReplace = {\n        '&': '&amp;',\n        '<': '&lt;',\n        '>': '&gt;'\n    };\n    \n    var replaceTag = function(tag) {\n        return tagsToReplace[tag] || tag;\n    }\n    \n    var safe_tags_replace = function(str) {\n        return str.replace(/[&<>]/g, replaceTag);\n    }\n    \n    /**\n     * Method for connecting the SPO WebSocket.\n     */ \n    this.connect = function() {\n        node.log('Connecting to SPO Websocket ' + this.websocketUrl +'...');\n        \n    \n        var manager = this;\n        \n        \n        \n        var headerLines = [];\n        for(var name in this.headers) {\n            headerLines.push(name + ': ' + this.headers[name]);\n        }\n        var headersString = Buffer.from(headerLines.join(\"\\r\\n\")).toString('base64').replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=/g, '.');\n        \n        this.websocket = new WebSocket(this.websocketUrl, ['Headers', 'Headers-' + headersString]);\n        \n        /**\n         * Function is called when connection has been established.\n         */ \n        this.websocket.onopen = function(openEvent) {\n            node.log('SPO Websocket connection ' + manager.websocketUrl +' has been established successfully.');\n            flow.set('websocket',true);\n        };\n        \n        /**\n         * Function is called when connection has been closed.\n         */ \n        this.websocket.onclose = function(closeEvent) {\n            node.error('Connection lost/refused, retry in ' + (manager.reconnectInterval / 1000) + ' seconds');\n            flow.set('websocket',false);\n            setTimeout(function() {\n                manager.connect();\n            }, manager.reconnectInterval);\n        };\n\n        /**\n         * Function is called in case of an error.\n         */ \n        this.websocket.onerror = function(errorEvent) {\n            node.error('Error occured: ' + errorEvent);\n        };\n        \n        /**\n         * Function is called when a message has been received.\n         */ \n        this.websocket.onmessage = function(messageEvent) {\n            node.send({\n                notification: JSON.parse(messageEvent.data)\n            });\n        };\n    \n    };\n    \n    /**\n     * Method for closing the SPO WebSocket connection.\n     */\n    this.close = function() {\n    \n        var manager = this;\n        \n        this.websocket.onclose = function(closeEvent) {\n            node.log('WebSocket connection ' + manager.websocketUrl +' has been closed.');\n            flow.set('websocket',false);\n        };\n        \n        this.websocket.close();\n    \n    };\n  \n};\n\n\n// if exists, close connection\nif(context.get('websocketManager')) {\n    context.get('websocketManager').close()\n}\n\n// create new websocket manager object\nvar websocketManager = new WebsocketManager();\n\n// close connection when nodered ends\nnode.on('close', function() {\n    websocketManager.close()\n});\n\n// establish connection\nwebsocketManager.connect();\n\n// keep manager in context\ncontext.set('websocketManager', websocketManager);\n\n\n\n\n",
         "outputs": 1,
         "noerr": 0,
         "x": 310,
@@ -776,7 +776,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 150,
-        "y": 1500,
+        "y": 1560,
         "wires": [
             [
                 "1ba0b50c.4454cb"
@@ -792,7 +792,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 520,
-        "y": 1500,
+        "y": 1560,
         "wires": [
             [
                 "db0181c9.88bf5"
@@ -807,7 +807,7 @@
         "statusCode": "",
         "headers": {},
         "x": 830,
-        "y": 1500,
+        "y": 1560,
         "wires": []
     },
     {
@@ -918,7 +918,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 270,
-        "y": 1620,
+        "y": 1680,
         "wires": [
             [
                 "7e8fdeb4.45173"
@@ -933,7 +933,7 @@
         "statusCode": "",
         "headers": {},
         "x": 450,
-        "y": 1620,
+        "y": 1680,
         "wires": []
     },
     {
@@ -1079,7 +1079,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Init Messages Array",
-        "func": "//init MESSAGES\nvar messages = context.global.get('CACHE_MESSAGES');\nif(!messages.hasOwnProperty('arr')) messages['arr'] = [];\nnode.log(\"Messages array was initialized.\");\n",
+        "func": "//init MESSAGES\nvar messages = context.global.get('CACHE_MESSAGES');\nif(!messages.hasOwnProperty('arr')) messages['arr'] = [];\nnode.log(\"Messages array was initialized.\");\n\n",
         "outputs": 1,
         "noerr": 0,
         "x": 290,
@@ -1367,7 +1367,51 @@
         ]
     },
     {
-        "id": "e77a415c.3a788",
+        "id": "b6ceb93f.a8f0f8",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "/controller/websocket",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 150,
+        "y": 1440,
+        "wires": [
+            [
+                "4353f1da.249af"
+            ]
+        ]
+    },
+    {
+        "id": "4353f1da.249af",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "read wesocket status",
+        "func": "// prepare result\nmsg.payload = {\n    status : flow.get(\"websocket\")\n};\n\n\n// return message\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 540,
+        "y": 1440,
+        "wires": [
+            [
+                "8ca50e30.ad45f"
+            ]
+        ]
+    },
+    {
+        "id": "8ca50e30.ad45f",
+        "type": "http response",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 830,
+        "y": 1440,
+        "wires": []
+    },
+    {
+        "id": "75abe28e.88b82c",
         "type": "http in",
         "z": "d4af305b.2ea44",
         "name": "",
@@ -1376,7 +1420,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 90,
-        "y": 1620,
+        "y": 1680,
         "wires": [
             [
                 "6540c97b.74e5d8"
