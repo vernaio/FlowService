@@ -11,15 +11,15 @@
 	- delete all successfull jobs
 /- Credential information
 /- Flow Information
-- Impositioner/Datadownload area
+/- Impositioner/Datadownload area
 	- Messages generieren
 - einheitliche Sprache
 
 	
 -----NICE TO HAVE------
-
+- icons für menu items
 - change event for orderLog refresh
-- short navigation
+/- short navigation
 - check storrage files
 - Deselection on clicking somewhere for selected table rows
 - Order log should reset at certain points, if parent is deleted

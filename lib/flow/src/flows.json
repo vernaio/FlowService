@@ -516,7 +516,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "read files data in",
-        "func": "const fs = context.global.get('FS');\nconst root = \"/data/in\";\n\nfunction getFileInfos(root, filename) {\n    var filePath = root + \"/\" + filename;\n    \n    try {\n        var stats = fs.statSync(filePath);\n        var fileSizeInKiloBytes = Math.ceil(stats[\"size\"] / 1024);\n        var i = filename.lastIndexOf('.');\n        return {\n            name : filename,\n            type : (i < 0) ? '' : filename.substr(i+1),\n            size : fileSizeInKiloBytes\n        }\n    }\n    catch(err) {\n        node.log('file does no longer exist: ' + filePath);\n        return null;\n    }\n    /*fs.stat(filePath, function(err, stats) {\n        if (err){\n            node.log('file does no longer exist: ' + filePath);\n            return null;\n        }\n        \n        else{\n            var fileSizeInKiloBytes = Math.ceil(stats[\"size\"] / 1024);\n            var i = filename.lastIndexOf('.');\n            return {\n                name : filename,\n                type : (i < 0) ? '' : filename.substr(i+1),\n                size : fileSizeInKiloBytes\n            }\n        }\n    });*/\n}\n\n// read directory\nfs.readdir(root, function(err, files) {\n    msg.payload = [];\n    for(var i = 0; i < files.length; i++){\n        var file = files[i];\n        var fileInfos = getFileInfos(root, file);\n        if(fileInfos !== null) msg.payload.push(fileInfos);\n    }\n    node.send(msg);\n});\n",
+        "func": "const fs = context.global.get('FS');\nconst root = \"/data/in\";\n\nfunction getFileInfos(root, filename) {\n    var filePath = root + \"/\" + filename;\n    \n    try {\n        var stats = fs.statSync(filePath);\n        var fileSizeInKiloBytes = Math.ceil(stats[\"size\"] / 1024);\n        var i = filename.lastIndexOf('.');\n        return {\n            name : filename,\n            type : (i < 0) ? '' : filename.substr(i+1),\n            size : fileSizeInKiloBytes\n        }\n    }\n    catch(err) {\n        node.log('file does no longer exist: ' + filePath);\n        return null;\n    }\n    /*fs.stat(filePath, function(err, stats) {\n        if (err){\n            node.log('file does no longer exist: ' + filePath);\n            return null;\n        }\n        \n        else{\n            var fileSizeInKiloBytes = Math.ceil(stats[\"size\"] / 1024);\n            var i = filename.lastIndexOf('.');\n            return {\n                name : filename,\n                type : (i < 0) ? '' : filename.substr(i+1),\n                size : fileSizeInKiloBytes\n            }\n        }\n    });*/\n}\n\n// read directory\nfs.readdir(root, function(err, files) {\n    msg.payload = [];\n    if(files !== undefined){\n        for(var i = 0; i < files.length; i++){\n            var file = files[i];\n            var fileInfos = getFileInfos(root, file);\n            if(fileInfos !== null) msg.payload.push(fileInfos);\n        }\n    }\n    node.send(msg);\n});\n",
         "outputs": 1,
         "noerr": 0,
         "x": 520,
@@ -932,7 +932,7 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 450,
+        "x": 430,
         "y": 1680,
         "wires": []
     },
