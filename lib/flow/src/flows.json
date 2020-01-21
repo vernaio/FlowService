@@ -645,7 +645,7 @@
         "name": "resourceStateChange & handshake",
         "info": "",
         "x": 860,
-        "y": 500,
+        "y": 480,
         "wires": []
     },
     {
@@ -657,7 +657,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 800,
-        "y": 540,
+        "y": 520,
         "wires": [
             []
         ]
@@ -712,20 +712,6 @@
         ]
     },
     {
-        "id": "b2f38747.7eb448",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "Flow: calculationReport (pdf)",
-        "func": "const request = context.global.get('REQUEST');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst pb = context.global.get('PRETTY_BYTES');\n\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent/report',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/pdf\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// define target file\nvar filename = path.join(msg.sheetDirectory, msg.sheetId + \"-report.pdf\");\n\n// execute request\nrequest(options)\n    .on('error', function(err) {\n        node.error(\"Unable to load SPO Calculation Report for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(err));\n    })\n    .pipe(fs.createWriteStream(filename))\n    .on('finish', () => {\n        msg.output.report = path.basename(filename);\n        \n        node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\")\n        node.send(msg);\n    });\n\n",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 2240,
-        "y": 280,
-        "wires": [
-            []
-        ]
-    },
-    {
         "id": "559cf6a4.1e9998",
         "type": "function",
         "z": "d4af305b.2ea44",
@@ -755,20 +741,6 @@
             [
                 "ab781dee.626f6"
             ]
-        ]
-    },
-    {
-        "id": "aa2979c2.cae158",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "Flow: imposeSheet (xjdf)",
-        "func": "const request = context.global.get('REQUEST');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst pb = context.global.get('PRETTY_BYTES');\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// define request options\nvar options = {\n    method: 'POST',\n    url: env.get(\"IMPOSITION_URL\") + '/impose/sheet',\n    body: msg.gangJobEventXml,\n}\n\n// define target file\nvar filename = path.join(msg.sheetDirectory, msg.sheetId + \".xjdf.zip\");\nvar file = fs.createWriteStream(filename)\n// execute request\nrequest(options)\n    .on('error', function(err) {\n        node.error(\"Unable to impose sheet '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(err));\n        \n        receivedPrintJobs[msg.sheetId].status = \"canceled\";\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to impose sheet.\"\n        });\n    })\n    .pipe(file)\n    .on('finish', () => {\n        file.end();\n        msg.output.xjdf = path.basename(filename);\n        \n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"Sheet imposition completed.\"\n        });\n        \n        node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\")\n\n        node.send(msg);\n    });\n",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 2230,
-        "y": 320,
-        "wires": [
-            []
         ]
     },
     {
@@ -814,20 +786,6 @@
         "x": 830,
         "y": 1560,
         "wires": []
-    },
-    {
-        "id": "eca85a85.426358",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "Integration: processSheet",
-        "func": "// get input logic\nvar integration = context.global.get('INTEGRATION');\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\nnode.log(\"Process sheet '\" + msg.sheetId + \"'...\")\n\n// process jobs bindery signatures\nintegration.processSheet(msg.sheetDirectory, msg.output)\n.then(() => {\n    node.log(\"Process sheet '\" + msg.sheetId + \"' successful.\")\n})\n.catch(function(e){\n    receivedPrintJobs[msg.sheetId].status = \"canceled\";\n    receivedPrintJobs[msg.sheetId].audit.push({\n        type : \"error\",\n        on   : Date.now(),\n        msg  : \"Error: \" + JSON.stringify(e)\n    });\n    console.log(e);\n})\n.finally(function() { \n    node.send(msg);\n});\n\n",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 2230,
-        "y": 240,
-        "wires": [
-            []
-        ]
     },
     {
         "id": "d26a4dcd.fc43c",
@@ -1605,21 +1563,6 @@
                 "ba2378f4.50b088",
                 "2c34a989.b64b06"
             ]
-        ]
-    },
-    {
-        "id": "6e3c3280.33997c",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "Integration: processJob",
-        "func": "\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\n// process job\nnode.log(\"Process job: \" + msg.job.jobId);\n\n// set job#s storage dir\nmsg.job.storageFolder = msg.job.jobId + \"/\";\n\nintegration.processJob(msg.job,msg.mediaList)\n    .then(\n    ((result) => {\n        msg.binderySignatures = result.binderySignatures\n        msg.assemblerTask = result.assemblerTask;\n    \n        if(msg.binderySignatures !== null) {\n            node.log(\"BinderySignatures have been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"A bindery signature has been created.\"\n                }  \n            );\n            node.send([msg, null]);\n        \n        } else if (msg.assemblerTask !== null) {\n            node.log(\"AssemblerTask has been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"Assembler task has been created.\"\n                }  \n            );\n            node.send([null, msg]);\n        } else {\n            processedJobs[msg.job.jobId].status = \"canceled\";\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"error\",\n                    on   : Date.now(),\n                    msg  : \"Job has invalid data format.\"\n                }  \n            );            \n            throw new Error(\"Invalid result for job \" + msg.job.jobId)\n        }\n    }),\n    ((reject)=>{\n        node.warn(reject)\n        console.log(reject);\n        processedJobs[msg.job.jobId].status = \"canceled\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Inknown error in processJob.\"\n            }  \n        );\n        \n        node.error(error)        \n    }))\n    .catch((error)=> {\n        console.log(error);\n        processedJobs[msg.job.jobId].status = \"canceled\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Inknown error in processJob.\"\n            }  \n        );\n        \n        node.error(error)\n    });\n\n\n\n",
-        "outputs": 2,
-        "noerr": 0,
-        "x": 1970,
-        "y": 240,
-        "wires": [
-            [],
-            []
         ]
     },
     {
