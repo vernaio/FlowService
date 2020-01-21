@@ -10,6 +10,7 @@
         "request": "*",
         "move-file": "*",
         "path": "*",
+        "unzipper": "^0.10.5",
         "ws": "*",
         "properties-reader": "*",
         "job-ticket-generator": "./jobTicketGenerator"

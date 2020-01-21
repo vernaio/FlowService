@@ -7,6 +7,13 @@
         "info": ""
     },
     {
+        "id": "5a7f2786.049e58",
+        "type": "tab",
+        "label": "Flow 2",
+        "disabled": false,
+        "info": ""
+    },
+    {
         "id": "e7f7d67f.1a41a8",
         "type": "comment",
         "z": "d4af305b.2ea44",
@@ -167,7 +174,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "log error",
-        "func": "var errorMsg = \"\";\n\nerrorMsg += \"An error has been occured:\\n\";\nerrorMsg += \"\\n\";\nerrorMsg += \"Node ID: \" + msg.error.source.id + \"\\n\";\nerrorMsg += \"Node Type: \" + msg.error.source.type + \"\\n\";\nerrorMsg += \"Node Name: \" + msg.error.source.name + \"\\n\";\nerrorMsg += \"\\n\";\nerrorMsg += \"Error Message:\\n\";\nerrorMsg += msg. error.message + \"\\n\";\n\nnode.error(errorMsg);\n",
+        "func": "var errorMsg = \"\";\n\nerrorMsg += \"An error has occured:\\n\";\nerrorMsg += \"\\n\";\nerrorMsg += \"Node ID: \" + msg.error.source.id + \"\\n\";\nerrorMsg += \"Node Type: \" + msg.error.source.type + \"\\n\";\nerrorMsg += \"Node Name: \" + msg.error.source.name + \"\\n\";\nerrorMsg += \"\\n\";\nerrorMsg += \"Error Message:\\n\";\nerrorMsg += msg.error.message + \"\\n\";\n\nnode.error(errorMsg);\n",
         "outputs": 1,
         "noerr": 0,
         "x": 260,
@@ -181,7 +188,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Integration: processJob",
-        "func": "\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\n// process job\nnode.log(\"Process job: \" + msg.job.jobId);\n\n// set job#s storage dir\nmsg.job.storageFolder = msg.job.jobId + \"/\";\n\nintegration.processJob(msg.job,msg.mediaList)\n    .then(\n    ((result) => {\n        msg.binderySignatures = result.binderySignatures\n        msg.assemblerTask = result.assemblerTask;\n    \n        if(msg.binderySignatures !== null) {\n            node.log(\"BinderySignatures have been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"A bindery signature has been created.\"\n                }  \n            );\n            node.send([msg, null]);\n        \n        } else if (msg.assemblerTask !== null) {\n            node.log(\"AssemblerTask has been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"Assembler task has been created.\"\n                }  \n            );\n            node.send([null, msg]);\n        } else {\n            processedJobs[msg.job.jobId].status = \"canceled\";\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"error\",\n                    on   : Date.now(),\n                    msg  : \"Job has invalid data format.\"\n                }  \n            );            \n            throw new Error(\"Invalid result for job \" + msg.job.jobId)\n        }\n    }),\n    ((reject)=>{\n        node.warn(reject)}))\n    .catch((error)=> { node.error(error)});\n\n\n\n",
+        "func": "\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\n// process job\nnode.log(\"Process job: \" + msg.job.jobId);\n\n// set job#s storage dir\nmsg.job.storageFolder = msg.job.jobId + \"/\";\n\nintegration.processJob(msg.job,msg.mediaList)\n.then(\n    result => {\n        msg.binderySignatures = result.binderySignatures\n        msg.assemblerTask = result.assemblerTask;\n    \n        if(msg.binderySignatures !== null) {\n            node.log(\"BinderySignatures have been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"A bindery signature has been created.\"\n                }  \n            );\n            node.send([msg, null]);\n        \n        } \n        \n        else if (msg.assemblerTask !== null) {\n            node.log(\"AssemblerTask has been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"Assembler task has been created.\"\n                }  \n            );\n            node.send([null, msg]);\n        } \n        \n        else {\n            processedJobs[msg.job.jobId].status = \"canceled\";\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"error\",\n                    on   : Date.now(),\n                    msg  : \"Job has invalid data format.\"\n                }  \n            );            \n            throw new Error(\"Invalid result for job \" + msg.job.jobId)\n        }\n    }\n)\n.catch(\n    errorMsg => {\n        processedJobs[msg.job.jobId].status = \"canceled\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : errorMsg\n            }  \n        );\n        \n        node.error(errorMsg)\n    }\n);",
         "outputs": 2,
         "noerr": 0,
         "x": 1190,
@@ -712,8 +719,8 @@
         "func": "const request = context.global.get('REQUEST');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst pb = context.global.get('PRETTY_BYTES');\n\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent/report',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/pdf\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// define target file\nvar filename = path.join(msg.sheetDirectory, msg.sheetId + \"-report.pdf\");\n\n// execute request\nrequest(options)\n    .on('error', function(err) {\n        node.error(\"Unable to load SPO Calculation Report for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(err));\n    })\n    .pipe(fs.createWriteStream(filename))\n    .on('finish', () => {\n        msg.output.report = path.basename(filename);\n        \n        node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\")\n        node.send(msg);\n    });\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 1960,
-        "y": 500,
+        "x": 2240,
+        "y": 280,
         "wires": [
             []
         ]
@@ -723,7 +730,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: loadGangJobEventXML",
-        "func": "const request = context.global.get('REQUEST');\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent?_nodeVisibility=$GANG_JOB_EVENT_COMPLETE',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/xml\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        receivedPrintJobs[msg.sheetId].status = \"canceled\";\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to load GangJobEvent.\"\n        });\n        \n        node.error(\"Unable to load GangJobEvent for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n    } \n    \n    else {\n        // append GangJobEvent to message\n        msg.gangJobEventXml = body;\n        \n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"GangJobEvent XML has been received.\"\n        });\n        \n        node.log('GangJobEvent XML has been received for sheet \\'' + msg.sheetId + '\\'.');\n        node.send(msg);\n    \n    }\n        \n});",
+        "func": "const request = context.global.get('REQUEST');\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\nmsg.task = 1;\n\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent?_nodeVisibility=$GANG_JOB_EVENT_COMPLETE',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/xml\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        receivedPrintJobs[msg.sheetId].status = \"canceled\";\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to load GangJobEvent.\"\n        });\n        \n        node.error(\"Unable to load GangJobEvent for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n    } \n    \n    else {\n        // append GangJobEvent to message\n        msg.gangJobEventXml = body;\n        \n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"GangJobEvent XML has been received.\"\n        });\n        \n        node.log('GangJobEvent XML has been received for sheet \\'' + msg.sheetId + '\\'.');\n        node.send(msg);\n    \n    }\n        \n});",
         "outputs": 1,
         "noerr": 0,
         "x": 1670,
@@ -746,7 +753,7 @@
         "y": 420,
         "wires": [
             [
-                "aa2979c2.cae158"
+                "ab781dee.626f6"
             ]
         ]
     },
@@ -755,15 +762,13 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: imposeSheet (xjdf)",
-        "func": "const request = context.global.get('REQUEST');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst pb = context.global.get('PRETTY_BYTES');\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// define request options\nvar options = {\n    method: 'POST',\n    url: env.get(\"IMPOSITION_URL\") + '/impose/sheet',\n    body: msg.gangJobEventXml,\n}\n\n// define target file\nvar filename = path.join(msg.sheetDirectory, msg.sheetId + \".xjdf.zip\");\nvar file = fs.createWriteStream(filename)\n// execute request\nrequest(options)\n    .on('error', function(err) {\n        node.error(\"Unable to impose sheet '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(err));\n        \n        receivedPrintJobs[msg.sheetId].status = \"canceled\";\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to impose sheet.\"\n        });\n    })\n    .pipe(file)\n    .on('finish', () => {\n        file.end();\n        msg.output.xjdf = path.basename(filename);\n        \n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"Imposition finished.\"\n        });\n        \n        node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\")\n\n        node.send(msg);\n    });\n",
+        "func": "const request = context.global.get('REQUEST');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst pb = context.global.get('PRETTY_BYTES');\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// define request options\nvar options = {\n    method: 'POST',\n    url: env.get(\"IMPOSITION_URL\") + '/impose/sheet',\n    body: msg.gangJobEventXml,\n}\n\n// define target file\nvar filename = path.join(msg.sheetDirectory, msg.sheetId + \".xjdf.zip\");\nvar file = fs.createWriteStream(filename)\n// execute request\nrequest(options)\n    .on('error', function(err) {\n        node.error(\"Unable to impose sheet '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(err));\n        \n        receivedPrintJobs[msg.sheetId].status = \"canceled\";\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to impose sheet.\"\n        });\n    })\n    .pipe(file)\n    .on('finish', () => {\n        file.end();\n        msg.output.xjdf = path.basename(filename);\n        \n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"Sheet imposition completed.\"\n        });\n        \n        node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\")\n\n        node.send(msg);\n    });\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 1950,
-        "y": 460,
+        "x": 2230,
+        "y": 320,
         "wires": [
-            [
-                "eca85a85.426358"
-            ]
+            []
         ]
     },
     {
@@ -815,11 +820,11 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Integration: processSheet",
-        "func": "// get input logic\nvar integration = context.global.get('INTEGRATION');\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\nnode.log(\"Process sheet '\" + msg.sheetId + \"'...\")\n\n// process jobs bindery signatures\nintegration.processSheet(msg.sheetDirectory, msg.output)\n.then(() => {\n    node.log(\"Process sheet '\" + msg.sheetId + \"' successful.\")\n    \n    receivedPrintJobs[msg.sheetId].status = \"success\";\n    receivedPrintJobs[msg.sheetId].audit.push({\n        type : \"info\",\n        on   : Date.now(),\n        msg  : \"Finished.\"\n    });\n    \n    node.send(msg);\n})\n.catch(function(e){\n    receivedPrintJobs[msg.sheetId].status = \"canceled\";\n    receivedPrintJobs[msg.sheetId].audit.push({\n        type : \"error\",\n        on   : Date.now(),\n        msg  : \"Error: \" + JSON.stringify(e)\n    });\n    console.log(e);\n});\n\n",
+        "func": "// get input logic\nvar integration = context.global.get('INTEGRATION');\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\nnode.log(\"Process sheet '\" + msg.sheetId + \"'...\")\n\n// process jobs bindery signatures\nintegration.processSheet(msg.sheetDirectory, msg.output)\n.then(() => {\n    node.log(\"Process sheet '\" + msg.sheetId + \"' successful.\")\n})\n.catch(function(e){\n    receivedPrintJobs[msg.sheetId].status = \"canceled\";\n    receivedPrintJobs[msg.sheetId].audit.push({\n        type : \"error\",\n        on   : Date.now(),\n        msg  : \"Error: \" + JSON.stringify(e)\n    });\n    console.log(e);\n})\n.finally(function() { \n    node.send(msg);\n});\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 2250,
-        "y": 420,
+        "x": 2230,
+        "y": 240,
         "wires": [
             []
         ]
@@ -843,7 +848,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 1670,
-        "y": 600,
+        "y": 480,
         "wires": [
             [
                 "89651d3e.7370a",
@@ -856,11 +861,11 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Integration: moveFiles",
-        "func": "// get input logic\nvar integration = context.global.get('INTEGRATION');\n\nnode.log(\"Move files for '\" + msg.sheetId + \"'...\")\n\n// process jobs bindery signatures\nintegration.moveFiles(msg.sheetDirectory, msg.job, \"/data/storage\")\n.then(() => {\n    node.log(\"Move files for '\" + msg.sheetId + \"' successful.\")\n    node.send(msg);\n})\n.catch((error) =>{\n    node.log(error); \n});\n\n",
+        "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\nnode.log(\"Move files for '\" + msg.sheetId + \"'...\")\n\n// process jobs bindery signatures\nintegration.moveFiles(msg.sheetDirectory, msg.job, \"/data/storage\")\n.then(() => {\n    node.log(\"Move files for '\" + msg.sheetId + \"' successful.\")\n    \n    receivedPrintJobs[msg.sheetId].audit.push({\n        type : \"info\",\n        on   : Date.now(),\n        msg  : \"Moved files.\"\n    });     \n})\n.catch((error) =>{\n    node.log(error);\n    receivedPrintJobs[msg.sheetId].audit.push({\n        type : \"error\",\n        on   : Date.now(),\n        msg  : \"Error at moving files.\"\n    });     \n})\n.finally(function(){\n    node.send(msg);\n});\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 2220,
-        "y": 600,
+        "x": 2200,
+        "y": 480,
         "wires": [
             []
         ]
@@ -870,11 +875,11 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: extractJobInfos",
-        "func": "//Create an internal job object for this flow\n\n\n//data source\nvar gangJobEvent = msg.gangJobEventJson[\"gangJobEvent-Root\"];\nvar gangJob = gangJobEvent.gangJob;\nvar media = gangJob.media;\nvar binderySignatures = gangJob.binderySignatures.binderySignature;\n\n//write to data target\n\n//for each bindery signature of the gangJobEvent\nvar bindSigs = [];\nbinderySignatures.forEach(function(binderySignature){\n  bindSigs.push({\n      id : binderySignature.id,\n      orderRef : binderySignature.orderRef\n  })\n});\n\n//create job object\nmsg.job = {\n    duration : gangJobEvent.plannedDuration,\n    workstyle : gangJob.workStyle,\n    mediaLabel : media.label,\n    mediaId : media.id,\n    mediaFormat : media.format,\n    binderySignatures : bindSigs\n};\n\nnode.send(msg);",
+        "func": "//Create an internal job object for this flow\n\nmsg.task = 2;\n\n//data source\nvar gangJobEvent = msg.gangJobEventJson[\"gangJobEvent-Root\"];\nvar gangJob = gangJobEvent.gangJob;\nvar media = gangJob.media;\nvar binderySignatures = gangJob.binderySignatures.binderySignature;\n\n//write to data target\n\n//for each bindery signature of the gangJobEvent\nvar bindSigs = [];\nbinderySignatures.forEach(function(binderySignature){\n  bindSigs.push({\n      id : binderySignature.id,\n      orderRef : binderySignature.orderRef\n  })\n});\n\n//create job object\nmsg.job = {\n    duration : gangJobEvent.plannedDuration,\n    workstyle : gangJob.workStyle,\n    mediaLabel : media.label,\n    mediaId : media.id,\n    mediaFormat : media.format,\n    binderySignatures : bindSigs\n};\n\nnode.send(msg);",
         "outputs": 1,
         "noerr": 0,
         "x": 1940,
-        "y": 600,
+        "y": 480,
         "wires": [
             [
                 "c4125dcd.1043"
@@ -902,12 +907,14 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: writeApogeeJobTicket_(beta))",
-        "func": "const path = context.global.get('PATH');\n\nconst jobTicketGenerator = context.global.get('JOB_TICKET_GENERATOR');\nconst apogeeJobTicketLocation = path.join(msg.sheetDirectory,msg.sheetId+\"_apogeeV9_JobTicket.jdf\");\n\nif (msg.gangJobEventJson[\"gangJobEvent-Root\"].gangJob.workStyle===\"SIMPLEX\") {\n    if (!context.global.get(\"apogeeJdfModel_Simplex\")) {\n        const fs = context.global.get('FS');\n        fs.readFile('jobTicketGenerator/apogee/model/ApogeeJdfV9_model_Simplex.jdf',\n            function (err, data) {\n                if (err) throw \"Apogee Jdf Simplex Model file could not be read - Error message: \" + err;\n                var lineArray = data.toString().split(\"\\n\");\n                context.global.set(\"apogeeJdfModel_Simplex\",lineArray);\n                node.log(\"ApogeeJdf-Simplex-Model initialized\");\n                jobTicketGenerator.writeApogeeJdf(\n                    apogeeJobTicketLocation,\n                    msg.sheetId,\n                    msg.gangJobEventJson[\"gangJobEvent-Root\"],\n                    0,\n                    context.global.get(\"apogeeJdfModel_Simplex\"));\n            }\n        );    \n    } else {\n        jobTicketGenerator.writeApogeeJdf(\n            apogeeJobTicketLocation,\n            msg.sheetId,\n            msg.gangJobEventJson[\"gangJobEvent-Root\"],\n            0,\n            context.global.get(\"apogeeJdfModel_Simplex\"));\n    }\n} else {\n    if (!context.global.get(\"apogeeJdfModel\")) {\n        const fs = context.global.get('FS');\n        fs.readFile('jobTicketGenerator/apogee/model/ApogeeJdfV9_model.jdf',\n            function (err, data) {\n                if (err) throw \"Apogee Jdf Model file could not be read - Error message: \" + err;\n                var lineArray = data.toString().split(\"\\n\");\n                context.global.set(\"apogeeJdfModel\",lineArray);        \n                node.log(\"Apogee-Jdf-Model initialized\");\n                jobTicketGenerator.writeApogeeJdf(\n                    apogeeJobTicketLocation,\n                    msg.sheetId,\n                    msg.gangJobEventJson[\"gangJobEvent-Root\"],\n                    0,\n                    context.global.get(\"apogeeJdfModel\"));\n            }\n        );    \n    } else {\n        jobTicketGenerator.writeApogeeJdf(\n            apogeeJobTicketLocation,\n            msg.sheetId,\n            msg.gangJobEventJson[\"gangJobEvent-Root\"],\n            0,\n            context.global.get(\"apogeeJdfModel\"));\n    }\n}\nnode.log(\"Apogee-JobTicket written to: \"+apogeeJobTicketLocation);\n",
-        "outputs": 0,
+        "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\nconst path = context.global.get('PATH');\n\nmsg.task = 3;\n\nconst jobTicketGenerator = context.global.get('JOB_TICKET_GENERATOR');\nconst apogeeJobTicketLocation = path.join(msg.sheetDirectory,msg.sheetId+\"_apogeeV9_JobTicket.jdf\");\n\nif (msg.gangJobEventJson[\"gangJobEvent-Root\"].gangJob.workStyle===\"SIMPLEX\") {\n    if (!context.global.get(\"apogeeJdfModel_Simplex\")) {\n        const fs = context.global.get('FS');\n        fs.readFile('jobTicketGenerator/apogee/model/ApogeeJdfV9_model_Simplex.jdf',\n            function (err, data) {\n                if (err) throw \"Apogee Jdf Simplex Model file could not be read - Error message: \" + err;\n                var lineArray = data.toString().split(\"\\n\");\n                context.global.set(\"apogeeJdfModel_Simplex\",lineArray);\n                node.log(\"ApogeeJdf-Simplex-Model initialized\");\n                jobTicketGenerator.writeApogeeJdf(\n                    apogeeJobTicketLocation,\n                    msg.sheetId,\n                    msg.gangJobEventJson[\"gangJobEvent-Root\"],\n                    0,\n                    context.global.get(\"apogeeJdfModel_Simplex\"));\n            }\n        );    \n    } else {\n        jobTicketGenerator.writeApogeeJdf(\n            apogeeJobTicketLocation,\n            msg.sheetId,\n            msg.gangJobEventJson[\"gangJobEvent-Root\"],\n            0,\n            context.global.get(\"apogeeJdfModel_Simplex\"));\n    }\n} else {\n    if (!context.global.get(\"apogeeJdfModel\")) {\n        const fs = context.global.get('FS');\n        fs.readFile('jobTicketGenerator/apogee/model/ApogeeJdfV9_model.jdf',\n            function (err, data) {\n                if (err) throw \"Apogee Jdf Model file could not be read - Error message: \" + err;\n                var lineArray = data.toString().split(\"\\n\");\n                context.global.set(\"apogeeJdfModel\",lineArray);        \n                node.log(\"Apogee-Jdf-Model initialized\");\n                jobTicketGenerator.writeApogeeJdf(\n                    apogeeJobTicketLocation,\n                    msg.sheetId,\n                    msg.gangJobEventJson[\"gangJobEvent-Root\"],\n                    0,\n                    context.global.get(\"apogeeJdfModel\"));\n            }\n        );    \n    } else {\n        jobTicketGenerator.writeApogeeJdf(\n            apogeeJobTicketLocation,\n            msg.sheetId,\n            msg.gangJobEventJson[\"gangJobEvent-Root\"],\n            0,\n            context.global.get(\"apogeeJdfModel\"));\n    }\n}\n\nnode.log(\"Apogee-JobTicket written to: \" + apogeeJobTicketLocation);\nreceivedPrintJobs[msg.sheetId].audit.push({\n    type : \"info\",\n    on   : Date.now(),\n    msg  : \"Apogee-JobTicket written to: \" + apogeeJobTicketLocation\n}); \nnode.send(msg);\n",
+        "outputs": 1,
         "noerr": 0,
         "x": 1990,
-        "y": 700,
-        "wires": []
+        "y": 540,
+        "wires": [
+            []
+        ]
     },
     {
         "id": "6540c97b.74e5d8",
@@ -1424,6 +1431,210 @@
         "wires": [
             [
                 "6540c97b.74e5d8"
+            ]
+        ]
+    },
+    {
+        "id": "4afa1e4d.4cbd1",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "consolidate",
+        "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n/*context.data = context.data || {\n    task1 : false,\n    task2 : false,\n    task3 : false\n};\n\nswitch (msg.task) {\n    case 1:\n        context.data.task1 = true;\n        break;\n    case 2:\n        context.data.task2 = true;\n        break;\n    case 3:\n        context.data.task3 = true;\n        break;\n        \n    default:\n    \tbreak;\nconsole.log(context.data);\n}*/\n\n//if(context.data.task1 && context.data.task2  && context.data.task3) {\n    if(receivedPrintJobs[msg.sheetId].status === \"pending\"){\n        receivedPrintJobs[msg.sheetId].status = \"success\";\n    }\n    receivedPrintJobs[msg.sheetId].audit.push({\n        type : \"info\",\n        on   : Date.now(),\n        msg  : \"finished.\"\n    });  \n//}",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 2430,
+        "y": 420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "955440a.c8da4c",
+        "type": "function",
+        "z": "5a7f2786.049e58",
+        "name": "Wait for all tasks to finish",
+        "func": "context.data = context.data || new Object();\n\nswitch (msg.topic) {\n    case \"task1\":\n        context.data.task1 = msg.payload;\n        msg = null;\n        break;\n    case \"task2\":\n        context.data.task2 = msg.payload;\n        msg = null;\n        break;\n    case \"task3\":\n        context.data.task3 = msg.payload;\n        msg = null;\n        break;\n        \n    default:\n        msg = null;\n    \tbreak;\n\n}\n\nif(context.data.task1 != null && context.data.task2 != null && context.data.task3 != null) {\n\tmsg2 = new Object();\n    msg2 = context.data;\n    context.data=null;\n\treturn msg2;\n} else return msg;",
+        "outputs": 1,
+        "x": 790,
+        "y": 300,
+        "wires": [
+            [
+                "293d820b.99d7fe"
+            ]
+        ]
+    },
+    {
+        "id": "25095ae3.610146",
+        "type": "delay",
+        "z": "5a7f2786.049e58",
+        "name": "Random delay",
+        "pauseType": "random",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "x": 532,
+        "y": 209,
+        "wires": [
+            [
+                "955440a.c8da4c"
+            ]
+        ]
+    },
+    {
+        "id": "293d820b.99d7fe",
+        "type": "debug",
+        "z": "5a7f2786.049e58",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 997,
+        "y": 299,
+        "wires": []
+    },
+    {
+        "id": "961a1f34.c7697",
+        "type": "delay",
+        "z": "5a7f2786.049e58",
+        "name": "Random delay",
+        "pauseType": "random",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "x": 536,
+        "y": 305,
+        "wires": [
+            [
+                "955440a.c8da4c"
+            ]
+        ]
+    },
+    {
+        "id": "9240e85b.3c14b8",
+        "type": "delay",
+        "z": "5a7f2786.049e58",
+        "name": "Random delay",
+        "pauseType": "random",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "x": 533,
+        "y": 389,
+        "wires": [
+            [
+                "955440a.c8da4c"
+            ]
+        ]
+    },
+    {
+        "id": "52669aad.2678f4",
+        "type": "function",
+        "z": "5a7f2786.049e58",
+        "name": "Task1",
+        "func": "msg.topic=\"task1\";\nmsg.payload=\"Task1's payload\"\nreturn msg;",
+        "outputs": 1,
+        "x": 364,
+        "y": 209,
+        "wires": [
+            [
+                "25095ae3.610146"
+            ]
+        ]
+    },
+    {
+        "id": "ba2378f4.50b088",
+        "type": "function",
+        "z": "5a7f2786.049e58",
+        "name": "Task2",
+        "func": "msg.topic=\"task2\";\nmsg.payload=\"Task2's payload\"\nreturn msg;",
+        "outputs": 1,
+        "x": 367,
+        "y": 304,
+        "wires": [
+            [
+                "961a1f34.c7697"
+            ]
+        ]
+    },
+    {
+        "id": "2c34a989.b64b06",
+        "type": "function",
+        "z": "5a7f2786.049e58",
+        "name": "Task3",
+        "func": "msg.topic=\"task3\";\nmsg.payload=\"Task3's payload\"\nreturn msg;",
+        "outputs": 1,
+        "x": 362,
+        "y": 388,
+        "wires": [
+            [
+                "9240e85b.3c14b8"
+            ]
+        ]
+    },
+    {
+        "id": "5965859f.8ada3c",
+        "type": "inject",
+        "z": "5a7f2786.049e58",
+        "name": "Start",
+        "topic": "",
+        "payload": "",
+        "payloadType": "none",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "x": 198,
+        "y": 293,
+        "wires": [
+            [
+                "52669aad.2678f4",
+                "ba2378f4.50b088",
+                "2c34a989.b64b06"
+            ]
+        ]
+    },
+    {
+        "id": "6e3c3280.33997c",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Integration: processJob",
+        "func": "\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\n// process job\nnode.log(\"Process job: \" + msg.job.jobId);\n\n// set job#s storage dir\nmsg.job.storageFolder = msg.job.jobId + \"/\";\n\nintegration.processJob(msg.job,msg.mediaList)\n    .then(\n    ((result) => {\n        msg.binderySignatures = result.binderySignatures\n        msg.assemblerTask = result.assemblerTask;\n    \n        if(msg.binderySignatures !== null) {\n            node.log(\"BinderySignatures have been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"A bindery signature has been created.\"\n                }  \n            );\n            node.send([msg, null]);\n        \n        } else if (msg.assemblerTask !== null) {\n            node.log(\"AssemblerTask has been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"Assembler task has been created.\"\n                }  \n            );\n            node.send([null, msg]);\n        } else {\n            processedJobs[msg.job.jobId].status = \"canceled\";\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"error\",\n                    on   : Date.now(),\n                    msg  : \"Job has invalid data format.\"\n                }  \n            );            \n            throw new Error(\"Invalid result for job \" + msg.job.jobId)\n        }\n    }),\n    ((reject)=>{\n        node.warn(reject)\n        console.log(reject);\n        processedJobs[msg.job.jobId].status = \"canceled\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Inknown error in processJob.\"\n            }  \n        );\n        \n        node.error(error)        \n    }))\n    .catch((error)=> {\n        console.log(error);\n        processedJobs[msg.job.jobId].status = \"canceled\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Inknown error in processJob.\"\n            }  \n        );\n        \n        node.error(error)\n    });\n\n\n\n",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 1970,
+        "y": 240,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "ab781dee.626f6",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: imposeSheet (xjdf)",
+        "func": "const request = context.global.get('REQUEST');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst pb = context.global.get('PRETTY_BYTES');\nconst unzipper = context.global.get('UNZIPPER');\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// define request options\nvar options = {\n    method: 'POST',\n    url: env.get(\"IMPOSITION_URL\") + '/impose/sheet',\n    body: msg.gangJobEventXml,\n}\n\n// execute request\n\nrequest(options)\n    .on('error', function(err) {\n        node.error(\"Unable to impose sheet '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(err));\n        \n        receivedPrintJobs[msg.sheetId].status = \"canceled\";\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to impose sheet.\"\n        });\n    })\n    .pipe(unzipper.Parse())\n    .on('entry', function (entry) {\n        const fileName = entry.path;\n        const targetPath = path.join(msg.sheetDirectory, path.basename(fileName));\n        entry.pipe(fs.createWriteStream(targetPath));\n    })\n    .on('finish', () => {\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"Sheet imposition completed.\"\n        });\n\n        node.send(msg);\n    });\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 2210,
+        "y": 420,
+        "wires": [
+            [
+                "4afa1e4d.4cbd1"
             ]
         ]
     }
