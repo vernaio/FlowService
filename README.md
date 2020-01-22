@@ -127,7 +127,7 @@ The output is a single string representing the sheet's identifier.
 
 ### Function: processSheet()
 The function _processSheet_ is the last one called in the process. This method can be used to
-integrate MIS Systems.
+integrate MIS Systems. [!Currently not called!]
  
 #### Input (Parameters):
 The function _processSheet()_ requires the following input parameters:
