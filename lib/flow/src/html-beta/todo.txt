@@ -3,8 +3,8 @@
 /- Upload Bug bei mehreren Jobs gleichzeitig: Error: ENOENT: no such file or directory, stat '/data/in/11936900-13.pdf'
 	- Warum wird der Flow während der Abarbeitung mehrmals gestartet?
 	
-- medias caching
-- Hover-Titel für zu lange log Einträge
+
+/- Hover-Titel für zu lange log Einträge
 /- Time bug in "Eingelesen" Erkannte Druckbestellungen
 /- Buttons:
 	- reset all canceled jobs
@@ -17,6 +17,7 @@
 
 	
 -----NICE TO HAVE------
+- medias caching
 - icons für menu items
 - change event for orderLog refresh
 /- short navigation

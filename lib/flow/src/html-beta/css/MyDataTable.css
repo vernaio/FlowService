@@ -153,7 +153,7 @@ table.MyDataTable-body td.order:before{background-image: url(/img/files/folder.s
 
 table.MyDataTable-body td.status:before{background-size: auto 50%;}
 table.MyDataTable-body td.status.pending:before{background-image: url(/img/pending.svg);}
-table.MyDataTable-body td.status.canceled:before{background-image: url(/img/canceled.svg);}
+table.MyDataTable-body td.status.error:before{background-image: url(/img/canceled.svg);}
 table.MyDataTable-body td.status.success:before{background-image: url(/img/success.svg);}
 
 table.MyDataTable-body td.log:before{background-size: auto 60%;}
