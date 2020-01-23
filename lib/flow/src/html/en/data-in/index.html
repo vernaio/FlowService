@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>PIB Flow - Datenupload</title>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
+
+		<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700&display=swap" rel="stylesheet">
+		<link rel="stylesheet" type="text/css" href="/css/MyDataTable.css"/>
+		<link rel="stylesheet" type="text/css" href="/css/MsgBar.css"/>
+		<link rel="stylesheet" type="text/css" href="/css/main.css"/>
+
+		<script src="/js/jquery-3.4.1.min.js"></script>
+
+		<script src="/js/util.js"></script>
+		<script src="/js/MyDataTable.js"></script>
+		<script src="/js/MsgBar.js"></script>
+		<script src="/js/locale.js"></script>
+		<script src="/js/main.js"></script>
+	</head>
+	<body>
+		<header></header>
+		<section id="main">
+			<div class="page">
+				<h1 class="icon upload">Data upload</h1>
+				<p>Print orders are read from the input folder and sent to sPrint One.</p>
+				<div class="flex-container flex-2">
+					<div class="flex-item">
+						<h3>Data input</h3>
+						<div id="wrapper-files-input"></div>
+						<div class="button-wrapper">
+							<div id="fetch-jobs" class="icon play bulk">GO</div>
+						</div>
+					</div>
+					<div class="flex-item">
+						<h3>Recognized print orders</h3>
+						<div id="wrapper-processed-orders"></div>
+						<div class="button-wrapper">
+							<div id="delete-pending-orders" class="icon pending">forget</div>
+							<div id="delete-canceled-orders" class="icon canceled">forget</div>
+							<div id="delete-success-orders" class="icon success">forget</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="flex-container flex-2">
+					<div class="flex-item">
+						<h4>Log / Data input</h4>
+						<div id="wrapper-logs"></div>
+						<div class="button-wrapper">
+							<div id="reset-upload-log" class="">clear</div>
+						</div>
+					</div>
+					<div class="flex-item">
+						<h4>Log / Print orders <span id="orderId">-</span></h4>
+						<div id="wrapper-order-logs"></div>
+						<div class="button-wrapper">
+							<!--<div id="reset-order-log" class="">zurücksetzen</div>-->
+						</div>						
+					</div>					
+				</div>
+
+			</div>
+		</section>
+		<footer></footer>
+	</body>
+</html>

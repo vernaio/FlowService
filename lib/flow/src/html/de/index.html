@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>PIB Flow - Home</title>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
+
+		<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700&display=swap" rel="stylesheet">
+		<link rel="stylesheet" type="text/css" href="/css/MyDataTable.css"/>
+		<link rel="stylesheet" type="text/css" href="/css/MsgBar.css"/>
+		<link rel="stylesheet" type="text/css" href="/css/main.css"/>
+
+		<script src="/js/jquery-3.4.1.min.js"></script>
+
+		<script src="/js/util.js"></script>
+		<script src="/js/MyDataTable.js"></script>
+		<script src="/js/MsgBar.js"></script>
+		<script src="/js/locale.js"></script>
+		<script src="/js/main.js"></script>
+	</head>
+	<body>
+		<header></header>
+		<section id="main">
+			<div class="page">
+				<h1>Home</h1>
+				<p>Die Printshop Integration Box (PIB) ist ein frei verfügbares Tool, um einen Druckbetrieb an PerfectPatterns sPrint One anzubinden. PIB sorgt ebenso für das Konvertieren und Hochladen von Druckbestellungen wie für das Herunterladen und Ausschießen produktionsfertiger Druckaufträge.</p>
+				<br><br><br>
+				<div class="workflow-container">
+					<h2>Der PIB Workflow</h2>
+					<br><br>
+					<div class="flex-container">
+						<div class="flex-item">
+							<a href="/de/data-in">
+								<div class="flex-content">
+									<img src="/img/up-arrow.svg" class=""/>
+									<p><strong>1. Datenupload</strong></h3>
+									<p>Neue Druckbestellungen werden aus dem Input-Ordner ausgelesen, konvertiert und an sPrint One übertragen.</p>
+								</div>
+							</a>
+						</div>
+						<div class="flex-item">
+							<a href="#" class="console-link" target="_blank">
+								<div class="flex-content">
+									<img src="/img/gear.svg" class=""/>
+									<p><strong>2. Berechnung</strong></h3>
+									<p>Im sPrint One Cockpit werden Druckaufträge berechnet und für den Druck freigegeben. </p>
+								</div>
+							</a>
+						</div>
+						<div class="flex-item">
+							<a href="/de/data-out">
+								<div class="flex-content">
+									<img src="/img/down-arrow.svg" class=""/>
+									<p><strong>3. Datendownload</strong></h3>
+									<p>Die in sPrint One Cockpit freígegebenen Druckaufträge werden heruntergeladen und ausgeschossen.</p>
+								</div>
+							</a>
+						</div>												
+					</div>
+				</div>
+			</div>
+		</section>
+		<footer></footer>
+	</body>
+</html>

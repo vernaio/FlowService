@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>PIB Flow - Datendownload</title>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
+
+		<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700&display=swap" rel="stylesheet">
+		<link rel="stylesheet" type="text/css" href="/css/MyDataTable.css"/>
+		<link rel="stylesheet" type="text/css" href="/css/MsgBar.css"/>
+		<link rel="stylesheet" type="text/css" href="/css/main.css"/>
+
+		<script src="/js/jquery-3.4.1.min.js"></script>
+
+		<script src="/js/util.js"></script>
+		<script src="/js/MyDataTable.js"></script>
+		<script src="/js/MsgBar.js"></script>
+		<script src="/js/locale.js"></script>
+		<script src="/js/main.js"></script>
+	</head>
+	<body>
+		<header></header>
+		<section id="main">
+			<div class="page">
+				<h1 class="icon download">Datendownload</h1 class="icon upload">
+				<p>Hier werden die Druckaufträge von sPrint One entgegengenommen, ausgeschossen und für den Druck fertig gemacht.</p>
+				<div class="flex-container flex-2">
+					<div class="flex-item">
+						<h3>sPrint One Websocket</h3>
+						<div class="pile" style="height:258px;">
+							<p class="title">Connection:</p>
+							<p class="value" id="webservice-connection">offline</p>
+						</div>
+					</div>
+									
+					<div class="flex-item">
+						<h3>Empfangene Druckaufträge</h3>
+						<div id="wrapper-received-printjobs"></div>
+						<div class="button-wrapper">
+							<div id="delete-pending-printjobs" class="icon pending">vergessen</div>
+							<div id="delete-canceled-printjobs" class="icon canceled">vergessen</div>
+							<div id="delete-success-printjobs" class="icon success">vergessen</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="flex-container flex-2">
+					<div class="flex-item">
+						<h4>Log / Datendownload</h4>
+						<div id="wrapper-logs"></div>
+						<div class="button-wrapper">
+							<div id="reset-download-log" class="">leeren</div>
+						</div>
+					</div>	
+					<div class="flex-item">
+						<h4>Log / Druckauftrag <span id="printjobId">-</span></h4>
+						<div id="wrapper-printjob-logs"></div>
+						<div class="button-wrapper">
+							
+						</div>						
+					</div>					
+				</div>
+			</div>
+		</section>
+		<footer></footer>
+	</body>
+</html>

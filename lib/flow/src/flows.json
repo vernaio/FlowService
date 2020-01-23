@@ -7,13 +7,6 @@
         "info": ""
     },
     {
-        "id": "5a7f2786.049e58",
-        "type": "tab",
-        "label": "Flow 2",
-        "disabled": false,
-        "info": ""
-    },
-    {
         "id": "e7f7d67f.1a41a8",
         "type": "comment",
         "z": "d4af305b.2ea44",
@@ -151,7 +144,7 @@
         "name": "Exception Handling",
         "info": "",
         "x": 130,
-        "y": 1800,
+        "y": 1740,
         "wires": []
     },
     {
@@ -162,7 +155,7 @@
         "scope": null,
         "uncaught": false,
         "x": 100,
-        "y": 1840,
+        "y": 1780,
         "wires": [
             [
                 "6a76d426.aa179c"
@@ -178,7 +171,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 260,
-        "y": 1840,
+        "y": 1780,
         "wires": [
             []
         ]
@@ -407,33 +400,6 @@
         "y": 820,
         "wires": [
             []
-        ]
-    },
-    {
-        "id": "70dcefc.8a12b1",
-        "type": "http response",
-        "z": "d4af305b.2ea44",
-        "name": "",
-        "statusCode": "",
-        "headers": {},
-        "x": 410,
-        "y": 1720,
-        "wires": []
-    },
-    {
-        "id": "9c920356.2208c",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "load asset",
-        "func": "const fs = context.global.get('FS');\nconst path = context.global.get('PATH');\n\nvar url = msg.req.url;\n\n// default entry point\nif(url === \"/\") {\n    url = \"index.html\";\n}\n\n// set asset path\nvar assetPath = path.join('./src/html/', url);\n\n// define content type\nvar contentType = \"application/octet-stream\"\n\nif(path.extname(assetPath) === \".html\" || path.extname(assetPath) === \".htm\") {\n    contentType = 'text/html';\n} else if (path.extname(assetPath) === \".js\") {\n    contentType = 'text/javascript';\n} else if (path.extname(assetPath) === \".css\") {\n    contentType = 'text/css';\n} else if (path.extname(assetPath) === \".ico\") {\n    contentType = 'image/x-icon';\n} else if (path.extname(assetPath) === \".svg\") {\n    contentType = 'image/svg+xml';\n}\n\n\n// try to deliver asset\nif(fs.existsSync(assetPath)) {\n    fs.readFile(assetPath, (err, data) => {\n        if (err) throw err;\n        \n        msg.payload = data;\n        msg.statusCode = 200;\n        msg.headers = {\n            'Content-Type': contentType\n        };\n        \n        node.send(msg);\n    });\n    \n} else {\n    node.warn(\"Asset not found: \" + assetPath + \" (\" + contentType + \")\")\n    \n    msg.payload = \"Page not found.\"\n    msg.statusCode = 404;\n    \n    node.send(msg);   \n}",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 250,
-        "y": 1720,
-        "wires": [
-            [
-                "70dcefc.8a12b1"
-            ]
         ]
     },
     {
@@ -878,11 +844,11 @@
         "id": "6540c97b.74e5d8",
         "type": "function",
         "z": "d4af305b.2ea44",
-        "name": "load asset (beta)",
-        "func": "const fs = context.global.get('FS');\nconst path = context.global.get('PATH');\n\nvar root = './src/html-beta/';\nvar url = msg.req.url;\n\nif(url.substr(url.length - 5).indexOf(\".\") === -1){\n    url = path.join(url, \"index.html\");\n}\n\n// set asset path\nvar assetPath = path.join(root, url);\n\n// define content type\nvar contentType = \"application/octet-stream\"\n\nif(path.extname(assetPath) === \".html\" || path.extname(assetPath) === \".htm\") {\n    contentType = 'text/html';\n} else if (path.extname(assetPath) === \".js\") {\n    contentType = 'text/javascript';\n} else if (path.extname(assetPath) === \".css\") {\n    contentType = 'text/css';\n} else if (path.extname(assetPath) === \".ico\") {\n    contentType = 'image/x-icon';\n} else if (path.extname(assetPath) === \".svg\") {\n    contentType = 'image/svg+xml';\n}\n\n\n// try to deliver asset\nif(fs.existsSync(assetPath)) {\n    fs.readFile(assetPath, (err, data) => {\n        if (err) throw err;\n        \n        msg.payload = data;\n        msg.statusCode = 200;\n        msg.headers = {\n            'Content-Type': contentType\n        };\n        \n        node.send(msg);\n    });\n    \n} else {\n    node.warn(\"Asset not found: \" + assetPath + \" (\" + contentType + \")\")\n    \n    assetPath = path.join(root, \"404.html\");\n    fs.readFile(assetPath, (err, data) => {\n        if (err) throw err;\n        \n        msg.payload = data;\n        msg.statusCode = 404;\n        msg.headers = {\n            'Content-Type': contentType\n        };\n        \n        node.send(msg);\n    });\n}",
+        "name": "load asset",
+        "func": "const fs = context.global.get('FS');\nconst path = context.global.get('PATH');\n\nvar root = './src/html/';\nvar url = msg.req.url;\n\nif(url.substr(url.length - 5).indexOf(\".\") === -1){\n    url = path.join(url, \"index.html\");\n}\n\n// set asset path\nvar assetPath = path.join(root, url);\n\n// define content type\nvar contentType = \"application/octet-stream\"\n\nif(path.extname(assetPath) === \".html\" || path.extname(assetPath) === \".htm\") {\n    contentType = 'text/html';\n} else if (path.extname(assetPath) === \".js\") {\n    contentType = 'text/javascript';\n} else if (path.extname(assetPath) === \".css\") {\n    contentType = 'text/css';\n} else if (path.extname(assetPath) === \".ico\") {\n    contentType = 'image/x-icon';\n} else if (path.extname(assetPath) === \".svg\") {\n    contentType = 'image/svg+xml';\n}\n\n\n// try to deliver asset\nif(fs.existsSync(assetPath)) {\n    fs.readFile(assetPath, (err, data) => {\n        if (err) throw err;\n        \n        msg.payload = data;\n        msg.statusCode = 200;\n        msg.headers = {\n            'Content-Type': contentType\n        };\n        \n        node.send(msg);\n    });\n    \n} else {\n    node.warn(\"Asset not found: \" + assetPath + \" (\" + contentType + \")\")\n    \n    assetPath = path.join(root, \"404.html\");\n    fs.readFile(assetPath, (err, data) => {\n        if (err) throw err;\n        \n        msg.payload = data;\n        msg.statusCode = 404;\n        msg.headers = {\n            'Content-Type': contentType\n        };\n        \n        node.send(msg);\n    });\n}",
         "outputs": 1,
         "noerr": 0,
-        "x": 270,
+        "x": 250,
         "y": 1680,
         "wires": [
             [
@@ -1389,165 +1355,6 @@
         "wires": [
             [
                 "6540c97b.74e5d8"
-            ]
-        ]
-    },
-    {
-        "id": "955440a.c8da4c",
-        "type": "function",
-        "z": "5a7f2786.049e58",
-        "name": "Wait for all tasks to finish",
-        "func": "context.data = context.data || new Object();\n\nswitch (msg.topic) {\n    case \"task1\":\n        context.data.task1 = msg.payload;\n        msg = null;\n        break;\n    case \"task2\":\n        context.data.task2 = msg.payload;\n        msg = null;\n        break;\n    case \"task3\":\n        context.data.task3 = msg.payload;\n        msg = null;\n        break;\n        \n    default:\n        msg = null;\n    \tbreak;\n\n}\n\nif(context.data.task1 != null && context.data.task2 != null && context.data.task3 != null) {\n\tmsg2 = new Object();\n    msg2 = context.data;\n    context.data=null;\n\treturn msg2;\n} else return msg;",
-        "outputs": 1,
-        "x": 790,
-        "y": 300,
-        "wires": [
-            [
-                "293d820b.99d7fe"
-            ]
-        ]
-    },
-    {
-        "id": "25095ae3.610146",
-        "type": "delay",
-        "z": "5a7f2786.049e58",
-        "name": "Random delay",
-        "pauseType": "random",
-        "timeout": "5",
-        "timeoutUnits": "seconds",
-        "rate": "1",
-        "rateUnits": "second",
-        "randomFirst": "1",
-        "randomLast": "5",
-        "randomUnits": "seconds",
-        "drop": false,
-        "x": 532,
-        "y": 209,
-        "wires": [
-            [
-                "955440a.c8da4c"
-            ]
-        ]
-    },
-    {
-        "id": "293d820b.99d7fe",
-        "type": "debug",
-        "z": "5a7f2786.049e58",
-        "name": "",
-        "active": true,
-        "console": "false",
-        "complete": "true",
-        "x": 997,
-        "y": 299,
-        "wires": []
-    },
-    {
-        "id": "961a1f34.c7697",
-        "type": "delay",
-        "z": "5a7f2786.049e58",
-        "name": "Random delay",
-        "pauseType": "random",
-        "timeout": "5",
-        "timeoutUnits": "seconds",
-        "rate": "1",
-        "rateUnits": "second",
-        "randomFirst": "1",
-        "randomLast": "5",
-        "randomUnits": "seconds",
-        "drop": false,
-        "x": 536,
-        "y": 305,
-        "wires": [
-            [
-                "955440a.c8da4c"
-            ]
-        ]
-    },
-    {
-        "id": "9240e85b.3c14b8",
-        "type": "delay",
-        "z": "5a7f2786.049e58",
-        "name": "Random delay",
-        "pauseType": "random",
-        "timeout": "5",
-        "timeoutUnits": "seconds",
-        "rate": "1",
-        "rateUnits": "second",
-        "randomFirst": "1",
-        "randomLast": "5",
-        "randomUnits": "seconds",
-        "drop": false,
-        "x": 533,
-        "y": 389,
-        "wires": [
-            [
-                "955440a.c8da4c"
-            ]
-        ]
-    },
-    {
-        "id": "52669aad.2678f4",
-        "type": "function",
-        "z": "5a7f2786.049e58",
-        "name": "Task1",
-        "func": "msg.topic=\"task1\";\nmsg.payload=\"Task1's payload\"\nreturn msg;",
-        "outputs": 1,
-        "x": 364,
-        "y": 209,
-        "wires": [
-            [
-                "25095ae3.610146"
-            ]
-        ]
-    },
-    {
-        "id": "ba2378f4.50b088",
-        "type": "function",
-        "z": "5a7f2786.049e58",
-        "name": "Task2",
-        "func": "msg.topic=\"task2\";\nmsg.payload=\"Task2's payload\"\nreturn msg;",
-        "outputs": 1,
-        "x": 367,
-        "y": 304,
-        "wires": [
-            [
-                "961a1f34.c7697"
-            ]
-        ]
-    },
-    {
-        "id": "2c34a989.b64b06",
-        "type": "function",
-        "z": "5a7f2786.049e58",
-        "name": "Task3",
-        "func": "msg.topic=\"task3\";\nmsg.payload=\"Task3's payload\"\nreturn msg;",
-        "outputs": 1,
-        "x": 362,
-        "y": 388,
-        "wires": [
-            [
-                "9240e85b.3c14b8"
-            ]
-        ]
-    },
-    {
-        "id": "5965859f.8ada3c",
-        "type": "inject",
-        "z": "5a7f2786.049e58",
-        "name": "Start",
-        "topic": "",
-        "payload": "",
-        "payloadType": "none",
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "x": 198,
-        "y": 293,
-        "wires": [
-            [
-                "52669aad.2678f4",
-                "ba2378f4.50b088",
-                "2c34a989.b64b06"
             ]
         ]
     },
