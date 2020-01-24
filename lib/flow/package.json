@@ -12,6 +12,7 @@
         "path": "*",
         "unzipper": "^0.10.5",
         "ws": "*",
+        "job-ticket-generator" : "./jobTicketGenerator",
         "properties-reader": "*"
     },
     "repository": {

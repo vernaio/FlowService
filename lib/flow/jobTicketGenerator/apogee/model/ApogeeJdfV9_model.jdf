@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<JDF xmlns="http://www.CIP4.org/JDFSchema_1_1" 
+    xmlns:agfa="http://www.agfa.com/w3c/gs/jdf/agfaextensions.xsd" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Activation="Active" DescriptiveName="INJECT(pib.sheet.id)" ID="INJECT(pib.sheet.id)" JobID="INJECT(pib.sheet.id)" JobPartID="INJECT(pib.sheet.id)" Status="Ready" Type="Product" Version="1.5">
+    <Comment AgentName="PIB" DescriptiveName="FullSheetPdf of Gang Job INJECT(pib.sheet.id)" />
+    <AuditPool>
+        <Created AgentName="PIB" ID="CreatedID" TimeStamp="INJECT(pib.sheet.createdOn)" />
+    </AuditPool>
+    <ResourcePool>
+        <NodeInfo Class="Parameter" ID="NodeInfoID" NodeStatus="Ready" Start="INJECT(pib.sheet.createdOn)" Status="Available">
+            <Employee PersonalID="INJECT(pib.user)" />
+        </NodeInfo>
+        <Component Amount="INJECT(pib.sheet.amount)" Class="Quantity" ComponentType="FinalProduct" Dimensions="INJECT(apogee.sheet.format.width) INJECT(apogee.sheet.format.height) 0.0" ID="ComponentID-INJECT(pib.sheet.id)" ReaderPageCount="INJECT(apogee.sheet.pageCount)" Status="Unavailable" SurfaceCount="INJECT(apogee.sheet.pageCount)" />
+        <ColorPool Class="Parameter" DescriptiveName="Colors for Job" ID="ColorPoolID" Locked="false" Status="Available">
+            <Color CMYK="1 0 0 0" Name="Cyan" />
+            <Color CMYK="0 1 0 0" Name="Magenta" />
+            <Color CMYK="0 0 1 0" Name="Yellow" />
+            <Color CMYK="0 0 0 1" Name="Black" />
+        </ColorPool>
+        <!-- (Q) can this be left out? -->
+        <BindingIntent BindingOrder="None" Class="Intent" ID="BindingIntentID" Status="Available">
+            <BindingSide Actual="Left" DataType="EnumerationSpan" Preferred="Left" />
+            <BindingType Actual="None" DataType="EnumerationSpan" Preferred="None" />
+        </BindingIntent>
+        <Media Class="Consumable" DescriptiveName="Media Proof" ID="MediaProofID" MediaType="Paper" ProductID="MediaProofID" Status="Available" />
+        <Media Class="Consumable" DescriptiveName="Plates for Job" ID="MediaPlateID" MediaType="Plate" Status="Available" />
+        <Media Class="Consumable" DescriptiveName="PrintingPaper" ID="MediaPrintingPaperID" MediaType="Paper" PartIDKeys="SignatureName SheetName" Status="Available">
+            <Media SignatureName="SignatureID_INJECT(pib.sheet.id)">
+                <Media Brand="" DescriptiveName="Grade 1" Dimension="INJECT(apogee.sheet.format.width) INJECT(apogee.sheet.format.height)" Grade="1" GrainDirection="INJECT(apogee.media.grainDirection)" ProductID="Paper_SheetID" SheetName="SheetID_INJECT(pib.sheet.id)" Thickness="INJECT(pib.sheet.thickness)" Weight="INJECT(pib.sheet.weight)" />
+            </Media>
+        </Media>
+        <ColorantControl Class="Parameter" ID="ColorantControlID" PartIDKeys="SignatureName SheetName Side" PartUsage="Implicit" Status="Available">
+            <ColorPoolRef rRef="ColorPoolID" />
+            <!-- begin editing -->
+            <ColorantControl ProcessColorModel="DeviceCMYK" SignatureName="SignatureID_INJECT(pib.sheet.id)">
+                <ColorantControl SheetName="SheetID_INJECT(pib.sheet.id)">
+                    <ColorantControl Side="Front">
+                        <ColorantParams />
+                        <ColorantOrder>
+                            <SeparationSpec Name="Cyan" />
+                            <SeparationSpec Name="Magenta" />
+                            <SeparationSpec Name="Yellow" />
+                            <SeparationSpec Name="Black" />
+                        </ColorantOrder>
+                    </ColorantControl>
+                    <ColorantControl ProcessColorModel="DeciveCMYK" Side="Back">
+                        <ColorantParams />
+                        <ColorantOrder>
+                            <SeparationSpec Name="Cyan" />
+                            <SeparationSpec Name="Magenta" />
+                            <SeparationSpec Name="Yellow" />
+                            <SeparationSpec Name="Black" />
+                        </ColorantOrder>
+                    </ColorantControl>
+                </ColorantControl>
+            </ColorantControl>
+            <!-- end editing -->
+        </ColorantControl>
+        <Layout Class="Parameter" DescriptiveName="LayoutID-INJECT(pib.sheet.id)" ID="LayoutID" PartIDKeys="SignatureName SheetName Side" Status="Unavailable">
+            <Layout SignatureName="SignatureID_INJECT(pib.sheet.id)">
+                <Layout SheetName="SheetID_INJECT(pib.sheet.id)">
+                    <Layout Side="Front" />
+                    <Layout Side="Back" />
+                </Layout>
+            </Layout>
+        </Layout>
+        <CustomerInfo Class="Parameter" CustomerID="CustomerID" ID="CustomerInfoID" Status="Available" />
+        <Device Class="Implementation" DescriptiveName="" DeviceID="INJECT(pib.sheet.device.id)" ID="DeviceID_INJECT(pib.sheet.device.label)" Status="Available" />
+        <ExposedMedia Class="Handling" DescriptiveName="Imposition Proof" ID="ExposedMediaImpoProofID" PartIDKeys="SignatureName SheetName Side" PartUsage="Explicit" Status="Unavailable">
+            <MediaRef rRef="MediaProofID" />
+            <ExposedMedia SignatureName="SignatureID_INJECT(pib.sheet.id)">
+                <ExposedMedia SheetName="SheetID_INJECT(pib.sheet.id)">
+                    <ExposedMedia Side="Front" />
+                    <ExposedMedia Side="Back" />
+                </ExposedMedia>
+            </ExposedMedia>
+        </ExposedMedia>
+        <ExposedMedia Class="Handling" ID="ExposedMediaID" PartIDKeys="SignatureName SheetName Side Separation" PartUsage="Explicit" Status="Unavailable">
+            <ExposedMedia SignatureName="SignatureID_INJECT(pib.sheet.id)">
+                <ExposedMedia SheetName="SheetID_INJECT(pib.sheet.id)">
+                    <MediaRef rRef="MediaPlateID" />
+                    <ExposedMedia Side="Front">
+                        <ExposedMedia ProductID="1" Separation="Cyan" />
+                        <ExposedMedia ProductID="2" Separation="Magenta" />
+                        <ExposedMedia ProductID="3" Separation="Yellow" />
+                        <ExposedMedia ProductID="4" Separation="Black" />
+                    </ExposedMedia>
+                    <ExposedMedia Side="Back">
+                        <ExposedMedia ProductID="5" Separation="Cyan" />
+                        <ExposedMedia ProductID="6" Separation="Magenta" />
+                        <ExposedMedia ProductID="7" Separation="Yellow" />
+                        <ExposedMedia ProductID="8" Separation="Black" />
+                    </ExposedMedia>
+                </ExposedMedia>
+            </ExposedMedia>
+        </ExposedMedia>
+        <RunList Class="Parameter" ID="sharedRunListOutID" Status="Unavailable" />
+        <RunList Class="Parameter" ID="sharedRunListInID" PartIDKeys="Run" Status="Available">
+            <RunList Pages="0" Run="0">
+                <LayoutElement>
+                    <FileSpec MimeType="application/pdf" URL="INJECT(apogee.artwork.location)" />
+                </LayoutElement>
+            </RunList>
+            <RunList Pages="1" Run="1">
+                <LayoutElement>
+                    <FileSpec MimeType="application/pdf" URL="INJECT(apogee.artwork.location)" />
+                </LayoutElement>
+            </RunList>
+        </RunList>
+        <Assembly BindingSide="Left" Class="Parameter" ID="AssemblyID" Order="None" Status="Available">
+            <AssemblySection AssemblyIDs="AssemblyIDs_INJECT(pib.sheet.id)" />
+        </Assembly>
+        <BinderySignature BinderySignatureType="Fold" Class="Parameter" DescriptiveName="Bindery Signature of INJECT(pib.sheet.id)" FoldCatalog="F2-1" ID="BinderySignature-INJECT(pib.sheet.id)" Status="Available" />
+        <StrippingParams Class="Parameter" ID="StrippingParamsID" PartIDKeys="SignatureName SheetName BinderySignatureName" Status="Available">
+            <StrippingParams SignatureName="SignatureID_INJECT(pib.sheet.id)">
+                <StrippingParams AssemblyIDs="AssemblyIDs_INJECT(pib.sheet.id)" SheetName="SheetID_INJECT(pib.sheet.id)" WorkStyle="INJECT(apogee.job.workStyle)">
+                    <MediaRef rRef="MediaPrintingPaperID">
+                        <Part SheetName="SheetID_INJECT(pib.sheet.id)" SignatureName="SignatureID_INJECT(pib.sheet.id)" />
+                    </MediaRef>
+                    <DeviceRef rRef="DeviceID_INJECT(pib.sheet.device.label)" />
+                    <StrippingParams AssemblyIDs="AssemblyIDs_INJECT(pib.sheet.id)" BinderySignatureName="BinderySignature-INJECT(pib.sheet.id)">
+                        <BinderySignatureRef rRef="BinderySignature-INJECT(pib.sheet.id)" />
+                        <StripCellParams BackOverfold="0" BleedFace="INJECT(apogee.sheet.bleed)" BleedFoot="INJECT(apogee.sheet.bleed)" BleedHead="INJECT(apogee.sheet.bleed)" BleedSpine="INJECT(apogee.sheet.bleed)" CutWidthFoot="0" CutWidthHead="0" FrontOverfold="0" MillingDepth="0" Spine="INJECT(apogee.sheet.bleed)" TrimFace="INJECT(apogee.sheet.bleed)" TrimFoot="INJECT(apogee.sheet.bleed)" TrimHead="INJECT(apogee.sheet.bleed)" TrimSize="INJECT(apogee.sheet.format.width) INJECT(apogee.sheet.format.height)" />
+                        <Position AbsoluteBox="-INJECT(apogee.sheet.bleed) -INJECT(apogee.sheet.bleed) INJECT(apogee.sheet.absoluteFormat.width) INJECT(apogee.sheet.absoluteFormat.height)" MarginBottom="0.0" MarginLeft="0.0" MarginRight="0.0" MarginTop="0.0" Orientation="Rotate0" />
+                    </StrippingParams>
+                </StrippingParams>
+            </StrippingParams>
+        </StrippingParams>
+        <RunList Class="Parameter" ID="SharedRunListOutID_2" Status="Unavailable" />
+        <Component Amount="2000" Class="Quantity" ComponentType="PartialProduct" Dimensions="INJECT(apogee.sheet.format.width) INJECT(apogee.sheet.format.height) 0.0" ID="ComponentPlateID_INJECT(pib.sheet.id)" ProductType="Flatwork" Status="Unavailable" />
+    </ResourcePool>
+    <ResourceLinkPool>
+        <BindingIntentLink Usage="Input" rRef="BindingIntentID" />
+        <ComponentLink Amount="INJECT(pib.sheet.amount)" Usage="Output" rRef="ComponentID-INJECT(pib.sheet.id)" />
+        <NodeInfoLink Usage="Input" rRef="NodeInfoID" />
+        <CustomerInfoLink Usage="Input" rRef="CustomerInfoID" />
+        <ComponentLink Usage="Input" rRef="ComponentPlateID_INJECT(pib.sheet.id)" />
+    </ResourceLinkPool>
+    <JDF Category="MISPRE.PrePressPreparation" DescriptiveName="PrePressPreparation shared" ID="SharedPrePressPreparationID" JobPartID="PrePressPreparationshared" Status="Waiting" Type="ProcessGroup" Types="PrePressPreparation" xsi:type="ProcessGroup">
+        <ResourceLinkPool>
+            <RunListLink ProcessUsage="Document" Usage="Input" rRef="sharedRunListInID" />
+            <RunListLink ProcessUsage="Document" Usage="Output" rRef="sharedRunListOutID" />
+        </ResourceLinkPool>
+    </JDF>
+    <JDF Category="MISPRE.ImpositionPreparation" DescriptiveName="ImpositionPreparation shared" ID="SharedImpositionPreparationID" JobPartID="ImpositionPreparationshared" Status="Waiting" Type="ProcessGroup" Types="ImpositionPreparation">
+        <ResourceLinkPool>
+            <RunListLink ProcessUsage="Marks" Usage="Output" rRef="SharedRunListOutID_2" />
+            <StrippingParamsLink Usage="Input" rRef="StrippingParamsID" />
+            <AssemblyLink Usage="Input" rRef="AssemblyID" />
+            <LayoutLink Usage="Output" rRef="LayoutID" />
+        </ResourceLinkPool>
+    </JDF>
+    <JDF DescriptiveName="Gang Job INJECT(pib.sheet.id)" ID="INJECT(pib.sheet.id)" JobPartID="INJECT(pib.sheet.id)" Status="Waiting" Type="Product">
+        <ResourceLinkPool>
+            <LayoutIntentLink Usage="Input" rRef="LayoutIntentID_INJECT(pib.sheet.id)" />
+            <FoldingIntentLink Usage="Input" rRef="FoldingIntentID_INJECT(pib.sheet.id)" />
+            <ComponentLink Usage="Output" rRef="ComponentPlateID_INJECT(pib.sheet.id)" />
+            <MediaIntentLink Usage="Input" rRef="MediaIntentID_INJECT(pib.sheet.id)" />
+            <ColorIntentLink Usage="Input" rRef="ColorIntentID_INJECT(pib.sheet.id)" />
+        </ResourceLinkPool>
+        <ResourcePool>
+            <LayoutIntent Class="Intent" ID="LayoutIntentID_INJECT(pib.sheet.id)" Sides="TwoSidedHeadToHead" Status="Available">
+                <Pages Actual="INJECT(apogee.sheet.pageCount)" DataType="IntegerSpan" Preferred="INJECT(apogee.sheet.pageCount)" />
+                <Dimensions Actual="INJECT(apogee.sheet.format.width) INJECT(apogee.sheet.format.height)" DataType="XYPairSpan" Preferred="INJECT(apogee.sheet.format.width) INJECT(apogee.sheet.format.height)" />
+            </LayoutIntent>
+            <FoldingIntent Class="Intent" ID="FoldingIntentID_INJECT(pib.sheet.id)" Status="Available">
+                <FoldingCatalog Actual="F2-1" DataType="NameSpan" Preferred="F2-1" />
+            </FoldingIntent>
+            <MediaIntent Class="Intent" ID="MediaIntentID_INJECT(pib.sheet.id)" Status="Available">
+                <MediaType DataType="EnumerationSpan" Preferred="Paper" />
+                <Weight Actual="INJECT(pib.sheet.weight)" DataType="NumberSpan" Preferred="INJECT(pib.sheet.weight)" />
+                <Thickness Actual="INJECT(pib.sheet.thickness)" DataType="NumberSpan" Preferred="INJECT(pib.sheet.thickness)" />
+                <StockBrand Actual="" DataType="StringSpan" Preferred="" />
+                <Grade Actual="1" DataType="IntegerSpan" Preferred="1" />
+            </MediaIntent>
+            <ColorIntent Class="Intent" ID="ColorIntentID_INJECT(pib.sheet.id)" Status="Available">
+                <ColorPoolRef rRef="ColorPoolID" />
+                <ColorsUsed>
+                    <SeparationSpec Name="Cyan" />
+                    <SeparationSpec Name="Magenta" />
+                    <SeparationSpec Name="Yellow" />
+                    <SeparationSpec Name="Black" />
+                </ColorsUsed>
+            </ColorIntent>
+        </ResourcePool>
+        <JDF Category="PrePress" DescriptiveName="Prepress of Gang Job INJECT(pib.sheet.id)" ID="PrePressID_INJECT(pib.sheet.id)" JobPartID="JobPartPrepressID_INJECT(pib.sheet.id)" Status="Waiting" Type="ProcessGroup">
+            <ResourceLinkPool />
+            <ResourcePool>
+                <InterpretingParams Class="Parameter" ID="InterpretingParamsID_INJECT(pib.sheet.id)" PartIDKeys="SignatureName SheetName" Status="Available" />
+            </ResourcePool>
+            <JDF Category="MISPRE.ImpositionProofing" DescriptiveName="ImpositionProofing" ID="ImpositionProofingID_INJECT(pib.sheet.id)" JobPartID="ImpositionProofingID_INJECT(pib.sheet.id)" Status="Waiting" Type="ProcessGroup" Types="Imposition ProofImaging">
+                <ResourceLinkPool>
+                    <RunListLink CombinedProcessIndex="0" ProcessUsage="Document" Usage="Input" rRef="sharedRunListOutID" />
+                    <RunListLink ProcessUsage="Marks" Usage="Input" rRef="SharedRunListOutID_2" />
+                    <MediaLink Usage="Input" rRef="MediaProofID" />
+                    <LayoutLink Usage="Input" rRef="LayoutID">
+                        <Part SheetName="SheetID_INJECT(pib.sheet.id)" SignatureName="SignatureID_INJECT(pib.sheet.id)" />
+                    </LayoutLink>
+                    <ExposedMediaLink Usage="Output" rRef="ExposedMediaImpoProofID">
+                        <Part SheetName="SheetID_INJECT(pib.sheet.id)" SignatureName="SignatureID_INJECT(pib.sheet.id)" />
+                    </ExposedMediaLink>
+                    <ColorantControlLink Usage="Input" rRef="ColorantControlID">
+                        <Part SheetName="SheetID_INJECT(pib.sheet.id)" SignatureName="SignatureID_INJECT(pib.sheet.id)" />
+                    </ColorantControlLink>
+                </ResourceLinkPool>
+            </JDF>
+            <JDF Category="MISPRE.PlateMaking" DescriptiveName="PlateMaking of Gang Job INJECT(pib.sheet.id)" ID="PlateMakingID_INJECT(pib.sheet.id)" JobPartID="PlateMakingID_INJECT(pib.sheet.id)" Status="Waiting" Type="ProcessGroup" Types="Imposition RIPing ImageSetting">
+                <ResourceLinkPool>
+                    <RunListLink CombinedProcessIndex="0" ProcessUsage="Document" Usage="Input" rRef="sharedRunListOutID" />
+                    <RunListLink ProcessUsage="Marks" Usage="Input" rRef="SharedRunListOutID_2" />
+                    <InterpretingParamsLink Usage="Input" rRef="InterpretingParamsID_INJECT(pib.sheet.id)" />
+                    <MediaLink Usage="Input" rRef="MediaPlateID" />
+                    <LayoutLink Usage="Input" rRef="LayoutID">
+                        <Part SheetName="SheetID_INJECT(pib.sheet.id)" SignatureName="SignatureID_INJECT(pib.sheet.id)" />
+                    </LayoutLink>
+                    <ExposedMediaLink Amount="1" Usage="Output" rRef="ExposedMediaID">
+                        <Part SheetName="SheetID_INJECT(pib.sheet.id)" SignatureName="SignatureID_INJECT(pib.sheet.id)" />
+                    </ExposedMediaLink>
+                    <ColorantControlLink Usage="Input" rRef="ColorantControlID">
+                        <Part SheetName="SheetID_INJECT(pib.sheet.id)" SignatureName="SignatureID_INJECT(pib.sheet.id)" />
+                    </ColorantControlLink>
+                </ResourceLinkPool>
+            </JDF>
+        </JDF>
+    </JDF>
+</JDF>
