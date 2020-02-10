@@ -3,7 +3,6 @@ FROM node:12-stretch AS builder
 
 RUN mkdir -p /work/flow && chown node:node /work/flow
 
-COPY --chown=node:node [".git", "/work/flow/.git"]
 COPY --chown=node:node ["lib", "/work/flow/lib"]
 COPY --chown=node:node ["README.md", "/work/flow/"]
 
