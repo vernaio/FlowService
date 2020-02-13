@@ -3,7 +3,6 @@ FROM node:12-stretch AS builder
 
 RUN mkdir -p /work/flow && chown node:node /work/flow
 
-COPY --chown=node:node [".git", "/work/flow/.git"]
 COPY --chown=node:node ["lib", "/work/flow/lib"]
 COPY --chown=node:node ["README.md", "/work/flow/"]
 
@@ -30,19 +29,16 @@ ENV INTEGRATION_LOCATION=https://github.com/perfectpattern/DefaultFlowLogic/arch
 ENV IMPOSITION_URL=http://imposition:4200
 
 # create folder interface
-RUN mkdir -p /opt/flow && chown node:node /opt/flow \
-    && mkdir -p /data/in && chown node:node /data/in \
-    && mkdir -p /data/out && chown node:node /data/out \
-    && mkdir -p /data/storage && chown node:node /data/storage
+RUN mkdir -p /opt/flow \
+    && mkdir -p /data/in \
+    && mkdir /data/out \
+    && mkdir /data/storage
 
 # copy files
-COPY --chown=node:node --from=builder /work/flow/lib/flow /opt/flow
+COPY --from=builder /work/flow/lib/flow /opt/flow
 
 # change working directory
 WORKDIR /opt/flow
-
-# change user
-USER node
 
 # status check
 HEALTHCHECK  --interval=10s --timeout=3s CMD wget --quiet --tries=1 --spider http://localhost:1881/status || exit 1
