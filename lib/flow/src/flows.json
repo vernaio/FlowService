@@ -13,7 +13,7 @@
         "name": "SPO Notification Listener",
         "info": "",
         "x": 150,
-        "y": 380,
+        "y": 460,
         "wires": []
     },
     {
@@ -23,7 +23,7 @@
         "name": "Version & Health-check",
         "info": "",
         "x": 140,
-        "y": 620,
+        "y": 1480,
         "wires": []
     },
     {
@@ -36,7 +36,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 110,
-        "y": 660,
+        "y": 1520,
         "wires": [
             [
                 "11327176.20e07f"
@@ -51,7 +51,7 @@
         "statusCode": "",
         "headers": {},
         "x": 850,
-        "y": 660,
+        "y": 1520,
         "wires": []
     },
     {
@@ -63,7 +63,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 660,
-        "y": 660,
+        "y": 1520,
         "wires": [
             [
                 "346c6a76.9caae6"
@@ -80,7 +80,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 110,
-        "y": 700,
+        "y": 1560,
         "wires": [
             [
                 "aa9f30a9.a0c99"
@@ -96,7 +96,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 300,
-        "y": 780,
+        "y": 1640,
         "wires": [
             []
         ]
@@ -114,7 +114,7 @@
         "once": true,
         "onceDelay": 0.1,
         "x": 100,
-        "y": 780,
+        "y": 1640,
         "wires": [
             [
                 "5a323ae1.505384"
@@ -130,7 +130,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 470,
-        "y": 700,
+        "y": 1560,
         "wires": [
             [
                 "11327176.20e07f"
@@ -144,7 +144,7 @@
         "name": "Exception Handling",
         "info": "",
         "x": 130,
-        "y": 1840,
+        "y": 2280,
         "wires": []
     },
     {
@@ -155,7 +155,7 @@
         "scope": null,
         "uncaught": false,
         "x": 100,
-        "y": 1880,
+        "y": 2320,
         "wires": [
             [
                 "6a76d426.aa179c"
@@ -171,7 +171,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 260,
-        "y": 1880,
+        "y": 2320,
         "wires": [
             []
         ]
@@ -184,8 +184,8 @@
         "func": "\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\nvar medias = context.global.get('CACHE_MEDIAS');\n\n// process job\nnode.log(\"Process job: \" + msg.job.jobId);\n\n// set job#s storage dir\nmsg.job.storageFolder = msg.job.jobId + \"/\";\n\nintegration.processJob(msg.job, medias.mediaList)\n.then(\n    result => {\n        msg.binderySignatures = result.binderySignatures\n        msg.assemblerTask = result.assemblerTask;\n    \n        if(msg.binderySignatures !== null) {\n            node.log(\"BinderySignatures have been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"A bindery signature has been created.\"\n                }  \n            );\n            node.send([msg, null]);\n        \n        } \n        \n        else if (msg.assemblerTask !== null) {\n            node.log(\"AssemblerTask has been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"Assembler task has been created.\"\n                }  \n            );\n            node.send([null, msg]);\n        } \n        \n        else {\n            processedJobs[msg.job.jobId].status = \"error\";\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"error\",\n                    on   : Date.now(),\n                    msg  : \"Job has invalid data format.\"\n                }  \n            );            \n            throw new Error(\"Invalid result for job \" + msg.job.jobId)\n        }\n    }\n)\n.catch(\n    errorMsg => {\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : errorMsg\n            }  \n        );\n        \n        node.error(errorMsg)\n    }\n);",
         "outputs": 2,
         "noerr": 0,
-        "x": 950,
-        "y": 140,
+        "x": 1130,
+        "y": 100,
         "wires": [
             [
                 "4aea9cdd.9cd1a4"
@@ -203,8 +203,8 @@
         "func": "//get Caches\nvar messages = context.global.get('CACHE_MESSAGES');\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\nfunction scanForOrders(){\n    messages.arr.push({\n        \"flow\" : \"upload\",\n        \"type\" : \"info\",\n        \"on\" : Date.now(),\n        \"msg\" : \"Scanning of input folder for orders...\" \n    });\n            \n    // get integration logic\n    var integration = context.global.get('INTEGRATION');\n    \n    // extract jobs\n    var jobs = integration.extractJobs(\"/data/in\")\n    .then(function(jobs) {\n        node.log(\"Number of extracted jobs: \" + jobs.length)\n        messages.arr.push({\n            \"flow\" : \"upload\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Found \" + jobs.length + \" order(s). Start processing orders...\" \n        });\n        // prepare output\n        msg.jobs = jobs;\n        node.send(msg);\n    })\n    .catch(function(e){\n        node.log(e);\n    })\n}\n\n//INFO: scanning is only allowed, if all former processedJobs are terminated (either canceled or success)\n\n//check if all processed jobs are terminated\nvar allProcessedJobsTerminated = true;\nfor (var id in processedJobs) {\n    if( processedJobs.hasOwnProperty(id) ) {\n        var processedJob = processedJobs[id];\n        if(processedJob.status == \"pending\"){\n            allProcessedJobsTerminated = false;\n            break;\n        }\n    }\n}\n\n//evaluate the result:\nif(allProcessedJobsTerminated === true){\n    scanForOrders();\n}\n\nelse{\n    messages.arr.push({\n        \"type\" : \"warning\",\n        \"on\" : Date.now(),\n        \"msg\" : \"A new order scan was prevented, because there are still pending orders. Please wait...\" \n    });    \n}\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 410,
-        "y": 140,
+        "x": 590,
+        "y": 100,
         "wires": [
             [
                 "c40e83fb.5fa09"
@@ -219,8 +219,8 @@
         "func": "const moveFile = context.global.get('MOVE_FILE');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\nconst storageDir = \"/data/storage/\" + msg.job.storageFolder;\n\n// create directory\nif (!fs.existsSync(storageDir)){\n    fs.mkdirSync(storageDir);\n}\n\n// move files\nnode.log(\"Move files of job '\" + msg.job.jobId + \"' to \" + storageDir + \" ...\");\n\nfunction moveFiles(filesList, index){\n    var source = filesList[index];\n    var target = path.join(storageDir, path.basename(source));\n    \n    (async () => {\n        await moveFile(source, target);\n        \n        //DONE\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"info\",\n                on   : Date.now(),\n                msg  : \"Move file '\" + source + \"' to \" + target\n            }\n        );\n        if(index + 1 < filesList.length){\n            index = index + 1;\n            moveFiles(filesList, index);\n        }\n        else{\n            node.send(msg);\n        }\n    })();    \n}\n\nmoveFiles(msg.job.files, 0);",
         "outputs": 1,
         "noerr": 0,
-        "x": 2090,
-        "y": 140,
+        "x": 2450,
+        "y": 100,
         "wires": [
             [
                 "6a1f6b74.45ad84"
@@ -235,8 +235,8 @@
         "func": "\n// get request\nvar request = context.global.get('REQUEST');\n\n// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\n// define options\nnode.log(\"Prepare AssemblerTask for job \" + msg.job.jobId);\n\nvar options = {\n    method: 'POST',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/assembler/',\n    json: true,\n    body: msg.assemblerTask,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to connect Assembler for job '\" + msg.job.jobId + \"'. Reason: \" + JSON.stringify(error));\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Unable to connect Assembler.\"\n            }  \n        );\n        return;\n    \n    } else if (body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"Assembler Parse Exception for Job '\" + msg.job.jobId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message);\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Assembler parse exception.\"\n            }\n        );\n        return;\n        \n    } else {\n        if (body['assembler-Root'].exceptionInfo!==undefined) {\n            console.dir(body['assembler-Root']);\n            var errMessage = body['assembler-Root'].exceptionInfo.message;\n            node.error(\"Assembler Task Exception for Job '\" + msg.job.jobId + \"': \" + errMessage);\n            processedJobs[msg.job.jobId].status = \"error\";\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"error\",\n                    on   : Date.now(),\n                    msg  : \"Assembler task exception.\"\n                }\n            );\n          return;\n        } \n        \n        else {\n            msg.binderySignatures = body['assembler-Root'].result.binderySignatures.binderySignature;\n            node.log(\"Assembler has been executed sucessfully for job '\" + msg.job.jobId + \"'. Number BinderySignatures: \" + msg.binderySignatures.length);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"Assembler created \" + msg.binderySignatures.length + \" bindery signatures.\"\n                }\n            );\n            node.send(msg);\n        }\n    }\n});\n\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 1200,
-        "y": 200,
+        "x": 1380,
+        "y": 160,
         "wires": [
             [
                 "4aea9cdd.9cd1a4"
@@ -251,11 +251,11 @@
         "func": "\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// process jobs bindery signatures\nintegration.processJobBinderySignatures(msg.binderySignatures, msg.job).then((modifiedBinderySignatures) => {\n    if(modifiedBinderySignatures !== null) {\n        msg.binderySignatures = modifiedBinderySignatures;\n        node.log(\"Post-process BinderySignatures for job '\" + msg.job.jobId + \"'. Number of BinderySignatures: \" + msg.binderySignatures.length);\n    } else {\n        node.log(\"SKIP post-process of BinderySignatures for job \" + msg.job.jobId);\n    }\n\n    node.send(msg);\n});\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 1480,
-        "y": 140,
+        "x": 1660,
+        "y": 100,
         "wires": [
             [
-                "b705eaad.ac0528"
+                "81bd319.c8450d"
             ]
         ]
     },
@@ -267,8 +267,8 @@
         "func": "\n// get request\nvar request = context.global.get('REQUEST');\n\n// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\n// define options\nnode.log(\"Prepare upload of job \" + msg.job.jobId);\n\nvar body = { \"binderySignatures-Root\" : { \"binderySignature\" : msg.binderySignatures } };\n\nvar options = {\n    method: 'POST',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/binderySignatures/',\n    json: true,\n    body: body,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to upload Job '\" + msg.job.jobId + \"'. Reason: \" + JSON.stringify(error));\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Unable to upload: \" + JSON.stringify(error)\n            }\n        );        \n        return;\n        \n    } else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Upload Exception for Job '\" + msg.job.jobId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message);\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Upload exception: \" + (err.statusCode == 409 ? \"The ID is already in use.\" : err.message)\n            }\n        ); \n        return;\n    \n    } else {\n        node.log(\"Upload has been executed sucessfully for job '\" + msg.job.jobId + \"'. Number BinderySignatures: \" + msg.binderySignatures.length);\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"info\",\n                on   : Date.now(),\n                msg  : \"The bindery signature(s) has been successfully uploaded.\"\n            }\n        );\n        node.send(msg);\n    }\n});",
         "outputs": 1,
         "noerr": 0,
-        "x": 1820,
-        "y": 140,
+        "x": 2150,
+        "y": 100,
         "wires": [
             [
                 "71cf47d7.5118c8"
@@ -288,10 +288,10 @@
         "once": false,
         "onceDelay": 0.1,
         "x": 110,
-        "y": 140,
+        "y": 100,
         "wires": [
             [
-                "5172bc7b.cdc624"
+                "389a59d3.cbbc86"
             ]
         ]
     },
@@ -303,8 +303,8 @@
         "func": "// get caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\nvar messages = context.global.get('CACHE_MESSAGES');\n\nfunction processJob(job){\n    node.log(\"Start new order: \" + job.jobId);\n    \n    processedJobs[job.jobId] = {\n        \"id\"        : job.jobId,\n        \"startedOn\" : Date.now(),\n        \"status\"    : \"pending\",\n        \"audit\"     : [\n            {\n                type : \"info\",\n                on   : Date.now(),\n                msg  : \"Order has been prepared.\"\n            }    \n        ],\n    };\n    \n    //check for errors while reading job\n    //this is optional and only used, if job has property error and errorMsg\n    if(job.hasOwnProperty(\"error\")){\n        if(job.error === true){\n            processedJobs[job.jobId].status = \"error\";\n            if(job.hasOwnProperty(\"errorMsg\")){\n                for (let errorMsg of job.errorMsg)\n                    processedJobs[job.jobId].audit.push(errorMsg); \n            }\n        }\n        \n        //success: error property exists, but no error occured\n        else{\n           node.send({ job: job }) \n        }\n    }\n    \n    //default: always send\n    else{\n        node.send({ job: job })\n    }\n}\n\n//INFO: a job is only allowed to be processed, if it is not yet in processedJobs\nfor(var i = 0; i < msg.jobs.length; i++){\n    var job = msg.jobs[i];\n    \n    if(!processedJobs.hasOwnProperty(job.jobId)) {\n        processJob(job);\n    } \n    \n    else {\n        node.log(\"Job '\" + job.jobId + \"' is already processing.\")\n        messages.arr.push({\n            \"flow\" : \"upload\",\n            \"type\" : \"warning\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Order '\" + job.jobId + \"' was already processed. Please reset first.\" \n        });\n    }        \n}",
         "outputs": 1,
         "noerr": 0,
-        "x": 680,
-        "y": 140,
+        "x": 860,
+        "y": 100,
         "wires": [
             [
                 "e87f497a.fb0198"
@@ -321,7 +321,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 110,
-        "y": 740,
+        "y": 1600,
         "wires": [
             [
                 "8b59f44e.309848"
@@ -337,7 +337,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 310,
-        "y": 740,
+        "y": 1600,
         "wires": [
             [
                 "aa9f30a9.a0c99"
@@ -352,8 +352,8 @@
         "func": "\n// get jobId\nvar jobId = msg.job.jobId;\n\nnode.log(\"Processing job '\" + jobId + \"' has been completed.\")\n\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\nprocessedJobs[msg.job.jobId].status = \"success\";\nprocessedJobs[msg.job.jobId].audit.push(\n    {\n        type : \"info\",\n        on   : Date.now(),\n        msg  : \"Order processing successfully completed.\"\n    }\n);\n\nnode.send(msg);",
         "outputs": 1,
         "noerr": 0,
-        "x": 2320,
-        "y": 140,
+        "x": 2680,
+        "y": 100,
         "wires": [
             []
         ]
@@ -365,7 +365,7 @@
         "name": "RESTful Controller API",
         "info": "",
         "x": 140,
-        "y": 900,
+        "y": 1800,
         "wires": []
     },
     {
@@ -381,7 +381,7 @@
         "once": false,
         "onceDelay": 0.1,
         "x": 120,
-        "y": 820,
+        "y": 1680,
         "wires": [
             [
                 "cdee81a6.8fba1"
@@ -397,7 +397,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 310,
-        "y": 820,
+        "y": 1680,
         "wires": [
             []
         ]
@@ -409,7 +409,7 @@
         "name": "User Interface (HTTP Server)",
         "info": "",
         "x": 160,
-        "y": 1720,
+        "y": 2160,
         "wires": []
     },
     {
@@ -422,7 +422,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 160,
-        "y": 1480,
+        "y": 1960,
         "wires": [
             [
                 "b2ed4347.33229"
@@ -438,7 +438,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 530,
-        "y": 1480,
+        "y": 1960,
         "wires": [
             [
                 "b7ef0e77.c2a41"
@@ -453,7 +453,7 @@
         "statusCode": "",
         "headers": {},
         "x": 830,
-        "y": 1480,
+        "y": 1960,
         "wires": []
     },
     {
@@ -466,7 +466,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 150,
-        "y": 1520,
+        "y": 2000,
         "wires": [
             [
                 "b4918ad2.0b3cc8"
@@ -481,7 +481,7 @@
         "statusCode": "",
         "headers": {},
         "x": 830,
-        "y": 1520,
+        "y": 2000,
         "wires": []
     },
     {
@@ -493,7 +493,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 520,
-        "y": 1520,
+        "y": 2000,
         "wires": [
             [
                 "18df55e5.bb2d6a"
@@ -510,11 +510,11 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 150,
-        "y": 180,
+        "y": 140,
         "wires": [
             [
-                "5172bc7b.cdc624",
-                "490c864b.ac8e98"
+                "490c864b.ac8e98",
+                "389a59d3.cbbc86"
             ]
         ]
     },
@@ -526,16 +526,16 @@
         "statusCode": "204",
         "headers": {},
         "x": 360,
-        "y": 180,
+        "y": 140,
         "wires": []
     },
     {
         "id": "3f8ba965.b2ff16",
         "type": "comment",
         "z": "d4af305b.2ea44",
-        "name": "sPrintOne Upload Process",
+        "name": "BinderySignatures Upload Process",
         "info": "",
-        "x": 150,
+        "x": 180,
         "y": 60,
         "wires": []
     },
@@ -552,10 +552,10 @@
         "once": true,
         "onceDelay": 0.1,
         "x": 100,
-        "y": 420,
+        "y": 500,
         "wires": [
             [
-                "cc31ed7f.8dc71"
+                "431f4d.e3db60b4"
             ]
         ]
     },
@@ -567,8 +567,8 @@
         "func": "\nif (msg.notification[\"resourceCreationNotification-Root\"] !== undefined) {\n    node.log(\"Notification 'resourceCreationNotification' has been received...\");\n    msg.resourceCreationNotification = msg.notification[\"resourceCreationNotification-Root\"];\n    return [msg,null];\n    \n} else if(msg.notification[\"resourceStateChangeNotification-Root\"] !== undefined) {\n    node.log(\"Notification 'resourceStateChangeNotification' has been received...\");\n    msg.resourceStateChangeNotification = msg.notification[\"resourceStateChangeNotification-Root\"];\n    return [null,msg];\n    \n} else if(msg.notification[\"handshakeNotification-Root\"] !== undefined) {\n    node.log(\"Notification 'handshakeNotification' has been received...\");\n    msg.handshakeNotification = msg.notification[\"handshakeNotification-Root\"];\n    return [null,msg];\n}\n\nreturn;",
         "outputs": 2,
         "noerr": 0,
-        "x": 570,
-        "y": 420,
+        "x": 710,
+        "y": 500,
         "wires": [
             [
                 "254be278.6ed3de"
@@ -586,8 +586,8 @@
         "func": "const request = context.global.get('REQUEST');\n\n// extract planned event id\nvar plannedEventId = msg.resourceCreationNotification.href.match(\"[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}\");\nnode.log(\"Load event details for plannedEvent '\" + plannedEventId + \"'...\")\n\n\n// define options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.resourceCreationNotification.href + '?_nodeVisibility=*/href:VISIBLE',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to connect SPO for plannedEvent '\" + plannedEventId + \"'. Reason: \" + JSON.stringify(error));\n    } \n    \n    else if (body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Exception for plannedEvent '\" + plannedEventId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message);\n    } \n    \n    else if (body['events-Root'] !== undefined) {\n        var events = body['events-Root'];\n        node.log(\"Event details has been loaded sucessfully for PlannedEvent '\" + plannedEventId + \"'. Number of Events: \" + events.event.length);\n        \n        for(var i = 0; i < events.event.length; i ++) {\n            node.log(\"Process PlannedEvent '\" + plannedEventId + \"'...\")\n            node.send({event:  events.event[i]});\n        }\n    }\n});\n\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 820,
-        "y": 420,
+        "x": 960,
+        "y": 500,
         "wires": [
             [
                 "f7348dc4.1ae43"
@@ -600,8 +600,8 @@
         "z": "d4af305b.2ea44",
         "name": "resourceCreation",
         "info": "",
-        "x": 800,
-        "y": 380,
+        "x": 940,
+        "y": 460,
         "wires": []
     },
     {
@@ -610,8 +610,8 @@
         "z": "d4af305b.2ea44",
         "name": "resourceStateChange & handshake",
         "info": "",
-        "x": 860,
-        "y": 480,
+        "x": 1000,
+        "y": 560,
         "wires": []
     },
     {
@@ -622,8 +622,8 @@
         "func": "\n\nif(msg.notification !== undefined) {\n    node.log(\"WebSocket handshake successful.\");\n    \n}\n\n\n\nreturn;",
         "outputs": 1,
         "noerr": 0,
-        "x": 800,
-        "y": 520,
+        "x": 940,
+        "y": 600,
         "wires": [
             []
         ]
@@ -636,8 +636,8 @@
         "func": "var WebSocket = global.get('WS');\nflow.set('websocket',false);\n\n/**\n * Class for managing the websocket communication\n **/\nvar WebsocketManager = function() {\n\n    // the reconnect timeinterval in ms\n    this.reconnectInterval = 500;\n    \n    // the websocket url\n    this.websocketUrl = \"wss://\" + env.get(\"SPO_URL\") + \"/api/websocket/notifications\";\n    \n    // websocket headers\n    this.headers = {\n        'Accept': 'application/json',\n        'X-Tenant': env.get(\"SPO_TENANT\") ,\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n    \n    var tagsToReplace = {\n        '&': '&amp;',\n        '<': '&lt;',\n        '>': '&gt;'\n    };\n    \n    var replaceTag = function(tag) {\n        return tagsToReplace[tag] || tag;\n    }\n    \n    var safe_tags_replace = function(str) {\n        return str.replace(/[&<>]/g, replaceTag);\n    }\n    \n    /**\n     * Method for connecting the SPO WebSocket.\n     */ \n    this.connect = function() {\n        node.log('Connecting to SPO Websocket ' + this.websocketUrl +'...');\n        \n    \n        var manager = this;\n        \n        \n        \n        var headerLines = [];\n        for(var name in this.headers) {\n            headerLines.push(name + ': ' + this.headers[name]);\n        }\n        var headersString = Buffer.from(headerLines.join(\"\\r\\n\")).toString('base64').replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=/g, '.');\n        \n        this.websocket = new WebSocket(this.websocketUrl, ['Headers', 'Headers-' + headersString]);\n        \n        /**\n         * Function is called when connection has been established.\n         */ \n        this.websocket.onopen = function(openEvent) {\n            node.log('SPO Websocket connection ' + manager.websocketUrl +' has been established successfully.');\n            flow.set('websocket',true);\n        };\n        \n        /**\n         * Function is called when connection has been closed.\n         */ \n        this.websocket.onclose = function(closeEvent) {\n            node.error('Connection lost/refused, retry in ' + (manager.reconnectInterval / 1000) + ' seconds');\n            flow.set('websocket',false);\n            setTimeout(function() {\n                manager.connect();\n            }, manager.reconnectInterval);\n        };\n\n        /**\n         * Function is called in case of an error.\n         */ \n        this.websocket.onerror = function(errorEvent) {\n            node.error('Error occured: ' + errorEvent);\n        };\n        \n        /**\n         * Function is called when a message has been received.\n         */ \n        this.websocket.onmessage = function(messageEvent) {\n            node.send({\n                notification: JSON.parse(messageEvent.data)\n            });\n        };\n    \n    };\n    \n    /**\n     * Method for closing the SPO WebSocket connection.\n     */\n    this.close = function() {\n    \n        var manager = this;\n        \n        this.websocket.onclose = function(closeEvent) {\n            node.log('WebSocket connection ' + manager.websocketUrl +' has been closed.');\n            flow.set('websocket',false);\n        };\n        \n        this.websocket.close();\n    \n    };\n  \n};\n\n\n// if exists, close connection\nif(context.get('websocketManager')) {\n    context.get('websocketManager').close()\n}\n\n// create new websocket manager object\nvar websocketManager = new WebsocketManager();\n\n// close connection when nodered ends\nnode.on('close', function() {\n    websocketManager.close()\n});\n\n// establish connection\nwebsocketManager.connect();\n\n// keep manager in context\ncontext.set('websocketManager', websocketManager);\n\n\n\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 310,
-        "y": 420,
+        "x": 450,
+        "y": 500,
         "wires": [
             [
                 "cedb6d39.38aa5"
@@ -652,8 +652,8 @@
         "func": "//get cache\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\nvar messages = context.global.get('CACHE_MESSAGES');\n\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// process jobs bindery signatures\nintegration.generateSheetId(msg.event).then((sheetId) => {\n    msg.sheetId = sheetId\n    node.log(\"Generated SheetId '\" + msg.sheetId + \"' for event '\" + msg.event.id + \"'\");\n        \n    messages.arr.push({\n        \"flow\" : \"download\",\n        \"type\" : \"info\",\n        \"on\" : Date.now(),\n        \"msg\" : \"Received new print job '\" + msg.sheetId + \"'.\" \n    });\n    \n    receivedPrintJobs[msg.sheetId] = {\n        \"id\"        : msg.sheetId,\n        \"receivedOn\" : Date.now(),\n        \"status\"    : \"pending\",\n        \"audit\"     : [\n            {\n                type : \"info\",\n                on   : Date.now(),\n                msg  : \"Received new print job '\" + msg.sheetId + \"'.\"\n            }    \n        ],\n    };\n    \n    node.send(msg);\n});\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 1080,
-        "y": 420,
+        "x": 1220,
+        "y": 500,
         "wires": [
             [
                 "788ebb62.fb12f4"
@@ -668,8 +668,8 @@
         "func": "const path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// define sheets directory\nvar sheetDirectory = path.join(\"/data/out/\", msg.sheetId);\n\n// create folder\nfs.mkdir(sheetDirectory, { recursive: true }, (err) => {\n    if (err) throw err;\n  \n    node.log(\"Sheets output directory '\" + sheetDirectory + \"' has been created.\")\n    \n    receivedPrintJobs[msg.sheetId].audit.push({\n        type : \"info\",\n        on   : Date.now(),\n        msg  : \"output directory '\" + sheetDirectory + \"' has been created.\"\n    });\n    \n    msg.sheetDirectory = sheetDirectory;\n    msg.output = {}\n    node.send(msg);\n});\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 1340,
-        "y": 420,
+        "x": 1480,
+        "y": 500,
         "wires": [
             [
                 "884c8dea.93d93",
@@ -685,8 +685,8 @@
         "func": "const request = context.global.get('REQUEST');\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent?_nodeVisibility=$GANG_JOB_EVENT_COMPLETE',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/xml\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        receivedPrintJobs[msg.sheetId].status = \"error\";\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to load GangJobEvent.\"\n        });\n        \n        node.error(\"Unable to load GangJobEvent for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n    } \n    \n    else {\n        // append GangJobEvent to message\n        msg.gangJobEventXml = body;\n        \n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"GangJobEvent XML has been received.\"\n        });\n        \n        node.log('GangJobEvent XML has been received for sheet \\'' + msg.sheetId + '\\'.');\n        node.send(msg);\n    \n    }\n        \n});",
         "outputs": 1,
         "noerr": 0,
-        "x": 1670,
-        "y": 420,
+        "x": 1750,
+        "y": 500,
         "wires": [
             [
                 "eed5a2d7.51d2e"
@@ -701,8 +701,8 @@
         "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\n\n// save GangJobEvent XML to output directory\nvar filename = path.join(msg.sheetDirectory, msg.sheetId + \"-gangJobEvent.xml\");\n\nfs.writeFile(filename, msg.gangJobEventXml, (err) => {\n    if (err) throw err;\n    \n    msg.output.event = path.basename(filename);\n    \n    node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\");\n    node.send(msg);\n});",
         "outputs": 1,
         "noerr": 0,
-        "x": 1950,
-        "y": 420,
+        "x": 2030,
+        "y": 500,
         "wires": [
             [
                 "ab781dee.626f6"
@@ -719,7 +719,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 150,
-        "y": 1560,
+        "y": 2040,
         "wires": [
             [
                 "1ba0b50c.4454cb"
@@ -735,7 +735,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 520,
-        "y": 1560,
+        "y": 2040,
         "wires": [
             [
                 "db0181c9.88bf5"
@@ -750,7 +750,7 @@
         "statusCode": "",
         "headers": {},
         "x": 830,
-        "y": 1560,
+        "y": 2040,
         "wires": []
     },
     {
@@ -759,8 +759,8 @@
         "z": "d4af305b.2ea44",
         "name": "File Output:",
         "info": "",
-        "x": 1910,
-        "y": 380,
+        "x": 1990,
+        "y": 460,
         "wires": []
     },
     {
@@ -771,8 +771,8 @@
         "func": "const request = context.global.get('REQUEST');\n\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent?_nodeVisibility=/auditLog:VISIBLE&_nodeVisibility=$GANG_JOB_EVENT_COMPLETE',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to load GangJobEvent JSON for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n    \n    } else {\n        // append GangJobEvent to message\n        msg.gangJobEventJson = body;\n        node.log('GangJobEvent JSON has been received for sheet \\'' + msg.sheetId + '\\'.');\n        node.send(msg);\n    \n    }\n        \n});",
         "outputs": 1,
         "noerr": 0,
-        "x": 1670,
-        "y": 480,
+        "x": 1750,
+        "y": 560,
         "wires": [
             [
                 "89651d3e.7370a",
@@ -788,8 +788,8 @@
         "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\nnode.log(\"Move files for '\" + msg.sheetId + \"'...\")\n\n// process jobs bindery signatures\nintegration.moveFiles(msg.sheetDirectory, msg.job, \"/data/storage\")\n.then(() => {\n    node.log(\"Move files for '\" + msg.sheetId + \"' successful.\")\n    \n    receivedPrintJobs[msg.sheetId].audit.push({\n        type : \"info\",\n        on   : Date.now(),\n        msg  : \"Moved files.\"\n    });     \n})\n.catch((error) =>{\n    node.log(error);\n    receivedPrintJobs[msg.sheetId].status = \"error\";\n    receivedPrintJobs[msg.sheetId].audit.push({\n        type : \"error\",\n        on   : Date.now(),\n        msg  : \"Error at moving files.\"\n    });     \n})\n.finally(function(){\n    node.send(msg);\n});\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 2200,
-        "y": 480,
+        "x": 2280,
+        "y": 560,
         "wires": [
             []
         ]
@@ -802,8 +802,8 @@
         "func": "//Create an internal job object for this flow\n\n//data source\nvar gangJobEvent = msg.gangJobEventJson[\"gangJobEvent-Root\"];\nvar gangJob = gangJobEvent.gangJob;\nvar media = gangJob.media;\nvar binderySignatures = gangJob.binderySignatures.binderySignature;\n\n//write to data target\n\n//for each bindery signature of the gangJobEvent\nvar bindSigs = [];\nbinderySignatures.forEach(function(binderySignature){\n  bindSigs.push({\n      id : binderySignature.id,\n      orderRef : binderySignature.orderRef\n  })\n});\n\n//create job object\nmsg.job = {\n    duration : gangJobEvent.plannedDuration,\n    workstyle : gangJob.workStyle,\n    mediaLabel : media.label,\n    mediaId : media.id,\n    mediaFormat : media.format,\n    binderySignatures : bindSigs\n};\n\nnode.send(msg);",
         "outputs": 1,
         "noerr": 0,
-        "x": 1940,
-        "y": 480,
+        "x": 2020,
+        "y": 560,
         "wires": [
             [
                 "c4125dcd.1043"
@@ -818,8 +818,8 @@
         "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\nconst path = context.global.get('PATH');\n\nconst jobTicketGenerator = context.global.get('JOB_TICKET_GENERATOR');\nconst apogeeJobTicketLocation = path.join(msg.sheetDirectory,msg.sheetId+\"_apogeeV9_JobTicket.jdf\");\n\nif (msg.gangJobEventJson[\"gangJobEvent-Root\"].gangJob.workStyle===\"SIMPLEX\") {\n    if (!context.global.get(\"apogeeJdfModel_Simplex\")) {\n        const fs = context.global.get('FS');\n        fs.readFile('jobTicketGenerator/apogee/model/ApogeeJdfV9_model_Simplex.jdf',\n            function (err, data) {\n                if (err) throw \"Apogee Jdf Simplex Model file could not be read - Error message: \" + err;\n                var lineArray = data.toString().split(\"\\n\");\n                context.global.set(\"apogeeJdfModel_Simplex\",lineArray);\n                node.log(\"ApogeeJdf-Simplex-Model initialized\");\n                jobTicketGenerator.writeApogeeJdf(\n                    apogeeJobTicketLocation,\n                    msg.sheetId,\n                    msg.gangJobEventJson[\"gangJobEvent-Root\"],\n                    0,\n                    context.global.get(\"apogeeJdfModel_Simplex\"));\n            }\n        );    \n    } else {\n        jobTicketGenerator.writeApogeeJdf(\n            apogeeJobTicketLocation,\n            msg.sheetId,\n            msg.gangJobEventJson[\"gangJobEvent-Root\"],\n            0,\n            context.global.get(\"apogeeJdfModel_Simplex\"));\n    }\n} else {\n    if (!context.global.get(\"apogeeJdfModel\")) {\n        const fs = context.global.get('FS');\n        fs.readFile('jobTicketGenerator/apogee/model/ApogeeJdfV9_model.jdf',\n            function (err, data) {\n                if (err) throw \"Apogee Jdf Model file could not be read - Error message: \" + err;\n                var lineArray = data.toString().split(\"\\n\");\n                context.global.set(\"apogeeJdfModel\",lineArray);        \n                node.log(\"Apogee-Jdf-Model initialized\");\n                jobTicketGenerator.writeApogeeJdf(\n                    apogeeJobTicketLocation,\n                    msg.sheetId,\n                    msg.gangJobEventJson[\"gangJobEvent-Root\"],\n                    0,\n                    context.global.get(\"apogeeJdfModel\"));\n            }\n        );    \n    } else {\n        jobTicketGenerator.writeApogeeJdf(\n            apogeeJobTicketLocation,\n            msg.sheetId,\n            msg.gangJobEventJson[\"gangJobEvent-Root\"],\n            0,\n            context.global.get(\"apogeeJdfModel\"));\n    }\n}\n\nnode.log(\"Apogee-JobTicket written to: \" + apogeeJobTicketLocation);\nreceivedPrintJobs[msg.sheetId].audit.push({\n    type : \"info\",\n    on   : Date.now(),\n    msg  : \"Apogee-JobTicket written to: \" + apogeeJobTicketLocation\n}); \nnode.send(msg);\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 1990,
-        "y": 540,
+        "x": 2070,
+        "y": 620,
         "wires": [
             []
         ]
@@ -833,7 +833,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 250,
-        "y": 1780,
+        "y": 2200,
         "wires": [
             [
                 "7e8fdeb4.45173"
@@ -848,7 +848,7 @@
         "statusCode": "",
         "headers": {},
         "x": 430,
-        "y": 1780,
+        "y": 2200,
         "wires": []
     },
     {
@@ -861,7 +861,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 170,
-        "y": 1060,
+        "y": 320,
         "wires": [
             [
                 "cc33d788.dccd28"
@@ -877,7 +877,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 540,
-        "y": 1060,
+        "y": 320,
         "wires": [
             [
                 "b2807223.17479"
@@ -892,7 +892,7 @@
         "statusCode": "",
         "headers": {},
         "x": 830,
-        "y": 980,
+        "y": 240,
         "wires": []
     },
     {
@@ -935,8 +935,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 830,
-        "y": 1380,
+        "x": 750,
+        "y": 1340,
         "wires": []
     },
     {
@@ -948,7 +948,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 550,
-        "y": 1020,
+        "y": 280,
         "wires": [
             [
                 "b2807223.17479"
@@ -965,7 +965,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 200,
-        "y": 940,
+        "y": 200,
         "wires": [
             [
                 "2a47847c.1bc54c"
@@ -982,7 +982,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 170,
-        "y": 1020,
+        "y": 280,
         "wires": [
             [
                 "956c0415.832b18"
@@ -997,8 +997,8 @@
         "func": "//init MESSAGES\nvar messages = context.global.get('CACHE_MESSAGES');\nif(!messages.hasOwnProperty('arr')) messages['arr'] = [];\nnode.log(\"Messages array was initialized.\");\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 290,
-        "y": 240,
+        "x": 530,
+        "y": 1260,
         "wires": [
             []
         ]
@@ -1012,7 +1012,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 550,
-        "y": 940,
+        "y": 200,
         "wires": [
             [
                 "b2807223.17479"
@@ -1029,7 +1029,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 220,
-        "y": 980,
+        "y": 240,
         "wires": [
             [
                 "912ecf0c.d4fed"
@@ -1045,7 +1045,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 570,
-        "y": 980,
+        "y": 240,
         "wires": [
             [
                 "b2807223.17479"
@@ -1131,7 +1131,7 @@
         "once": true,
         "onceDelay": 0.1,
         "x": 100,
-        "y": 240,
+        "y": 1260,
         "wires": [
             [
                 "92cf1fae.901e3"
@@ -1148,7 +1148,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 140,
-        "y": 1240,
+        "y": 680,
         "wires": [
             [
                 "8af12808.9e6af8"
@@ -1163,8 +1163,8 @@
         "func": "\n// load active jobs\nvar printjobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// prepare result\nvar result = [];\n\nfor(var key in printjobs) {\n    var entry = printjobs[key];\n    result.push(entry);\n}\n\nmsg.payload = result;\n\n// return message\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
-        "x": 520,
-        "y": 1240,
+        "x": 480,
+        "y": 680,
         "wires": [
             [
                 "e729b6ed.e56d68"
@@ -1178,8 +1178,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 830,
-        "y": 1160,
+        "x": 730,
+        "y": 620,
         "wires": []
     },
     {
@@ -1190,8 +1190,8 @@
         "func": "const printjobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// reset all jobs\nvar numberJobs = Object.keys(printjobs).length;\n\nfor(var key in printjobs) {\n    delete printjobs[key];\n    node.warn(\"Printjob '\" + key + \"' has been deleted.\")\n}\n\nnode.warn(\"All \"+ numberJobs + \" printjobs have been deleted.\");\n\nreturn msg;\n\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 530,
-        "y": 1200,
+        "x": 490,
+        "y": 640,
         "wires": [
             [
                 "e729b6ed.e56d68"
@@ -1208,7 +1208,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 180,
-        "y": 1120,
+        "y": 560,
         "wires": [
             [
                 "98f50994.c9e2a8"
@@ -1225,7 +1225,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 150,
-        "y": 1200,
+        "y": 640,
         "wires": [
             [
                 "d7bf7774.f7ff08"
@@ -1240,8 +1240,8 @@
         "func": "const printjobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// get jobId\nvar jobId = msg.req.params.jobId;\n\n\nif(jobId !== undefined) {\n    \n    // reset specific job\n    delete printjobs[jobId];\n    \n    node.warn(\"Printjob '\" + jobId + \"' has been deleted.\")\n} \nreturn msg;\n\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 550,
-        "y": 1120,
+        "x": 510,
+        "y": 560,
         "wires": [
             [
                 "e729b6ed.e56d68"
@@ -1258,7 +1258,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 200,
-        "y": 1160,
+        "y": 600,
         "wires": [
             [
                 "35055277.cc336e"
@@ -1273,8 +1273,8 @@
         "func": "const printjobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// get jobId\nvar status = msg.req.params.status;\n\n\nif(status !== undefined) {\n    \n    // reset all jobs with status X\n    var numberJobsBefore = Object.keys(printjobs).length;\n    \n    for(var key in printjobs) {\n        if(printjobs.hasOwnProperty(key)){\n            var printjob = printjobs[key];\n            if(printjob.status === status){\n                delete printjobs[key];\n                node.warn(\"Printjob '\" + key + \"' has been deleted.\")\n            }\n        }\n    }\n    \n    var numberJobsAfter = Object.keys(printjobs).length;\n    var deletedJobs = numberJobsBefore - numberJobsAfter;\n    \n    node.warn(deletedJobs + \" printjobs with status '\" + status + \"' have been deleted.\");\n}\nreturn msg;\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 550,
-        "y": 1160,
+        "x": 510,
+        "y": 600,
         "wires": [
             [
                 "e729b6ed.e56d68"
@@ -1291,7 +1291,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 150,
-        "y": 1440,
+        "y": 1920,
         "wires": [
             [
                 "4353f1da.249af"
@@ -1307,7 +1307,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 540,
-        "y": 1440,
+        "y": 1920,
         "wires": [
             [
                 "8ca50e30.ad45f"
@@ -1322,7 +1322,7 @@
         "statusCode": "",
         "headers": {},
         "x": 830,
-        "y": 1440,
+        "y": 1920,
         "wires": []
     },
     {
@@ -1333,8 +1333,8 @@
         "func": "const request = context.global.get('REQUEST');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst pb = context.global.get('PRETTY_BYTES');\nconst unzipper = context.global.get('UNZIPPER');\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// define request options\nvar options = {\n    method: 'POST',\n    url: env.get(\"IMPOSITION_URL\") + '/impose/sheet',\n    body: msg.gangJobEventXml,\n}\n\n// execute request\n\nrequest(options)\n    .on('error', function(err) {\n        node.error(\"Unable to impose sheet '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(err));\n        \n        receivedPrintJobs[msg.sheetId].status = \"error\";\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to impose sheet.\"\n        });\n    })\n    .pipe(unzipper.Parse())\n    .on('entry', function (entry) {\n        const fileName = entry.path;\n        const targetPath = path.join(msg.sheetDirectory, path.basename(fileName));\n        entry.pipe(fs.createWriteStream(targetPath));\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"Wrote file \" + path.basename(fileName) + \".\"\n        });        \n    })\n    .on('finish', () => {\n        \n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"Sheet imposition finished.\"\n        });\n        \n        if(receivedPrintJobs[msg.sheetId].status === \"pending\"){\n            receivedPrintJobs[msg.sheetId].status = \"success\";\n        }\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"finished.\"\n        });\n\n        node.send(msg);\n    });\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 2210,
-        "y": 420,
+        "x": 2290,
+        "y": 500,
         "wires": [
             []
         ]
@@ -1348,7 +1348,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 540,
-        "y": 1620,
+        "y": 1880,
         "wires": [
             [
                 "f14f1775.6456f8"
@@ -1365,7 +1365,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 170,
-        "y": 1620,
+        "y": 1880,
         "wires": [
             [
                 "8414ee15.32b7d"
@@ -1380,7 +1380,7 @@
         "statusCode": "204",
         "headers": {},
         "x": 840,
-        "y": 1620,
+        "y": 1880,
         "wires": []
     },
     {
@@ -1393,7 +1393,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 90,
-        "y": 1780,
+        "y": 2200,
         "wires": [
             [
                 "6540c97b.74e5d8"
@@ -1413,11 +1413,324 @@
         "once": true,
         "onceDelay": 0.1,
         "x": 150,
-        "y": 1660,
+        "y": 1840,
         "wires": [
             [
                 "8414ee15.32b7d"
             ]
+        ]
+    },
+    {
+        "id": "74ab624d.ef1f9c",
+        "type": "comment",
+        "z": "d4af305b.2ea44",
+        "name": "Messages",
+        "info": "",
+        "x": 100,
+        "y": 1220,
+        "wires": []
+    },
+    {
+        "id": "e90a6b9a.c2db58",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: multpipleLayoutTasksService",
+        "func": "\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 2160,
+        "y": 140,
+        "wires": [
+            [
+                "71cf47d7.5118c8"
+            ]
+        ]
+    },
+    {
+        "id": "81bd319.c8450d",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "manifest?",
+        "func": "var flowKey = \"binderySignatureUpload\";\nvar manifestation = \"default\";\n\ntry{\n    manifestation = context.global.get('INTEGRATION').flowConfig().getManifestation(flowKey);\n}catch(e){}\n\nswitch(manifestation){\n    case \"multipleScenariosService\":\n        node.send([null, msg]);\n        break;\n    default:\n        node.send([msg, null]);\n        break;\n}\n\n",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 1920,
+        "y": 100,
+        "wires": [
+            [
+                "b705eaad.ac0528"
+            ],
+            [
+                "e90a6b9a.c2db58"
+            ]
+        ],
+        "icon": "font-awesome/fa-sun-o"
+    },
+    {
+        "id": "431f4d.e3db60b4",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "enabled?",
+        "func": "var flowKey = \"notificationListener\";\nvar enabled = true;\n\ntry{\n    enabled = context.global.get('INTEGRATION').flowConfig().getFlowEnabled(flowKey);\n}catch(e){}\n\nswitch(enabled){\n    case false:\n        node.send(null);\n        break;\n    default:\n        node.send(msg);\n        break;\n}\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 240,
+        "y": 500,
+        "wires": [
+            [
+                "cc31ed7f.8dc71"
+            ]
+        ],
+        "icon": "font-awesome/fa-sun-o"
+    },
+    {
+        "id": "389a59d3.cbbc86",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "enabled?",
+        "func": "var flowKey = \"binderySignatureUpload\";\nvar enabled = true;\n\ntry{\n    enabled = context.global.get('INTEGRATION').flowConfig().getFlowEnabled(flowKey);\n}catch(e){}\n\nswitch(enabled){\n    case false:\n        node.send(null);\n        break;\n    default:\n        node.send(msg);\n        break;\n}\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 360,
+        "y": 100,
+        "wires": [
+            [
+                "5172bc7b.cdc624"
+            ]
+        ],
+        "icon": "font-awesome/fa-sun-o"
+    },
+    {
+        "id": "c8c7d7e6.0a67b8",
+        "type": "comment",
+        "z": "d4af305b.2ea44",
+        "name": "LayoutTask processor",
+        "info": "",
+        "x": 140,
+        "y": 820,
+        "wires": []
+    },
+    {
+        "id": "8d5a3748.7b0fe8",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "enabled?",
+        "func": "var flowKey = \"layoutTaskProcessor\";\nvar enabled = true;\n\ntry{\n    enabled = context.global.get('INTEGRATION').flowConfig().getFlowEnabled(flowKey);\n}catch(e){}\n\nswitch(enabled){\n    case false:\n        node.send(null);\n        break;\n    default:\n        node.send(msg);\n        break;\n}\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 400,
+        "y": 860,
+        "wires": [
+            [
+                "7d7683a0.fd799c"
+            ]
+        ],
+        "icon": "font-awesome/fa-sun-o"
+    },
+    {
+        "id": "fbe7193e.879ad8",
+        "type": "inject",
+        "z": "d4af305b.2ea44",
+        "name": "debug trigger",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 110,
+        "y": 860,
+        "wires": [
+            [
+                "8d5a3748.7b0fe8"
+            ]
+        ]
+    },
+    {
+        "id": "77bf828c.6f069c",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "/controller/layoutTask/:id",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 160,
+        "y": 900,
+        "wires": [
+            [
+                "16627dce.2b9e42",
+                "8d5a3748.7b0fe8"
+            ]
+        ]
+    },
+    {
+        "id": "16627dce.2b9e42",
+        "type": "http response",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "statusCode": "204",
+        "headers": {},
+        "x": 400,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "c60a1a5e.5ab7f8",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "/controller/layouttasks",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 150,
+        "y": 1060,
+        "wires": [
+            [
+                "de4134a1.469da8"
+            ]
+        ]
+    },
+    {
+        "id": "de4134a1.469da8",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "read print jobs",
+        "func": "\n// load active layouttasks\nvar layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// prepare result\nvar result = [];\n\nfor(var key in layouttasks) {\n    var entry = layouttasks[key];\n    result.push(entry);\n}\n\nmsg.payload = result;\n\n// return message\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 480,
+        "y": 1060,
+        "wires": [
+            [
+                "ba633144.95c42"
+            ]
+        ]
+    },
+    {
+        "id": "ba633144.95c42",
+        "type": "http response",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "statusCode": "204",
+        "headers": {},
+        "x": 740,
+        "y": 1000,
+        "wires": []
+    },
+    {
+        "id": "ac0d5b90.b2cb38",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "delete all printjobs",
+        "func": "const layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// reset all jobs\nvar numberJobs = Object.keys(layouttasks).length;\n\nfor(var key in layouttasks) {\n    delete layouttasks[key];\n    node.warn(\"Layouttask '\" + key + \"' has been deleted.\")\n}\n\nnode.warn(\"All \"+ numberJobs + \" layouttasks have been deleted.\");\n\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 490,
+        "y": 1020,
+        "wires": [
+            [
+                "ba633144.95c42"
+            ]
+        ]
+    },
+    {
+        "id": "bd228756.dcaaa8",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "/controller/layouttasks/id/:id",
+        "method": "delete",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 180,
+        "y": 940,
+        "wires": [
+            [
+                "bcf9c7f8.73e8a8"
+            ]
+        ]
+    },
+    {
+        "id": "fdc311d9.dbc83",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "/controller/layouttasks",
+        "method": "delete",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 160,
+        "y": 1020,
+        "wires": [
+            [
+                "ac0d5b90.b2cb38"
+            ]
+        ]
+    },
+    {
+        "id": "bcf9c7f8.73e8a8",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "delete processed job by id",
+        "func": "const layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// get jobId\nvar ltId = msg.req.params.id;\n\n\nif(jobId !== undefined) {\n    \n    // reset specific job\n    delete layouttasks[ltId];\n    \n    node.warn(\"LayoutTask '\" + ltId + \"' has been deleted.\")\n} \nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 510,
+        "y": 940,
+        "wires": [
+            [
+                "ba633144.95c42"
+            ]
+        ]
+    },
+    {
+        "id": "4d565e19.8bfab",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "/controller/layouttasks/status/:status",
+        "method": "delete",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 210,
+        "y": 980,
+        "wires": [
+            [
+                "d245fa48.01f0c8"
+            ]
+        ]
+    },
+    {
+        "id": "d245fa48.01f0c8",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "delete printjob by status",
+        "func": "const layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// get jobId\nvar status = msg.req.params.status;\n\n\nif(status !== undefined) {\n    \n    // reset all jobs with status X\n    var numberJobsBefore = Object.keys(layouttasks).length;\n    \n    for(var key in layouttasks) {\n        if(layouttasks.hasOwnProperty(key)){\n            var layouttask = layouttasks[key];\n            if(layouttask.status === status){\n                delete layouttasks[key];\n                node.warn(\"Layouttasks '\" + key + \"' has been deleted.\")\n            }\n        }\n    }\n    \n    var numberJobsAfter = Object.keys(layouttasks).length;\n    var deletedJobs = numberJobsBefore - numberJobsAfter;\n    \n    node.warn(deletedJobs + \" layouttasks with status '\" + status + \"' have been deleted.\");\n}\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 510,
+        "y": 980,
+        "wires": [
+            [
+                "ba633144.95c42"
+            ]
+        ]
+    },
+    {
+        "id": "7d7683a0.fd799c",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: loadLayoutTask",
+        "func": "const request = context.global.get('REQUEST');\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\nvar credentials\n\n//get credentials form integration \ntry{\n    credentials = context.global.get('INTEGRATION').flowConfig().getCredentials();\n}catch(e){\n    //Fallback: Get credentials from environment variables\n    credentials = {\n        env : env.get(\"SPO_URL\"),\n        tenant : env.get(\"SPO_TENANT\"),\n        user : env.get(\"SPO_USER\"),\n        password : env.get(\"SPO_PASSWORD\")\n    }\n}\n\n//LayoutTask id\n// get jobId\nvar ltId = msg.req.params.id;\nif(ltId === undefined) {\n   node.error(\"Reeceived no LayoutTaksId.\");\n}\n\n\n/*\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent?_nodeVisibility=$GANG_JOB_EVENT_COMPLETE',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/xml\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        receivedPrintJobs[msg.sheetId].status = \"error\";\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to load GangJobEvent.\"\n        });\n        \n        node.error(\"Unable to load GangJobEvent for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n    } \n    \n    else {\n        // append GangJobEvent to message\n        msg.gangJobEventXml = body;\n        \n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"GangJobEvent XML has been received.\"\n        });\n        \n        node.log('GangJobEvent XML has been received for sheet \\'' + msg.sheetId + '\\'.');\n        node.send(msg);\n    \n    }\n        \n});*/",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 620,
+        "y": 860,
+        "wires": [
+            []
         ]
     }
 ]
