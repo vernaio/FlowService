@@ -1384,23 +1384,6 @@
         "wires": []
     },
     {
-        "id": "a714e05a.80acd",
-        "type": "http in",
-        "z": "d4af305b.2ea44",
-        "name": "",
-        "url": "*",
-        "method": "get",
-        "upload": false,
-        "swaggerDoc": "",
-        "x": 90,
-        "y": 2200,
-        "wires": [
-            [
-                "6540c97b.74e5d8"
-            ]
-        ]
-    },
-    {
         "id": "2e9d08df.d73ea8",
         "type": "inject",
         "z": "d4af305b.2ea44",
@@ -1731,6 +1714,67 @@
         "y": 860,
         "wires": [
             []
+        ]
+    },
+    {
+        "id": "91c1e4da.061938",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "/credentials",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 120,
+        "y": 2080,
+        "wires": [
+            [
+                "df7dab4b.e72a88"
+            ]
+        ]
+    },
+    {
+        "id": "df7dab4b.e72a88",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "get credentials",
+        "func": "var credentials\n\n//get credentials form integration \ntry{\n    credentials = context.global.get('INTEGRATION').flowConfig().getCredentials();\n}catch(e){\n    //Fallback: Get credentials from environment variables\n    credentials = {\n        env : env.get(\"SPO_URL\"),\n        tenant : env.get(\"SPO_TENANT\"),\n        user : env.get(\"SPO_USER\"),\n        password : env.get(\"SPO_PASSWORD\")\n    }\n}\n\nmsg.payload = credentials;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 520,
+        "y": 2080,
+        "wires": [
+            [
+                "4467a430.6731ec"
+            ]
+        ]
+    },
+    {
+        "id": "4467a430.6731ec",
+        "type": "http response",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "statusCode": "200",
+        "headers": {},
+        "x": 840,
+        "y": 2080,
+        "wires": []
+    },
+    {
+        "id": "fa1e02cc.59958",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "*",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 90,
+        "y": 2200,
+        "wires": [
+            [
+                "6540c97b.74e5d8"
+            ]
         ]
     }
 ]
