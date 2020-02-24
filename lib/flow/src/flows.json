@@ -255,7 +255,7 @@
         "y": 100,
         "wires": [
             [
-                "81bd319.c8450d"
+                "3ee48152.76281e"
             ]
         ]
     },
@@ -689,7 +689,7 @@
         "y": 500,
         "wires": [
             [
-                "eed5a2d7.51d2e"
+                "f52af730.150ed8"
             ]
         ]
     },
@@ -697,15 +697,15 @@
         "id": "eed5a2d7.51d2e",
         "type": "function",
         "z": "d4af305b.2ea44",
-        "name": "Flow: gangJobEvent (xml)",
+        "name": "Flow: writeGangJobEvent (xml)",
         "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\n\n// save GangJobEvent XML to output directory\nvar filename = path.join(msg.sheetDirectory, msg.sheetId + \"-gangJobEvent.xml\");\n\nfs.writeFile(filename, msg.gangJobEventXml, (err) => {\n    if (err) throw err;\n    \n    msg.output.event = path.basename(filename);\n    \n    node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\");\n    node.send(msg);\n});",
         "outputs": 1,
         "noerr": 0,
-        "x": 2030,
-        "y": 500,
+        "x": 2210,
+        "y": 520,
         "wires": [
             [
-                "ab781dee.626f6"
+                "db2825bb.5cd2b8"
             ]
         ]
     },
@@ -759,8 +759,8 @@
         "z": "d4af305b.2ea44",
         "name": "File Output:",
         "info": "",
-        "x": 1990,
-        "y": 460,
+        "x": 2150,
+        "y": 440,
         "wires": []
     },
     {
@@ -772,11 +772,11 @@
         "outputs": 1,
         "noerr": 0,
         "x": 1750,
-        "y": 560,
+        "y": 580,
         "wires": [
             [
-                "89651d3e.7370a",
-                "f076011.b2542"
+                "f076011.b2542",
+                "2d0d6990.f4fc76"
             ]
         ]
     },
@@ -788,10 +788,12 @@
         "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\nnode.log(\"Move files for '\" + msg.sheetId + \"'...\")\n\n// process jobs bindery signatures\nintegration.moveFiles(msg.sheetDirectory, msg.job, \"/data/storage\")\n.then(() => {\n    node.log(\"Move files for '\" + msg.sheetId + \"' successful.\")\n    \n    receivedPrintJobs[msg.sheetId].audit.push({\n        type : \"info\",\n        on   : Date.now(),\n        msg  : \"Moved files.\"\n    });     \n})\n.catch((error) =>{\n    node.log(error);\n    receivedPrintJobs[msg.sheetId].status = \"error\";\n    receivedPrintJobs[msg.sheetId].audit.push({\n        type : \"error\",\n        on   : Date.now(),\n        msg  : \"Error at moving files.\"\n    });     \n})\n.finally(function(){\n    node.send(msg);\n});\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 2280,
-        "y": 560,
+        "x": 2520,
+        "y": 580,
         "wires": [
-            []
+            [
+                "7f423f4a.0186d"
+            ]
         ]
     },
     {
@@ -802,8 +804,8 @@
         "func": "//Create an internal job object for this flow\n\n//data source\nvar gangJobEvent = msg.gangJobEventJson[\"gangJobEvent-Root\"];\nvar gangJob = gangJobEvent.gangJob;\nvar media = gangJob.media;\nvar binderySignatures = gangJob.binderySignatures.binderySignature;\n\n//write to data target\n\n//for each bindery signature of the gangJobEvent\nvar bindSigs = [];\nbinderySignatures.forEach(function(binderySignature){\n  bindSigs.push({\n      id : binderySignature.id,\n      orderRef : binderySignature.orderRef\n  })\n});\n\n//create job object\nmsg.job = {\n    duration : gangJobEvent.plannedDuration,\n    workstyle : gangJob.workStyle,\n    mediaLabel : media.label,\n    mediaId : media.id,\n    mediaFormat : media.format,\n    binderySignatures : bindSigs\n};\n\nnode.send(msg);",
         "outputs": 1,
         "noerr": 0,
-        "x": 2020,
-        "y": 560,
+        "x": 2180,
+        "y": 580,
         "wires": [
             [
                 "c4125dcd.1043"
@@ -818,10 +820,12 @@
         "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\nconst path = context.global.get('PATH');\n\nconst jobTicketGenerator = context.global.get('JOB_TICKET_GENERATOR');\nconst apogeeJobTicketLocation = path.join(msg.sheetDirectory,msg.sheetId+\"_apogeeV9_JobTicket.jdf\");\n\nif (msg.gangJobEventJson[\"gangJobEvent-Root\"].gangJob.workStyle===\"SIMPLEX\") {\n    if (!context.global.get(\"apogeeJdfModel_Simplex\")) {\n        const fs = context.global.get('FS');\n        fs.readFile('jobTicketGenerator/apogee/model/ApogeeJdfV9_model_Simplex.jdf',\n            function (err, data) {\n                if (err) throw \"Apogee Jdf Simplex Model file could not be read - Error message: \" + err;\n                var lineArray = data.toString().split(\"\\n\");\n                context.global.set(\"apogeeJdfModel_Simplex\",lineArray);\n                node.log(\"ApogeeJdf-Simplex-Model initialized\");\n                jobTicketGenerator.writeApogeeJdf(\n                    apogeeJobTicketLocation,\n                    msg.sheetId,\n                    msg.gangJobEventJson[\"gangJobEvent-Root\"],\n                    0,\n                    context.global.get(\"apogeeJdfModel_Simplex\"));\n            }\n        );    \n    } else {\n        jobTicketGenerator.writeApogeeJdf(\n            apogeeJobTicketLocation,\n            msg.sheetId,\n            msg.gangJobEventJson[\"gangJobEvent-Root\"],\n            0,\n            context.global.get(\"apogeeJdfModel_Simplex\"));\n    }\n} else {\n    if (!context.global.get(\"apogeeJdfModel\")) {\n        const fs = context.global.get('FS');\n        fs.readFile('jobTicketGenerator/apogee/model/ApogeeJdfV9_model.jdf',\n            function (err, data) {\n                if (err) throw \"Apogee Jdf Model file could not be read - Error message: \" + err;\n                var lineArray = data.toString().split(\"\\n\");\n                context.global.set(\"apogeeJdfModel\",lineArray);        \n                node.log(\"Apogee-Jdf-Model initialized\");\n                jobTicketGenerator.writeApogeeJdf(\n                    apogeeJobTicketLocation,\n                    msg.sheetId,\n                    msg.gangJobEventJson[\"gangJobEvent-Root\"],\n                    0,\n                    context.global.get(\"apogeeJdfModel\"));\n            }\n        );    \n    } else {\n        jobTicketGenerator.writeApogeeJdf(\n            apogeeJobTicketLocation,\n            msg.sheetId,\n            msg.gangJobEventJson[\"gangJobEvent-Root\"],\n            0,\n            context.global.get(\"apogeeJdfModel\"));\n    }\n}\n\nnode.log(\"Apogee-JobTicket written to: \" + apogeeJobTicketLocation);\nreceivedPrintJobs[msg.sheetId].audit.push({\n    type : \"info\",\n    on   : Date.now(),\n    msg  : \"Apogee-JobTicket written to: \" + apogeeJobTicketLocation\n}); \nnode.send(msg);\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 2070,
-        "y": 620,
+        "x": 2230,
+        "y": 660,
         "wires": [
-            []
+            [
+                "7f423f4a.0186d"
+            ]
         ]
     },
     {
@@ -1330,13 +1334,15 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: imposeSheet (xjdf)",
-        "func": "const request = context.global.get('REQUEST');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst pb = context.global.get('PRETTY_BYTES');\nconst unzipper = context.global.get('UNZIPPER');\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// define request options\nvar options = {\n    method: 'POST',\n    url: env.get(\"IMPOSITION_URL\") + '/impose/sheet',\n    body: msg.gangJobEventXml,\n}\n\n// execute request\n\nrequest(options)\n    .on('error', function(err) {\n        node.error(\"Unable to impose sheet '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(err));\n        \n        receivedPrintJobs[msg.sheetId].status = \"error\";\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to impose sheet.\"\n        });\n    })\n    .pipe(unzipper.Parse())\n    .on('entry', function (entry) {\n        const fileName = entry.path;\n        const targetPath = path.join(msg.sheetDirectory, path.basename(fileName));\n        entry.pipe(fs.createWriteStream(targetPath));\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"Wrote file \" + path.basename(fileName) + \".\"\n        });        \n    })\n    .on('finish', () => {\n        \n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"Sheet imposition finished.\"\n        });\n        \n        if(receivedPrintJobs[msg.sheetId].status === \"pending\"){\n            receivedPrintJobs[msg.sheetId].status = \"success\";\n        }\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"finished.\"\n        });\n\n        node.send(msg);\n    });\n",
+        "func": "const request = context.global.get('REQUEST');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst pb = context.global.get('PRETTY_BYTES');\nconst unzipper = context.global.get('UNZIPPER');\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// define request options\nvar options = {\n    method: 'POST',\n    url: env.get(\"IMPOSITION_URL\") + '/impose/sheet',\n    body: msg.gangJobEventXml,\n}\n\n// execute request\n\nrequest(options)\n    .on('error', function(err) {\n        node.error(\"Unable to impose sheet '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(err));\n        \n        receivedPrintJobs[msg.sheetId].status = \"error\";\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to impose sheet.\"\n        });\n    })\n    .pipe(unzipper.Parse())\n    .on('entry', function (entry) {\n        const fileName = entry.path;\n        const targetPath = path.join(msg.sheetDirectory, path.basename(fileName));\n        entry.pipe(fs.createWriteStream(targetPath));\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"Wrote file \" + path.basename(fileName) + \".\"\n        });        \n    })\n    .on('finish', () => {\n        \n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"Sheet imposition finished.\"\n        });\n        \n        /*if(receivedPrintJobs[msg.sheetId].status === \"pending\"){\n            receivedPrintJobs[msg.sheetId].status = \"success\";\n        }\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"finished.\"\n        });*/\n\n        node.send(msg);\n    });\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 2290,
-        "y": 500,
+        "x": 2690,
+        "y": 520,
         "wires": [
-            []
+            [
+                "7f423f4a.0186d"
+            ]
         ]
     },
     {
@@ -1430,31 +1436,11 @@
         ]
     },
     {
-        "id": "81bd319.c8450d",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "manifest?",
-        "func": "var flowKey = \"binderySignatureUpload\";\nvar manifestation = \"default\";\n\ntry{\n    manifestation = context.global.get('INTEGRATION').flowConfig().getManifestation(flowKey);\n}catch(e){}\n\nswitch(manifestation){\n    case \"multipleScenariosService\":\n        node.send([null, msg]);\n        break;\n    default:\n        node.send([msg, null]);\n        break;\n}\n\n",
-        "outputs": 2,
-        "noerr": 0,
-        "x": 1920,
-        "y": 100,
-        "wires": [
-            [
-                "b705eaad.ac0528"
-            ],
-            [
-                "e90a6b9a.c2db58"
-            ]
-        ],
-        "icon": "font-awesome/fa-sun-o"
-    },
-    {
         "id": "431f4d.e3db60b4",
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "enabled?",
-        "func": "var flowKey = \"notificationListener\";\nvar enabled = true;\n\ntry{\n    enabled = context.global.get('INTEGRATION').flowConfig().getFlowEnabled(flowKey);\n}catch(e){}\n\nswitch(enabled){\n    case false:\n        node.send(null);\n        break;\n    default:\n        node.send(msg);\n        break;\n}\n\n",
+        "func": "//get config or choose default\nvar flowConfig = context.global.get('INTEGRATION').flowConfig;\nif(typeof flowConfig === 'function'){\n    flowConfig = flowConfig(); //get interface\n}else{\n    node.send(msg); //no config: default 'enabled''\n}\n\n//got config\nif(flowConfig.getFlowEnabled(\"notificationListener\") === true) node.send(msg);",
         "outputs": 1,
         "noerr": 0,
         "x": 240,
@@ -1471,7 +1457,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "enabled?",
-        "func": "var flowKey = \"binderySignatureUpload\";\nvar enabled = true;\n\ntry{\n    enabled = context.global.get('INTEGRATION').flowConfig().getFlowEnabled(flowKey);\n}catch(e){}\n\nswitch(enabled){\n    case false:\n        node.send(null);\n        break;\n    default:\n        node.send(msg);\n        break;\n}\n\n",
+        "func": "//get config or choose default\nvar flowConfig = context.global.get('INTEGRATION').flowConfig;\nif(typeof flowConfig === 'function'){\n    flowConfig = flowConfig(); //get interface\n}else{\n    node.send(msg); //no config: default 'enabled''\n}\n\n//got config\nif(flowConfig.getFlowEnabled(\"binderySignatureUpload\") === true) node.send(msg);",
         "outputs": 1,
         "noerr": 0,
         "x": 360,
@@ -1498,7 +1484,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "enabled?",
-        "func": "var flowKey = \"layoutTaskProcessor\";\nvar enabled = true;\n\ntry{\n    enabled = context.global.get('INTEGRATION').flowConfig().getFlowEnabled(flowKey);\n}catch(e){}\n\nswitch(enabled){\n    case false:\n        node.send(null);\n        break;\n    default:\n        node.send(msg);\n        break;\n}\n\n",
+        "func": "//get config or choose default\nvar flowConfig = context.global.get('INTEGRATION').flowConfig;\nif(typeof flowConfig === 'function'){\n    flowConfig = flowConfig(); //get interface\n}else{\n    node.send(null); //no config: default 'disabled''\n}\n\n//got config\nif(flowConfig.getFlowEnabled(\"layoutTaskProcessor\") === true) node.send(msg);",
         "outputs": 1,
         "noerr": 0,
         "x": 400,
@@ -1721,11 +1707,11 @@
         "type": "http in",
         "z": "d4af305b.2ea44",
         "name": "",
-        "url": "/credentials",
+        "url": "/workspaceId",
         "method": "get",
         "upload": false,
         "swaggerDoc": "",
-        "x": 120,
+        "x": 130,
         "y": 2080,
         "wires": [
             [
@@ -1737,8 +1723,8 @@
         "id": "df7dab4b.e72a88",
         "type": "function",
         "z": "d4af305b.2ea44",
-        "name": "get credentials",
-        "func": "var credentials\n\n//get credentials form integration \ntry{\n    credentials = context.global.get('INTEGRATION').flowConfig().getCredentials();\n}catch(e){\n    //Fallback: Get credentials from environment variables\n    credentials = {\n        env : env.get(\"SPO_URL\"),\n        tenant : env.get(\"SPO_TENANT\"),\n        user : env.get(\"SPO_USER\"),\n        password : env.get(\"SPO_PASSWORD\")\n    }\n}\n\nmsg.payload = credentials;\n\nreturn msg;",
+        "name": "get workspaceId",
+        "func": "var workspaceId;\n\n//get credentials form integration \ntry{\n    workspaceId = context.global.get('INTEGRATION').flowConfig().getWorkspace();\n}catch(e){\n    //Fallback: Get credentials from environment variables\n    workspaceId = env.get(\"SPO_WORKSPACE_ID\");\n}\n\nmsg.payload = workspaceId;\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "x": 520,
@@ -1761,7 +1747,7 @@
         "wires": []
     },
     {
-        "id": "fa1e02cc.59958",
+        "id": "d0d93b28.c3bea8",
         "type": "http in",
         "z": "d4af305b.2ea44",
         "name": "",
@@ -1776,5 +1762,127 @@
                 "6540c97b.74e5d8"
             ]
         ]
+    },
+    {
+        "id": "3ee48152.76281e",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "option?",
+        "func": "//get config or choose default\nvar flowConfig = context.global.get('INTEGRATION').flowConfig;\nif(typeof flowConfig === 'function'){\n    flowConfig = flowConfig(); //get interface\n}else{\n    node.send([msg, null]); //no config: default 'uploadBinderySignature'\n}\n\n//got config\nvar flowKey = \"binderySignatureUpload\";\nvar option;\n\n//OPTION \"uploadToWorkspace\"\noption = flowConfig.getFlowOption(flowKey, \"uploadToWorkspace\");\nif(option.enabled === true){\n    node.send([msg, null]);\n}\n\n//OPTION \"multipleScenariosService\"\noption = flowConfig.getFlowOption(flowKey, \"multipleScenariosService\");\nif(option.enabled === true){\n    node.send([null, msg]);\n}\n",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 1920,
+        "y": 100,
+        "wires": [
+            [
+                "b705eaad.ac0528"
+            ],
+            [
+                "e90a6b9a.c2db58"
+            ]
+        ],
+        "icon": "font-awesome/fa-sun-o"
+    },
+    {
+        "id": "f52af730.150ed8",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "option?",
+        "func": "//get config or choose default\nvar flowConfig = context.global.get('INTEGRATION').flowConfig;\nif(typeof flowConfig === 'function'){\n    flowConfig = flowConfig(); //get interface\n}else{\n    node.send([msg, null]); //no config: default 'bypass writeGangJobXML'\n}\n\n//got config\nvar option = flowConfig.getFlowOption(\"notificationListener\", \"writeGangJobXML\");\nif(option.enabled === true){\n    node.send([null, msg]);\n}else{\n    node.send([msg, null]);\n}",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 1980,
+        "y": 500,
+        "wires": [
+            [
+                "db2825bb.5cd2b8"
+            ],
+            [
+                "eed5a2d7.51d2e"
+            ]
+        ],
+        "icon": "font-awesome/fa-sun-o"
+    },
+    {
+        "id": "db2825bb.5cd2b8",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "option?",
+        "func": "//get config or choose default\nvar flowConfig = context.global.get('INTEGRATION').flowConfig;\nif(typeof flowConfig === 'function'){\n    flowConfig = flowConfig(); //get interface\n}else{\n    node.send([null, msg]); //no config: default 'enabled'\n}\n\n//got config\nvar option = flowConfig.getFlowOption(\"notificationListener\", \"impose\");\nif(option.enabled === true){\n    node.send([null, msg]);\n}else{\n    node.send([msg, null]);\n}",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 2480,
+        "y": 500,
+        "wires": [
+            [
+                "7f423f4a.0186d"
+            ],
+            [
+                "ab781dee.626f6"
+            ]
+        ],
+        "icon": "font-awesome/fa-sun-o"
+    },
+    {
+        "id": "f035f4de.0e7098",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: finished",
+        "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n        \nreceivedPrintJobs[msg.sheetId].status = \"success\";\nreceivedPrintJobs[msg.sheetId].audit.push({\n    type : \"info\",\n    on   : Date.now() + 1,\n    msg  : \"finished.\"\n});\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 3120,
+        "y": 580,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "7f423f4a.0186d",
+        "type": "join",
+        "z": "d4af305b.2ea44",
+        "name": "wait",
+        "mode": "custom",
+        "build": "array",
+        "property": "",
+        "propertyType": "full",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "",
+        "count": "3",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 2930,
+        "y": 580,
+        "wires": [
+            [
+                "f035f4de.0e7098"
+            ]
+        ]
+    },
+    {
+        "id": "2d0d6990.f4fc76",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "option?",
+        "func": "//get config or choose default\nvar flowConfig = context.global.get('INTEGRATION').flowConfig;\nif(typeof flowConfig === 'function'){\n    flowConfig = flowConfig(); //get interface\n}else{\n    node.send([msg, null]); //no config: default 'disabled'\n}\n\n//got config\nvar option = flowConfig.getFlowOption(\"notificationListener\", \"writeApogeeJobTicket\");\nif(option.enabled === true){\n    node.send([null, msg]);\n}else{\n    node.send([msg, null]);\n}",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 1980,
+        "y": 640,
+        "wires": [
+            [
+                "7f423f4a.0186d"
+            ],
+            [
+                "89651d3e.7370a"
+            ]
+        ],
+        "icon": "font-awesome/fa-sun-o"
     }
 ]
