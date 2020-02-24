@@ -144,7 +144,7 @@
         "name": "Exception Handling",
         "info": "",
         "x": 130,
-        "y": 2280,
+        "y": 2460,
         "wires": []
     },
     {
@@ -155,7 +155,7 @@
         "scope": null,
         "uncaught": false,
         "x": 100,
-        "y": 2320,
+        "y": 2500,
         "wires": [
             [
                 "6a76d426.aa179c"
@@ -171,7 +171,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 260,
-        "y": 2320,
+        "y": 2500,
         "wires": [
             []
         ]
@@ -409,7 +409,7 @@
         "name": "User Interface (HTTP Server)",
         "info": "",
         "x": 160,
-        "y": 2160,
+        "y": 2340,
         "wires": []
     },
     {
@@ -422,7 +422,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 160,
-        "y": 1960,
+        "y": 1920,
         "wires": [
             [
                 "b2ed4347.33229"
@@ -438,7 +438,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 530,
-        "y": 1960,
+        "y": 1920,
         "wires": [
             [
                 "b7ef0e77.c2a41"
@@ -452,8 +452,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 830,
-        "y": 1960,
+        "x": 750,
+        "y": 1920,
         "wires": []
     },
     {
@@ -466,7 +466,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 150,
-        "y": 2000,
+        "y": 1960,
         "wires": [
             [
                 "b4918ad2.0b3cc8"
@@ -480,8 +480,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 830,
-        "y": 2000,
+        "x": 750,
+        "y": 1960,
         "wires": []
     },
     {
@@ -493,7 +493,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 520,
-        "y": 2000,
+        "y": 1960,
         "wires": [
             [
                 "18df55e5.bb2d6a"
@@ -649,7 +649,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Integration: generateSheetId",
-        "func": "//get cache\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\nvar messages = context.global.get('CACHE_MESSAGES');\n\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// process jobs bindery signatures\nintegration.generateSheetId(msg.event).then((sheetId) => {\n    msg.sheetId = sheetId\n    node.log(\"Generated SheetId '\" + msg.sheetId + \"' for event '\" + msg.event.id + \"'\");\n        \n    messages.arr.push({\n        \"flow\" : \"download\",\n        \"type\" : \"info\",\n        \"on\" : Date.now(),\n        \"msg\" : \"Received new print job '\" + msg.sheetId + \"'.\" \n    });\n    \n    receivedPrintJobs[msg.sheetId] = {\n        \"id\"        : msg.sheetId,\n        \"receivedOn\" : Date.now(),\n        \"status\"    : \"pending\",\n        \"audit\"     : [\n            {\n                type : \"info\",\n                on   : Date.now(),\n                msg  : \"Received new print job '\" + msg.sheetId + \"'.\"\n            }    \n        ],\n    };\n    \n    node.send(msg);\n});\n",
+        "func": "//get cache\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\nvar messages = context.global.get('CACHE_MESSAGES');\n\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// process jobs bindery signatures\nintegration.generateSheetId(msg.event).then((sheetId) => {\n    msg.sheetId = sheetId\n    node.log(\"Generated SheetId '\" + msg.sheetId + \"' for event '\" + msg.event.id + \"'\");\n        \n    messages.arr.push({\n        \"flow\" : \"download\",\n        \"type\" : \"info\",\n        \"on\" : Date.now(),\n        \"msg\" : \"Received new print job '\" + msg.sheetId + \"'.\" \n    });\n    \n    receivedPrintJobs[msg.sheetId] = {\n        \"id\"        : msg.sheetId,\n        \"finished\" : 0,\n        \"receivedOn\" : Date.now(),\n        \"status\"    : \"pending\",\n        \"audit\"     : [\n            {\n                type : \"info\",\n                on   : Date.now(),\n                msg  : \"Received new print job '\" + msg.sheetId + \"'.\"\n            }    \n        ],\n    };\n    \n    node.send(msg);\n});\n",
         "outputs": 1,
         "noerr": 0,
         "x": 1220,
@@ -719,7 +719,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 150,
-        "y": 2040,
+        "y": 2240,
         "wires": [
             [
                 "1ba0b50c.4454cb"
@@ -731,11 +731,11 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "read imposition",
-        "func": "const request = context.global.get('REQUEST');\n\n// define options\nvar options = {\n    method: 'GET',\n    url: env.get(\"IMPOSITION_URL\") + '/version',\n    timeout: 500,\n    json: true,\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.warn(\"Unable to connect Imposition Service '\" + env.get(\"IMPOSITION_URL\") + \"'\");\n    \n        msg.payload = {\n            status: 'Unavailable',\n            version: \"\",\n            timestamp: \"\",\n            revision: \"\"\n        }\n    \n    } else if (body['appName'] !== undefined) {\n        msg.payload = {\n            status: 'Online',\n            version: body['appVersion'],\n            timestamp: body['buildTime'],\n            revision: body['commitId']\n        }\n        \n        \n    } \n    \n    node.send(msg);\n});",
+        "func": "const request = context.global.get('REQUEST');\n\n// define options\nvar options = {\n    method: 'GET',\n    url: env.get(\"IMPOSITION_URL\") + '/version',\n    timeout: 500,\n    json: true,\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.warn(\"Unable to connect Imposition Service '\" + env.get(\"IMPOSITION_URL\") + \"'\");\n    \n        msg.payload = {\n            status: 'Unavailable',\n            version: \"\",\n            timestamp: \"\",\n            revision: \"\"\n        }\n    \n    } else if (body['appName'] !== undefined) {\n        msg.payload = {\n            status: 'Online',\n            version: body['appVersion'],\n            timestamp: body['buildTime'],\n            revision: body['commitId']\n        }\n        \n    } \n    \n    node.send(msg);\n});",
         "outputs": 1,
         "noerr": 0,
         "x": 520,
-        "y": 2040,
+        "y": 2240,
         "wires": [
             [
                 "db0181c9.88bf5"
@@ -749,8 +749,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 830,
-        "y": 2040,
+        "x": 750,
+        "y": 2240,
         "wires": []
     },
     {
@@ -760,7 +760,7 @@
         "name": "File Output:",
         "info": "",
         "x": 2150,
-        "y": 440,
+        "y": 460,
         "wires": []
     },
     {
@@ -792,7 +792,7 @@
         "y": 580,
         "wires": [
             [
-                "7f423f4a.0186d"
+                "f035f4de.0e7098"
             ]
         ]
     },
@@ -821,10 +821,10 @@
         "outputs": 1,
         "noerr": 0,
         "x": 2230,
-        "y": 660,
+        "y": 680,
         "wires": [
             [
-                "7f423f4a.0186d"
+                "f035f4de.0e7098"
             ]
         ]
     },
@@ -837,7 +837,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 250,
-        "y": 2200,
+        "y": 2380,
         "wires": [
             [
                 "7e8fdeb4.45173"
@@ -851,8 +851,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 430,
-        "y": 2200,
+        "x": 410,
+        "y": 2380,
         "wires": []
     },
     {
@@ -909,7 +909,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 150,
-        "y": 1380,
+        "y": 1340,
         "wires": [
             [
                 "c863824b.beeb1"
@@ -925,7 +925,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 520,
-        "y": 1380,
+        "y": 1340,
         "wires": [
             [
                 "6ece029b.8ab3bc"
@@ -940,7 +940,7 @@
         "statusCode": "",
         "headers": {},
         "x": 750,
-        "y": 1340,
+        "y": 1300,
         "wires": []
     },
     {
@@ -1002,7 +1002,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 530,
-        "y": 1260,
+        "y": 1220,
         "wires": [
             []
         ]
@@ -1066,7 +1066,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 160,
-        "y": 1340,
+        "y": 1300,
         "wires": [
             [
                 "20e2a162.235e6e"
@@ -1081,8 +1081,8 @@
         "func": "\n// load active jobs\nvar messages = context.global.get('CACHE_MESSAGES');\n\n\nmessages['arr'] = [];\n\n// return message\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
-        "x": 530,
-        "y": 1340,
+        "x": 540,
+        "y": 1300,
         "wires": [
             [
                 "6ece029b.8ab3bc"
@@ -1099,7 +1099,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 180,
-        "y": 1300,
+        "y": 1260,
         "wires": [
             [
                 "bd891eb1.de071"
@@ -1115,7 +1115,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 550,
-        "y": 1300,
+        "y": 1260,
         "wires": [
             [
                 "6ece029b.8ab3bc"
@@ -1135,7 +1135,7 @@
         "once": true,
         "onceDelay": 0.1,
         "x": 100,
-        "y": 1260,
+        "y": 1220,
         "wires": [
             [
                 "92cf1fae.901e3"
@@ -1295,7 +1295,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 150,
-        "y": 1920,
+        "y": 2200,
         "wires": [
             [
                 "4353f1da.249af"
@@ -1306,12 +1306,12 @@
         "id": "4353f1da.249af",
         "type": "function",
         "z": "d4af305b.2ea44",
-        "name": "read wesocket status",
+        "name": "read websocket status",
         "func": "// prepare result\nmsg.payload = {\n    status : flow.get(\"websocket\")\n};\n\n\n// return message\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "x": 540,
-        "y": 1920,
+        "y": 2200,
         "wires": [
             [
                 "8ca50e30.ad45f"
@@ -1325,8 +1325,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 830,
-        "y": 1920,
+        "x": 750,
+        "y": 2200,
         "wires": []
     },
     {
@@ -1341,7 +1341,7 @@
         "y": 520,
         "wires": [
             [
-                "7f423f4a.0186d"
+                "f035f4de.0e7098"
             ]
         ]
     },
@@ -1350,7 +1350,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: retrieveMedias",
-        "func": "// get request\nvar request = context.global.get('REQUEST');\nvar medias = context.global.get('CACHE_MEDIAS');\nvar messages = context.global.get('CACHE_MESSAGES');\n\n// define options\nnode.log(\"Prepare media retrieval from workspace with id='\" + env.get('SPO_WORKSPACE_ID')+\"'\");\n\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/medias/',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve medias from workspace with id='\" + env.get('SPO_WORKSPACE_ID') + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for Medias in workspace with id='\" + env.get('SPO_WORKSPACE_ID') + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        return;\n    } \n    \n    else {\n        medias[\"mediaList\"] = body['medias-Root'].media;\n        node.log(\"Media retrieval from workspace with id='\"+env.get('SPO_WORKSPACE_ID')+\"' has been sucessful. Number Medias: \" + medias[\"mediaList\"].length);\n        messages.arr.push({\n            \"flow\" : \"upload\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Medias were updated (downloaded \" + medias[\"mediaList\"].length + \" medias).\" \n        });\n        node.send(msg);\n    }\n});\n",
+        "func": "// get request\nvar request = context.global.get('REQUEST');\nvar medias = context.global.get('CACHE_MEDIAS');\nvar messages = context.global.get('CACHE_MESSAGES');\n\n// define options\nnode.log(\"Prepare media retrieval from workspace with id='\" + env.get('SPO_WORKSPACE_ID')+\"'\");\n\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/medias/',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve medias from workspace with id='\" + env.get('SPO_WORKSPACE_ID') + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for Medias in workspace with id='\" + env.get('SPO_WORKSPACE_ID') + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        return;\n    } \n    \n    else {\n        medias[\"mediaList\"] = body['medias-Root'].media;\n        node.log(\"Media retrieval from workspace with id='\"+env.get('SPO_WORKSPACE_ID')+\"' has been sucessful. Number Medias: \" + medias[\"mediaList\"].length);\n        messages.arr.push({\n            \"flow\" : \"upload\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Medias were updated (downloaded \" + medias[\"mediaList\"].length + \" medias).\" \n        });\n        \n        //send based on input\n        if(msg.hasOwnProperty(\"req\")) node.send(msg);\n    }\n});\n",
         "outputs": 1,
         "noerr": 0,
         "x": 540,
@@ -1385,7 +1385,7 @@
         "name": "",
         "statusCode": "204",
         "headers": {},
-        "x": 840,
+        "x": 760,
         "y": 1880,
         "wires": []
     },
@@ -1416,7 +1416,7 @@
         "name": "Messages",
         "info": "",
         "x": 100,
-        "y": 1220,
+        "y": 1180,
         "wires": []
     },
     {
@@ -1487,7 +1487,7 @@
         "func": "//get config or choose default\nvar flowConfig = context.global.get('INTEGRATION').flowConfig;\nif(typeof flowConfig === 'function'){\n    flowConfig = flowConfig(); //get interface\n}else{\n    node.send(null); //no config: default 'disabled''\n}\n\n//got config\nif(flowConfig.getFlowEnabled(\"layoutTaskProcessor\") === true) node.send(msg);",
         "outputs": 1,
         "noerr": 0,
-        "x": 400,
+        "x": 500,
         "y": 860,
         "wires": [
             [
@@ -1521,11 +1521,11 @@
         "type": "http in",
         "z": "d4af305b.2ea44",
         "name": "",
-        "url": "/controller/layoutTask/:id",
+        "url": "/controller/layoutTask/:jobId/:lTId/:wsId",
         "method": "post",
         "upload": false,
         "swaggerDoc": "",
-        "x": 160,
+        "x": 210,
         "y": 900,
         "wires": [
             [
@@ -1541,7 +1541,7 @@
         "name": "",
         "statusCode": "204",
         "headers": {},
-        "x": 400,
+        "x": 500,
         "y": 900,
         "wires": []
     },
@@ -1570,7 +1570,7 @@
         "func": "\n// load active layouttasks\nvar layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// prepare result\nvar result = [];\n\nfor(var key in layouttasks) {\n    var entry = layouttasks[key];\n    result.push(entry);\n}\n\nmsg.payload = result;\n\n// return message\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
-        "x": 480,
+        "x": 520,
         "y": 1060,
         "wires": [
             [
@@ -1585,7 +1585,7 @@
         "name": "",
         "statusCode": "204",
         "headers": {},
-        "x": 740,
+        "x": 780,
         "y": 1000,
         "wires": []
     },
@@ -1597,7 +1597,7 @@
         "func": "const layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// reset all jobs\nvar numberJobs = Object.keys(layouttasks).length;\n\nfor(var key in layouttasks) {\n    delete layouttasks[key];\n    node.warn(\"Layouttask '\" + key + \"' has been deleted.\")\n}\n\nnode.warn(\"All \"+ numberJobs + \" layouttasks have been deleted.\");\n\nreturn msg;\n\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 490,
+        "x": 530,
         "y": 1020,
         "wires": [
             [
@@ -1647,7 +1647,7 @@
         "func": "const layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// get jobId\nvar ltId = msg.req.params.id;\n\n\nif(jobId !== undefined) {\n    \n    // reset specific job\n    delete layouttasks[ltId];\n    \n    node.warn(\"LayoutTask '\" + ltId + \"' has been deleted.\")\n} \nreturn msg;\n\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 510,
+        "x": 550,
         "y": 940,
         "wires": [
             [
@@ -1680,7 +1680,7 @@
         "func": "const layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// get jobId\nvar status = msg.req.params.status;\n\n\nif(status !== undefined) {\n    \n    // reset all jobs with status X\n    var numberJobsBefore = Object.keys(layouttasks).length;\n    \n    for(var key in layouttasks) {\n        if(layouttasks.hasOwnProperty(key)){\n            var layouttask = layouttasks[key];\n            if(layouttask.status === status){\n                delete layouttasks[key];\n                node.warn(\"Layouttasks '\" + key + \"' has been deleted.\")\n            }\n        }\n    }\n    \n    var numberJobsAfter = Object.keys(layouttasks).length;\n    var deletedJobs = numberJobsBefore - numberJobsAfter;\n    \n    node.warn(deletedJobs + \" layouttasks with status '\" + status + \"' have been deleted.\");\n}\nreturn msg;\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 510,
+        "x": 550,
         "y": 980,
         "wires": [
             [
@@ -1696,7 +1696,7 @@
         "func": "const request = context.global.get('REQUEST');\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\nvar credentials\n\n//get credentials form integration \ntry{\n    credentials = context.global.get('INTEGRATION').flowConfig().getCredentials();\n}catch(e){\n    //Fallback: Get credentials from environment variables\n    credentials = {\n        env : env.get(\"SPO_URL\"),\n        tenant : env.get(\"SPO_TENANT\"),\n        user : env.get(\"SPO_USER\"),\n        password : env.get(\"SPO_PASSWORD\")\n    }\n}\n\n//LayoutTask id\n// get jobId\nvar ltId = msg.req.params.id;\nif(ltId === undefined) {\n   node.error(\"Reeceived no LayoutTaksId.\");\n}\n\n\n/*\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent?_nodeVisibility=$GANG_JOB_EVENT_COMPLETE',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/xml\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        receivedPrintJobs[msg.sheetId].status = \"error\";\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to load GangJobEvent.\"\n        });\n        \n        node.error(\"Unable to load GangJobEvent for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n    } \n    \n    else {\n        // append GangJobEvent to message\n        msg.gangJobEventXml = body;\n        \n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"GangJobEvent XML has been received.\"\n        });\n        \n        node.log('GangJobEvent XML has been received for sheet \\'' + msg.sheetId + '\\'.');\n        node.send(msg);\n    \n    }\n        \n});*/",
         "outputs": 1,
         "noerr": 0,
-        "x": 620,
+        "x": 700,
         "y": 860,
         "wires": [
             []
@@ -1707,12 +1707,12 @@
         "type": "http in",
         "z": "d4af305b.2ea44",
         "name": "",
-        "url": "/workspaceId",
+        "url": "/controller/workspaceId",
         "method": "get",
         "upload": false,
         "swaggerDoc": "",
-        "x": 130,
-        "y": 2080,
+        "x": 160,
+        "y": 2000,
         "wires": [
             [
                 "df7dab4b.e72a88"
@@ -1728,7 +1728,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 520,
-        "y": 2080,
+        "y": 2000,
         "wires": [
             [
                 "4467a430.6731ec"
@@ -1742,33 +1742,16 @@
         "name": "",
         "statusCode": "200",
         "headers": {},
-        "x": 840,
-        "y": 2080,
+        "x": 760,
+        "y": 2000,
         "wires": []
-    },
-    {
-        "id": "d0d93b28.c3bea8",
-        "type": "http in",
-        "z": "d4af305b.2ea44",
-        "name": "",
-        "url": "*",
-        "method": "get",
-        "upload": false,
-        "swaggerDoc": "",
-        "x": 90,
-        "y": 2200,
-        "wires": [
-            [
-                "6540c97b.74e5d8"
-            ]
-        ]
     },
     {
         "id": "3ee48152.76281e",
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "option?",
-        "func": "//get config or choose default\nvar flowConfig = context.global.get('INTEGRATION').flowConfig;\nif(typeof flowConfig === 'function'){\n    flowConfig = flowConfig(); //get interface\n}else{\n    node.send([msg, null]); //no config: default 'uploadBinderySignature'\n}\n\n//got config\nvar flowKey = \"binderySignatureUpload\";\nvar option;\n\n//OPTION \"uploadToWorkspace\"\noption = flowConfig.getFlowOption(flowKey, \"uploadToWorkspace\");\nif(option.enabled === true){\n    node.send([msg, null]);\n}\n\n//OPTION \"multipleScenariosService\"\noption = flowConfig.getFlowOption(flowKey, \"multipleScenariosService\");\nif(option.enabled === true){\n    node.send([null, msg]);\n}\n",
+        "func": "//get config or choose default\nvar flowConfig = context.global.get('INTEGRATION').flowConfig;\nif(typeof flowConfig === 'function'){\n    flowConfig = flowConfig(); //get interface\n}else{\n    node.send([msg, null]); //no config: default 'uploadBinderySignature'\n}\n\n//got config\nvar flowKey = \"binderySignatureUpload\";\nvar option;\n\n//OPTION \"uploadToWorkspace\"\noption = flowConfig.getFlowOption(flowKey, \"uploadToWorkspace\");\nif(option.enabled === true){\n    node.send([msg, null]);\n}\n\n//OPTION \"multipleScenariosService\"\noption = flowConfig.getFlowOption(flowKey, \"multipleLayoutTasksService\");\nif(option.enabled === true){\n    node.send([null, msg]);\n}\n",
         "outputs": 2,
         "noerr": 0,
         "x": 1920,
@@ -1815,7 +1798,7 @@
         "y": 500,
         "wires": [
             [
-                "7f423f4a.0186d"
+                "f035f4de.0e7098"
             ],
             [
                 "ab781dee.626f6"
@@ -1827,42 +1810,14 @@
         "id": "f035f4de.0e7098",
         "type": "function",
         "z": "d4af305b.2ea44",
-        "name": "Flow: finished",
-        "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n        \nreceivedPrintJobs[msg.sheetId].status = \"success\";\nreceivedPrintJobs[msg.sheetId].audit.push({\n    type : \"info\",\n    on   : Date.now() + 1,\n    msg  : \"finished.\"\n});\n\nreturn msg;",
+        "name": "Flow: finish",
+        "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n//add on to finished\nreceivedPrintJobs[msg.sheetId].finished = receivedPrintJobs[msg.sheetId].finished + 1;\n        \nif(receivedPrintJobs[msg.sheetId].finished === 3){\n    receivedPrintJobs[msg.sheetId].status = \"success\";\n    receivedPrintJobs[msg.sheetId].audit.push({\n        type : \"info\",\n        on   : Date.now() + 1,\n        msg  : \"finished.\"\n    });\n}\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
-        "x": 3120,
+        "x": 2950,
         "y": 580,
         "wires": [
             []
-        ]
-    },
-    {
-        "id": "7f423f4a.0186d",
-        "type": "join",
-        "z": "d4af305b.2ea44",
-        "name": "wait",
-        "mode": "custom",
-        "build": "array",
-        "property": "",
-        "propertyType": "full",
-        "key": "topic",
-        "joiner": "\\n",
-        "joinerType": "str",
-        "accumulate": false,
-        "timeout": "",
-        "count": "3",
-        "reduceRight": false,
-        "reduceExp": "",
-        "reduceInit": "",
-        "reduceInitType": "",
-        "reduceFixup": "",
-        "x": 2930,
-        "y": 580,
-        "wires": [
-            [
-                "f035f4de.0e7098"
-            ]
         ]
     },
     {
@@ -1874,15 +1829,86 @@
         "outputs": 2,
         "noerr": 0,
         "x": 1980,
-        "y": 640,
+        "y": 660,
         "wires": [
             [
-                "7f423f4a.0186d"
+                "f035f4de.0e7098"
             ],
             [
                 "89651d3e.7370a"
             ]
         ],
         "icon": "font-awesome/fa-sun-o"
+    },
+    {
+        "id": "6185b7cd.0871d8",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "/controller/flowConfig",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 150,
+        "y": 2040,
+        "wires": [
+            [
+                "f7d3ab8a.debc68"
+            ]
+        ]
+    },
+    {
+        "id": "f7d3ab8a.debc68",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "get flowConfig",
+        "func": "//get config or choose default\nvar flowConfig = context.global.get('INTEGRATION').flowConfig;\nif(typeof flowConfig === 'function'){\n    flowConfig = flowConfig(); //get interface\n}else{\n    //no config: default config\n    msg.payload = {\n        services : [\n            {\n                name : \"websocket\",\n                params : {}\n            },\n            {\n                name : \"imposition\",\n                params : {}\n            }\n        ],\n        flows : [\"binderySignatureUpload\", \"notificationListener\"]\n    }\n}\n\n//got config\nmsg.payload = flowConfig.getServicesAndFlows();\n\n//add calculation url\nmsg.payload.calculationUrl = \"TODO\";\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 520,
+        "y": 2040,
+        "wires": [
+            [
+                "6a8f05fa.48164c"
+            ]
+        ]
+    },
+    {
+        "id": "6a8f05fa.48164c",
+        "type": "http response",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "statusCode": "200",
+        "headers": {},
+        "x": 760,
+        "y": 2040,
+        "wires": []
+    },
+    {
+        "id": "978b0f51.399bd",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "*",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 90,
+        "y": 2380,
+        "wires": [
+            [
+                "6540c97b.74e5d8"
+            ]
+        ]
+    },
+    {
+        "id": "1a972d0d.64d503",
+        "type": "comment",
+        "z": "d4af305b.2ea44",
+        "name": "RESTful Controller API /Services",
+        "info": "",
+        "x": 170,
+        "y": 2160,
+        "wires": []
     }
 ]
