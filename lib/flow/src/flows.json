@@ -731,7 +731,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "read imposition",
-        "func": "const request = context.global.get('REQUEST');\n\n// define options\nvar options = {\n    method: 'GET',\n    url: env.get(\"IMPOSITION_URL\") + '/version',\n    timeout: 500,\n    json: true,\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.warn(\"Unable to connect Imposition Service '\" + env.get(\"IMPOSITION_URL\") + \"'\");\n    \n        msg.payload = {\n            status: 'Unavailable',\n            version: \"\",\n            timestamp: \"\",\n            revision: \"\"\n        }\n    \n    } else if (body['appName'] !== undefined) {\n        msg.payload = {\n            status: 'Online',\n            version: body['appVersion'],\n            timestamp: body['buildTime'],\n            revision: body['commitId']\n        }\n        \n    } \n    \n    node.send(msg);\n});",
+        "func": "const request = context.global.get('REQUEST');\n\n// define options\nvar options = {\n    method: 'GET',\n    url: env.get(\"IMPOSITION_URL\") + '/version',\n    timeout: 500,\n    json: true,\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.warn(\"Unable to connect Imposition Service '\" + env.get(\"IMPOSITION_URL\") + \"'\");\n    \n        msg.payload = {\n            status: 'Unavailable',\n            version: \"\",\n            timestamp: \"\",\n            revision: \"\"\n        }\n    \n    } else if (body['appName'] !== undefined) {\n        msg.payload = {\n            status: 'online',\n            version: body['appVersion'],\n            timestamp: body['buildTime'],\n            revision: body['commitId']\n        }\n        \n    } \n    \n    node.send(msg);\n});",
         "outputs": 1,
         "noerr": 0,
         "x": 520,
@@ -1491,7 +1491,7 @@
         "y": 860,
         "wires": [
             [
-                "7d7683a0.fd799c"
+                "24412b57.7767d4"
             ]
         ],
         "icon": "font-awesome/fa-sun-o"
@@ -1521,11 +1521,11 @@
         "type": "http in",
         "z": "d4af305b.2ea44",
         "name": "",
-        "url": "/controller/layoutTask/:jobId/:lTId/:wsId",
+        "url": "/controller/layouttask/:jobId/:ltId/:wsId",
         "method": "post",
         "upload": false,
         "swaggerDoc": "",
-        "x": 210,
+        "x": 200,
         "y": 900,
         "wires": [
             [
@@ -1566,7 +1566,7 @@
         "id": "de4134a1.469da8",
         "type": "function",
         "z": "d4af305b.2ea44",
-        "name": "read print jobs",
+        "name": "read layouttasks",
         "func": "\n// load active layouttasks\nvar layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// prepare result\nvar result = [];\n\nfor(var key in layouttasks) {\n    var entry = layouttasks[key];\n    result.push(entry);\n}\n\nmsg.payload = result;\n\n// return message\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
@@ -1583,9 +1583,9 @@
         "type": "http response",
         "z": "d4af305b.2ea44",
         "name": "",
-        "statusCode": "204",
+        "statusCode": "200",
         "headers": {},
-        "x": 780,
+        "x": 800,
         "y": 1000,
         "wires": []
     },
@@ -1593,11 +1593,11 @@
         "id": "ac0d5b90.b2cb38",
         "type": "function",
         "z": "d4af305b.2ea44",
-        "name": "delete all printjobs",
+        "name": "delete all layouttasks",
         "func": "const layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// reset all jobs\nvar numberJobs = Object.keys(layouttasks).length;\n\nfor(var key in layouttasks) {\n    delete layouttasks[key];\n    node.warn(\"Layouttask '\" + key + \"' has been deleted.\")\n}\n\nnode.warn(\"All \"+ numberJobs + \" layouttasks have been deleted.\");\n\nreturn msg;\n\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 530,
+        "x": 540,
         "y": 1020,
         "wires": [
             [
@@ -1643,7 +1643,7 @@
         "id": "bcf9c7f8.73e8a8",
         "type": "function",
         "z": "d4af305b.2ea44",
-        "name": "delete processed job by id",
+        "name": "delete layouttasks by id",
         "func": "const layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// get jobId\nvar ltId = msg.req.params.id;\n\n\nif(jobId !== undefined) {\n    \n    // reset specific job\n    delete layouttasks[ltId];\n    \n    node.warn(\"LayoutTask '\" + ltId + \"' has been deleted.\")\n} \nreturn msg;\n\n\n",
         "outputs": 1,
         "noerr": 0,
@@ -1676,30 +1676,16 @@
         "id": "d245fa48.01f0c8",
         "type": "function",
         "z": "d4af305b.2ea44",
-        "name": "delete printjob by status",
+        "name": "delete layouttask by status",
         "func": "const layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// get jobId\nvar status = msg.req.params.status;\n\n\nif(status !== undefined) {\n    \n    // reset all jobs with status X\n    var numberJobsBefore = Object.keys(layouttasks).length;\n    \n    for(var key in layouttasks) {\n        if(layouttasks.hasOwnProperty(key)){\n            var layouttask = layouttasks[key];\n            if(layouttask.status === status){\n                delete layouttasks[key];\n                node.warn(\"Layouttasks '\" + key + \"' has been deleted.\")\n            }\n        }\n    }\n    \n    var numberJobsAfter = Object.keys(layouttasks).length;\n    var deletedJobs = numberJobsBefore - numberJobsAfter;\n    \n    node.warn(deletedJobs + \" layouttasks with status '\" + status + \"' have been deleted.\");\n}\nreturn msg;\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 550,
+        "x": 560,
         "y": 980,
         "wires": [
             [
                 "ba633144.95c42"
             ]
-        ]
-    },
-    {
-        "id": "7d7683a0.fd799c",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "Flow: loadLayoutTask",
-        "func": "const request = context.global.get('REQUEST');\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\nvar credentials\n\n//get credentials form integration \ntry{\n    credentials = context.global.get('INTEGRATION').flowConfig().getCredentials();\n}catch(e){\n    //Fallback: Get credentials from environment variables\n    credentials = {\n        env : env.get(\"SPO_URL\"),\n        tenant : env.get(\"SPO_TENANT\"),\n        user : env.get(\"SPO_USER\"),\n        password : env.get(\"SPO_PASSWORD\")\n    }\n}\n\n//LayoutTask id\n// get jobId\nvar ltId = msg.req.params.id;\nif(ltId === undefined) {\n   node.error(\"Reeceived no LayoutTaksId.\");\n}\n\n\n/*\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent?_nodeVisibility=$GANG_JOB_EVENT_COMPLETE',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/xml\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        receivedPrintJobs[msg.sheetId].status = \"error\";\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to load GangJobEvent.\"\n        });\n        \n        node.error(\"Unable to load GangJobEvent for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n    } \n    \n    else {\n        // append GangJobEvent to message\n        msg.gangJobEventXml = body;\n        \n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"GangJobEvent XML has been received.\"\n        });\n        \n        node.log('GangJobEvent XML has been received for sheet \\'' + msg.sheetId + '\\'.');\n        node.send(msg);\n    \n    }\n        \n});*/",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 700,
-        "y": 860,
-        "wires": [
-            []
         ]
     },
     {
@@ -1862,7 +1848,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "get flowConfig",
-        "func": "//get config or choose default\nvar flowConfig = context.global.get('INTEGRATION').flowConfig;\nif(typeof flowConfig === 'function'){\n    flowConfig = flowConfig(); //get interface\n}else{\n    //no config: default config\n    msg.payload = {\n        services : [\n            {\n                name : \"websocket\",\n                params : {}\n            },\n            {\n                name : \"imposition\",\n                params : {}\n            }\n        ],\n        flows : [\"binderySignatureUpload\", \"notificationListener\"]\n    }\n}\n\n//got config\nmsg.payload = flowConfig.getServicesAndFlows();\n\n//add calculation url\nmsg.payload.calculationUrl = \"TODO\";\n\nreturn msg;",
+        "func": "//get config or choose default\nvar flowConfig = context.global.get('INTEGRATION').flowConfig;\nif(typeof flowConfig === 'function'){\n    flowConfig = flowConfig(); //get interface\n}else{\n    //no config: default config\n    msg.payload = {\n        services : [\n            {\n                name : \"websocket\",\n                params : {}\n            },\n            {\n                name : \"imposition\",\n                params : {}\n            }\n        ],\n        flows : [\"binderySignatureUpload\", \"notificationListener\"]\n    }\n}\n\n//got config\nmsg.payload = flowConfig.getServicesAndFlows();\n\n//add calculation url. default: SPOCV2\nvar urlRoot = env.get(\"SPO_URL\").replace(\"spo-v3.web-apps.\", \"\");\nmsg.payload.calculationUrl = \"https://\" + urlRoot + \"/sPrint.one.cockpit.v2.webClient/current\";\n\nif(flowConfig.getFlowOption(\"binderySignatureUpload\", \"multipleLayoutTasksService\").enabled === true){\n    msg.payload.calculationUrl = env.get(\"MLS_URL\");\n}\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "x": 520,
@@ -1885,7 +1871,77 @@
         "wires": []
     },
     {
-        "id": "978b0f51.399bd",
+        "id": "1a972d0d.64d503",
+        "type": "comment",
+        "z": "d4af305b.2ea44",
+        "name": "RESTful Controller API /Services",
+        "info": "",
+        "x": 170,
+        "y": 2160,
+        "wires": []
+    },
+    {
+        "id": "d7d9e8e9.cc0a18",
+        "type": "http in",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "url": "/controller/multipleLayoutTasksService",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 200,
+        "y": 2280,
+        "wires": [
+            [
+                "bccf9c9a.d2a9"
+            ]
+        ]
+    },
+    {
+        "id": "bccf9c9a.d2a9",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "read mls",
+        "func": "const request = context.global.get('REQUEST');\n\n// define options\nvar options = {\n    method: 'GET',\n    url: env.get(\"MLS_URL\") + '/version',\n    timeout: 500,\n    json: true,\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.warn(\"Unable to connect MultipleLayoutTasksService '\" + env.get(\"MLS_URL\") + \"'\");\n    \n        msg.payload = {\n            status: 'unavailable',\n            version: \"\",\n            timestamp: \"\",\n            revision: \"\"\n        }\n    \n    } else if (body['name'] !== undefined) {\n        msg.payload = {\n            status: 'online',\n            version: body['versionNumber'],\n            timestamp: \"\",\n            revision: \"\"\n        }\n        \n    } \n    \n    node.send(msg);\n});",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 500,
+        "y": 2280,
+        "wires": [
+            [
+                "86ccc9dc.2e4348"
+            ]
+        ]
+    },
+    {
+        "id": "86ccc9dc.2e4348",
+        "type": "http response",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 750,
+        "y": 2280,
+        "wires": []
+    },
+    {
+        "id": "24412b57.7767d4",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: createDir",
+        "func": "var messages = context.global.get('CACHE_MESSAGES');\nconst path = context.global.get('PATH');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\nconst fs = context.global.get('FS');\n\n// create directories\nconst jobDir = path.join(\"/data/out/\",msg.req.params.jobId);\nif (!fs.existsSync(jobDir)) fs.mkdirSync(jobDir);\n\nconst wsDir = path.join(jobDir, msg.req.params.wsId);\nif (!fs.existsSync(wsDir)) fs.mkdirSync(wsDir);\n\nconst ltDir = path.join(wsDir, msg.req.params.ltId);\nif (!fs.existsSync(ltDir)) fs.mkdirSync(ltDir);\n\nmsg.directories = {\n    jobDir  : jobDir,\n    wsDir   : wsDir,\n    ltDir   : ltDir\n};\n\nmessages.arr.push({\n    \"flow\" : \"layoutTaskProcessor\",\n    \"type\" : \"info\",\n    \"on\" : Date.now(),\n    \"msg\" : \"Received layouttask'\" + msg.req.params.ltId + \"' for job '\" + msg.req.params.jobId + \"', workspace '\" + msg.req.params.wsId + \"'.\"\n});\n\nlayouttasks[msg.req.params.ltId] = {\n    \"id\"        : msg.req.params.ltId,\n    \"jobId\"     : msg.req.params.jobId,\n    \"wsId\"      : msg.req.params.wsId,\n    \"finished\" : 0,\n    \"receivedOn\" : Date.now(),\n    \"status\"    : \"pending\",\n    \"audit\"     : [\n        {\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"Received.\"\n        }    \n    ],\n};\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 700,
+        "y": 860,
+        "wires": [
+            [
+                "16fcf376.f2c6dd"
+            ]
+        ]
+    },
+    {
+        "id": "a5c378f4.ddc2e8",
         "type": "http in",
         "z": "d4af305b.2ea44",
         "name": "",
@@ -1902,13 +1958,105 @@
         ]
     },
     {
-        "id": "1a972d0d.64d503",
-        "type": "comment",
+        "id": "16fcf376.f2c6dd",
+        "type": "function",
         "z": "d4af305b.2ea44",
-        "name": "RESTful Controller API /Services",
-        "info": "",
-        "x": 170,
-        "y": 2160,
-        "wires": []
+        "name": "Flow: loadLayoutTask",
+        "func": "// get request\nvar request = context.global.get('REQUEST');\nvar messages = context.global.get('CACHE_MESSAGES');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// define options\nnode.log(\"Prepare media retrieval from workspace with id='\" + env.get('SPO_WORKSPACE_ID')+\"'\");\n\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '?_nodeVisibility=%24LAYOUT_TASK_COMPLETE&_formatted=true&_download=true',\n    //json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/xml\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve layouttask with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for layouttask with id='\" + msg.req.params.ltId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        return;\n    } \n    \n    else {\n        msg.layoutTaskXML = body;\n        node.log(\"Layouttask retrieval with id='\"+ msg.req.params.ltId +\"' has been sucessful.\");\n        messages.arr.push({\n            \"flow\" : \"layoutTaskProcessor\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Layouttask was downloaded.\" \n        });\n        \n        layouttasks[msg.req.params.ltId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"Layouttask was downloaded.\"\n        });        \n        \n        //send based on input\n        node.send(msg);\n    }\n});\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 920,
+        "y": 860,
+        "wires": [
+            [
+                "265fc4a4.16273c"
+            ]
+        ]
+    },
+    {
+        "id": "f8c430b7.29fd9",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: writeLayoutTask XML",
+        "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// save GangJobEvent XML to output directory\nvar filename = path.join(msg.directories.ltDir, \"LayoutTask.xml\");\n\nfs.writeFile(filename, msg.layoutTaskXML, (err) => {\n    if (err) throw err;\n    \n    node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\");\n    layouttasks[msg.req.params.ltId].audit.push({\n        type : \"info\",\n        on   : Date.now() + 1,\n        msg  : \"Layouttask was written to file '\" + filename + \"'.\"\n    });     \n    node.send(msg);\n});",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1340,
+        "y": 880,
+        "wires": [
+            [
+                "d5c46bad.168e48"
+            ]
+        ]
+    },
+    {
+        "id": "c7cd521f.cf715",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: finish",
+        "func": "const layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\nlayouttasks[msg.req.params.ltId].status = \"success\";\nlayouttasks[msg.req.params.ltId].audit.push({\n    type : \"info\",\n    on   : Date.now() + 100,\n    msg  : \"finished.\"\n});\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 2090,
+        "y": 860,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "265fc4a4.16273c",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "option?",
+        "func": "//get config or choose default\nvar flowConfig = context.global.get('INTEGRATION').flowConfig;\nif(typeof flowConfig === 'function'){\n    flowConfig = flowConfig(); //get interface\n}else{\n    node.send([null, msg]); //no config: default 'enabled'\n}\n\n//got config\nvar option = flowConfig.getFlowOption(\"layoutTaskProcessor\", \"writeLayoutTask\");\nif(option.enabled === true){\n    node.send([null, msg]);\n}else{\n    node.send([msg, null]);\n}",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 1120,
+        "y": 860,
+        "wires": [
+            [
+                "d5c46bad.168e48"
+            ],
+            [
+                "f8c430b7.29fd9"
+            ]
+        ],
+        "icon": "font-awesome/fa-sun-o"
+    },
+    {
+        "id": "d5c46bad.168e48",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "option?",
+        "func": "//get config or choose default\nvar flowConfig = context.global.get('INTEGRATION').flowConfig;\nif(typeof flowConfig === 'function'){\n    flowConfig = flowConfig(); //get interface\n}else{\n    node.send([msg, null]); //no config: default 'disabled'\n}\n\n//got config\nvar option = flowConfig.getFlowOption(\"layoutTaskProcessor\", \"writeReport\");\nif(option.enabled === true){\n    node.send([null, msg]);\n}else{\n    node.send([msg, null]);\n}",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 1600,
+        "y": 860,
+        "wires": [
+            [
+                "c7cd521f.cf715"
+            ],
+            [
+                "b33757e7.7912e8"
+            ]
+        ],
+        "icon": "font-awesome/fa-sun-o"
+    },
+    {
+        "id": "b33757e7.7912e8",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: writeLayoutTask Report",
+        "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\nconst request = context.global.get('REQUEST');\nconst messages = context.global.get('CACHE_MESSAGES');\n\n// define options\nvar options = {\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '/result/report?_download=true',\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/pdf\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    },\n    encoding: null //because we get a buffer then. Otherwise body has to go into Buffer first before erotomng to file\n};\n\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve layouttask with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for layouttask with id='\" + msg.req.params.ltId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        return;\n    } \n    \n    else {\n        var filename = path.join(msg.directories.ltDir, \"LayoutTask.pdf\");\n        fs.writeFileSync(filename, body,'binary');\n        \n        node.log(\"Report retrieval with id='\"+ msg.req.params.ltId +\"' has been sucessful.\");\n        messages.arr.push({\n            \"flow\" : \"layoutTaskProcessor\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Report was downloaded.\" \n        });\n        \n        layouttasks[msg.req.params.ltId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"Report was downloaded.\"\n        });        \n        \n        //send based on input\n        node.send(msg);\n    }\n});\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1850,
+        "y": 880,
+        "wires": [
+            [
+                "c7cd521f.cf715"
+            ]
+        ]
     }
 ]

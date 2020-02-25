@@ -110,7 +110,7 @@ p{
 .header-menu{
 	position: absolute;
 	text-align: left;
-	z-index: 2;
+	z-index: 3;
 	right: 0;
 	top: 0;
 	width: 0px;
@@ -166,7 +166,7 @@ header a.selected, .header-menu-item:hover a.selected{
 }
 
 .header-menu-active-layer{
-	z-index: 2;
+	z-index: 3;
 	position: fixed;
 	display: none;
 	width: 100vw;
@@ -225,7 +225,7 @@ header a.selected, .header-menu-item:hover a.selected{
 }
 #quick-menu div.quick-menu-item.data-in a:before{background-image: url("/img/up-arrow-white.svg");}
 #quick-menu div.quick-menu-item.data-out a:before{background-image: url("/img/down-arrow-white.svg");}
-
+#quick-menu div.quick-menu-item.data-out-lt a:before{background-image: url("/img/down-arrow-white.svg");}
 
 
 
