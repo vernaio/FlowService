@@ -823,15 +823,15 @@
         "id": "89651d3e.7370a",
         "type": "function",
         "z": "d4af305b.2ea44",
-        "name": "Flow: writeApogeeJobTicket",
-        "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\nconst path = context.global.get('PATH');\nconst fetch = context.global.get('NODEFETCH');\nconst fs = context.global.get('FS');\n\n// define request options\nvar options = {\n    method: 'POST',\n    url: env.get(\"JDF_JTG_URL\") + '/json/' + msg.sheetId,\n    body: msg.gangJobEventJson,\n}\n\nvar url = env.get(\"JDF_JTG_URL\") + '/json/' + msg.sheetId;\n\nfetch(url, {\n        method: 'post',\n        headers: { 'Content-Type': 'application/json' },\n        body:    JSON.stringify(msg.gangJobEventJson),\n    })\n    .then(res => {\n        if(res.ok === true){\n            node.log(\"Jobticket JDF retrieval with id='\"+ msg.sheetId +\"' has been successful.\");\n            res.text()\n            .then(data => {\n                var filename = path.join(msg.sheetDirectory, msg.sheetId + \"_apogeeV9_JobTicket.jdf\");\n                fs.writeFile(filename, data, (err) => {\n                    if (err) throw err;\n                    \n                    receivedPrintJobs[msg.sheetId].audit.push({\n                        type : \"info\",\n                        on   : Date.now() + 1,\n                        msg  : \"Jobticket JDF was downloaded.\"\n                    });        \n                    \n                    //send based on input\n                    node.send(msg);\n                });                \n            })\n        }\n        \n        else{\n            node.log(\"Error: Jobticket JDF retrieval with id='\"+ msg.sheetId +\"' has NOT been successful.\");\n            receivedPrintJobs[msg.sheetId].status = \"error\";\n            receivedPrintJobs[msg.sheetId].audit.push({\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Jobticket JDF retrieval was unsuccessful.\"\n            });\n        }\n    })\n\n    .catch(err => console.error(err));\n    \n\n// execute request\n/*request(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve JDF job ticket with id='\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n        node.send(msg);\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for jdf jobticket with id='\" + msg.sheetId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        node.send(msg);\n    } \n    \n    else {\n        var filename = path.join(msg.sheetDirectory, msg.sheetId + \"_apogeeV9_JobTicket.jdf\");\n        \n        fs.writeFile(filename, body, (err) => {\n            if (err) throw err;\n        \n            node.log(\"Jobticket JDF retrieval with id='\"+ msg.req.params.ltId +\"' has been successful. URL: \" + url);\n            receivedPrintJobs[msg.sheetId].audit.push({\n                type : \"info\",\n                on   : Date.now() + 1,\n                msg  : \"Jobticket JDF was downloaded.\"\n            });        \n            \n            //send based on input\n            node.send(msg);\n        });\n    }\n});*/\n\n\n",
+        "name": "Flow: writeJDFJobTicket",
+        "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\nconst path = context.global.get('PATH');\nconst fetch = context.global.get('NODEFETCH');\nconst fs = context.global.get('FS');\n\nvar url = env.get(\"JDF_JTG_URL\") + '/json/' + msg.sheetId;\n\nfetch(url, {\n        method: 'post',\n        headers: { 'Content-Type': 'application/json' },\n        body:    JSON.stringify(msg.gangJobEventJson),\n    })\n    .then(res => {\n        if(res.ok === true){\n            node.log(\"Jobticket JDF retrieval with id='\"+ msg.sheetId +\"' has been successful.\");\n            res.text()\n            .then(data => {\n                var filename = path.join(msg.sheetDirectory, msg.sheetId + \"_apogeeV9_JobTicket.jdf\");\n                fs.writeFile(filename, data, (err) => {\n                    if (err) throw err;\n                    \n                    receivedPrintJobs[msg.sheetId].audit.push({\n                        type : \"info\",\n                        on   : Date.now() + 1,\n                        msg  : \"Jobticket JDF was downloaded.\"\n                    });        \n                    \n                    //send based on input\n                    node.send(msg);\n                });                \n            })\n        }\n        \n        else{\n            node.log(\"Error: Jobticket JDF retrieval with id='\"+ msg.sheetId +\"' has NOT been successful.\");\n            receivedPrintJobs[msg.sheetId].status = \"error\";\n            receivedPrintJobs[msg.sheetId].audit.push({\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Jobticket JDF retrieval was unsuccessful.\"\n            });\n            node.send(msg);\n        }\n    })\n\n    .catch(err => {\n        console.error(err);\n        node.send(msg);\n    });\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 2700,
+        "x": 2570,
         "y": 660,
         "wires": [
             [
-                "f035f4de.0e7098"
+                "7da68184.a9cce"
             ]
         ]
     },
@@ -1807,8 +1807,8 @@
         "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n//add on to finished\nreceivedPrintJobs[msg.sheetId].finished = receivedPrintJobs[msg.sheetId].finished + 1;\n        \nif(receivedPrintJobs[msg.sheetId].finished === 3){\n    receivedPrintJobs[msg.sheetId].status = \"success\";\n    receivedPrintJobs[msg.sheetId].audit.push({\n        type : \"info\",\n        on   : Date.now() + 1,\n        msg  : \"finished.\"\n    });\n}\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
-        "x": 2950,
-        "y": 580,
+        "x": 3270,
+        "y": 480,
         "wires": [
             []
         ]
@@ -1821,11 +1821,11 @@
         "func": "//get config or choose default\nvar flowConfig = context.global.get('INTEGRATION').flowConfig;\nif(typeof flowConfig === 'function'){\n    flowConfig = flowConfig(); //get interface\n}else{\n    node.send([msg, null]); //no config: default 'disabled'\n}\n\n//got config\nvar option = flowConfig.getFlowOption(\"notificationListener\", \"generateJdfJobTicket\");\nif(option.enabled === true){\n    node.send([null, msg]);\n}else{\n    node.send([msg, null]);\n}",
         "outputs": 2,
         "noerr": 0,
-        "x": 2480,
+        "x": 2380,
         "y": 640,
         "wires": [
             [
-                "f035f4de.0e7098"
+                "7da68184.a9cce"
             ],
             [
                 "89651d3e.7370a"
@@ -2146,7 +2146,7 @@
         "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst printjobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// save GangJobEvent XML to output directory\nvar filename = path.join(msg.sheetDirectory, msg.sheetId + \"-gangJobEvent.json\");\n\nfs.writeFile(filename, JSON.stringify(msg.gangJobEventJson), (err) => {\n    if (err) throw err;\n    \n    node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\");\n    printjobs[msg.sheetId].audit.push({\n        type : \"info\",\n        on   : Date.now() + 1,\n        msg  : \"Event JSON was written to file '\" + filename + \"'.\"\n    });     \n    node.send(msg);\n});",
         "outputs": 1,
         "noerr": 0,
-        "x": 2210,
+        "x": 2170,
         "y": 660,
         "wires": [
             [
@@ -2162,7 +2162,7 @@
         "func": "//get config or choose default\nvar flowConfig = context.global.get('INTEGRATION').flowConfig;\nif(typeof flowConfig === 'function'){\n    flowConfig = flowConfig(); //get interface\n}else{\n    node.send([msg, null]); //no config: default 'disabled'\n}\n\n//got config\nvar option = flowConfig.getFlowOption(\"notificationListener\", \"writeGangJobEventJSON\");\nif(option.enabled === true){\n    node.send([null, msg]);\n}else{\n    node.send([msg, null]);\n}",
         "outputs": 2,
         "noerr": 0,
-        "x": 1980,
+        "x": 1960,
         "y": 640,
         "wires": [
             [
@@ -2344,5 +2344,41 @@
         "x": 980,
         "y": 260,
         "wires": []
+    },
+    {
+        "id": "7da68184.a9cce",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "option?",
+        "func": "//get config or choose default\nvar flowConfig = context.global.get('INTEGRATION').flowConfig;\nif(typeof flowConfig === 'function'){\n    flowConfig = flowConfig(); //get interface\n}else{\n    node.send([msg, null]); //no config: default 'disabled'\n}\n\n//got config\nvar option = flowConfig.getFlowOption(\"notificationListener\", \"generatePdfJobTicket\");\nif(option.enabled === true){\n    node.send([null, msg]);\n}else{\n    node.send([msg, null]);\n}",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 2800,
+        "y": 640,
+        "wires": [
+            [
+                "f035f4de.0e7098"
+            ],
+            [
+                "1b4d43fd.48031c"
+            ]
+        ],
+        "icon": "font-awesome/fa-sun-o"
+    },
+    {
+        "id": "1b4d43fd.48031c",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: writePDFJobTicket",
+        "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\nconst path = context.global.get('PATH');\nconst fetch = context.global.get('NODEFETCH');\nconst fs = context.global.get('FS');\n\nvar url = env.get(\"PDF_JTG_URL\") + '/';\n\nfetch(url, {\n        method: 'post',\n        headers: { 'Content-Type': 'application/json' },\n        body:    JSON.stringify(msg.gangJobEventJson),\n})\n    .then(res => {\n        if(res.ok === true){\n            node.log(\"Jobticket PDF retrieval with id='\"+ msg.sheetId +\"' has been successful.\");\n        \n            var filename = path.join(msg.sheetDirectory, msg.sheetId + \"_JobTicket.pdf\");\n            const dest = fs.createWriteStream(filename);\n            res.body.pipe(dest);\n            \n            receivedPrintJobs[msg.sheetId].audit.push({\n                type : \"info\",\n                on   : Date.now() + 1,\n                msg  : \"Jobticket PDF was downloaded.\"\n            });        \n            \n            //send based on input\n            node.send(msg);\n        }\n        \n        else{\n            node.log(\"Error: Jobticket PDF retrieval with id='\"+ msg.sheetId +\"' has NOT been successful.\");\n            receivedPrintJobs[msg.sheetId].status = \"error\";\n            receivedPrintJobs[msg.sheetId].audit.push({\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Jobticket PDF retrieval was unsuccessful.\"\n            });\n            node.send(msg);\n        }\n    })\n\n    .catch(err => {\n        console.error(err);\n        node.send(msg);\n    });\n  ",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 3010,
+        "y": 660,
+        "wires": [
+            [
+                "f035f4de.0e7098"
+            ]
+        ]
     }
 ]
