@@ -1,8 +1,0 @@
-{
-    "name": "job-ticket-generator",
-    "description": "PerfectPattern PIB Export Tools, writes an apogee (v9) jdf job ticket referencing the full sheet pdf expected from the imposition service",
-    "version": "1.0.1",
-    "engines": {
-        "node": "8.x"
-    }
-}

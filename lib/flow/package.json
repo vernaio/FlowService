@@ -8,6 +8,7 @@
         "pretty-bytes": "*",
         "ftp": "*",
         "request": "*",
+        "node-fetch":"^2.6.0",
         "move-file": "*",
         "path": "*",
         "unzipper": "^0.10.5",
