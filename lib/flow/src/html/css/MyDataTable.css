@@ -50,6 +50,10 @@ table.MyDataTable-header th:hover,table.MyDataTable-body tr td{
     user-select: none;
 }
 
+table.MyDataTable-header th:hover,table.MyDataTable-body tr td{
+    user-select: none;
+}
+
 table.MyDataTable-header th:hover,table.MyDataTable-body tr:hover td{
     background-color: rgb(184, 214, 231);
 }

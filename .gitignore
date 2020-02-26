@@ -13,3 +13,4 @@ data-raw
 start-dev.bat
 imposition.bat
 start-dev.sh
+*.bat
