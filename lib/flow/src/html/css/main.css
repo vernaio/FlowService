@@ -416,3 +416,35 @@ h1.icon:before{
 }
 h1.icon.upload:before{background-image: url("/img/up-arrow.svg");}
 h1.icon.download:before{background-image: url("/img/down-arrow.svg");}
+
+.service-wrapper {
+    color: #555;
+    font-size: 0.9rem;
+    margin-top: 0;
+    margin-bottom: 7px;
+	line-height: 1.3rem;
+	padding: 15px 10px 20px 10px;
+	margin-bottom: 20px;
+    background: #f9f9f9;
+}
+
+.service-wrapper.offline {
+	background-color: rgb(255, 219, 219);
+}
+
+.service-wrapper.online {
+	background-color: rgb(224, 255, 230);
+}
+
+.service-wrapper table{
+	width: 100%;
+}
+
+.service-wrapper table tr td{
+	padding: 2px 0px;
+}
+
+.service-wrapper table tr td:first-child{
+	padding-right: 30px;
+	width: 160px;	
+}

@@ -10,7 +10,5 @@ coverage
 version.properties
 next-steps.txt
 data-raw
-start-dev.bat
-imposition.bat
 start-dev.sh
 *.bat
