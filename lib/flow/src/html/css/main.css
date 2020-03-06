@@ -63,6 +63,13 @@ p{
 	font-weight: 600;
 }
 
+.header-title-text > span {
+    font-weight: 100;
+    font-size: 0.8rem;
+    margin-left: 10px;
+    color: #d6d6d6;
+}
+
 .header-title-subtext{
 	position: absolute;
     right: 0;
@@ -425,11 +432,13 @@ h1.icon.download:before{background-image: url("/img/down-arrow.svg");}
 	line-height: 1.3rem;
 	padding: 15px 10px 20px 10px;
 	margin-bottom: 20px;
-    background: #f9f9f9;
+	background: #f9f9f9;
+	border: solid 1px rgb(177, 201, 224);
 }
 
 .service-wrapper.offline {
-	background-color: rgb(255, 219, 219);
+	-background-color: rgb(255, 219, 219);
+	border: solid 1px rgb(223, 131, 131);
 }
 
 .service-wrapper.online {

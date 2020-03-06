@@ -1,0 +1,41 @@
+<h1 lan="de" class="icon upload">Datenupload</h1>
+<h1 lan="en" class="icon upload">Data upload</h1>
+<p lan="de">Hier werden die Druckbestellungen aus dem Eingangsordner ausgelesen und an sPrint One übermittelt.</p>
+<p lan="en">Print orders are read from the input folder and sent to sPrint One.</p>
+<div class="flex-container flex-2">
+    <div class="flex-item">
+        <h3 lan="de">Dateneingang</h3>
+        <h3 lan="en">Data input</h3>
+        <div id="wrapper-files-input"></div>
+        <div class="button-wrapper">
+            <div id="fetch-jobs" class="icon play bulk"><span lan="de">LOS</span><span lan="en">GO</span></div>
+        </div>
+    </div>
+    <div class="flex-item">
+        <h3 lan="de">Erkannte Druckbestellungen</h3>
+        <h3 lan="en">Recognized print orders</h3>
+        <div id="wrapper-processed-orders"></div>
+        <div class="button-wrapper">
+            <div id="delete-pending-orders" class="icon pending"><span lan="de">vergessen</span><span lan="en">forget</span></div>
+            <div id="delete-canceled-orders" class="icon canceled"><span lan="de">vergessen</span><span lan="en">forget</span></div>
+            <div id="delete-success-orders" class="icon success"><span lan="de">vergessen</span><span lan="en">forget</span></div>
+        </div>
+    </div>
+</div>
+
+<div class="flex-container flex-2">
+    <div class="flex-item">
+        <h4 lan="de">Log / Dateneingang</h4>
+        <h4 lan="en">Log / Data input</h4>
+        <div id="wrapper-logs"></div>
+        <div class="button-wrapper">
+            <div id="reset-upload-log" class=""><span lan="de">leeren</span><span lan="en">clear</span></div>
+        </div>
+    </div>
+    <div class="flex-item">
+        <h4 lan="de">Log / Druckbestellung <span id="orderId">-</span></h4>
+        <h4 lan="en">Log / Print orders <span id="orderId">-</span></h4>
+        <div id="wrapper-order-logs"></div>
+        <div class="button-wrapper"></div>						
+    </div>					
+</div>

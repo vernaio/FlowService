@@ -9,6 +9,7 @@
         "ftp": "*",
         "request": "*",
         "node-fetch":"^2.6.0",
+        "axios":"^0.19.2",
         "move-file": "*",
         "path": "*",
         "unzipper": "^0.10.5",
