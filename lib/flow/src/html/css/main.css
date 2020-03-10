@@ -437,7 +437,7 @@ h1.icon.download:before{background-image: url("/img/down-arrow.svg");}
 }
 
 .service-wrapper.offline {
-	-background-color: rgb(255, 219, 219);
+	background-color: rgb(255, 219, 219);
 	border: solid 1px rgb(223, 131, 131);
 }
 
