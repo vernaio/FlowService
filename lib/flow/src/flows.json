@@ -181,7 +181,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Integration: processJob",
-        "func": "\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\nvar medias = context.global.get('CACHE_MEDIAS');\n\n// process job\nnode.log(\"Process job: \" + msg.job.jobId);\n\n// set job#s storage dir\nmsg.job.storageFolder = msg.job.jobId + \"/\";\n\nintegration.processJob(msg.job, medias.mediaList)\n.then(\n    result => {\n        msg.binderySignatures = result.binderySignatures\n        msg.assemblerTask = result.assemblerTask;\n    \n        if(msg.binderySignatures !== null) {\n            node.log(\"BinderySignatures have been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"A bindery signature has been created.\"\n                }  \n            );\n            node.send([msg, null]);\n        \n        } \n        \n        else if (msg.assemblerTask !== null) {\n            node.log(\"AssemblerTask has been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"Assembler task has been created.\"\n                }  \n            );\n            node.send([null, msg]);\n        } \n        \n        else {\n            processedJobs[msg.job.jobId].status = \"error\";\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"error\",\n                    on   : Date.now(),\n                    msg  : \"Job has invalid data format.\"\n                }  \n            );            \n            throw new Error(\"Invalid result for job \" + msg.job.jobId)\n        }\n    }\n)\n.catch(\n    errorMsg => {\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : errorMsg\n            }  \n        );\n        \n        node.error(errorMsg)\n    }\n);",
+        "func": "\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\nvar medias = context.global.get('CACHE_MEDIAS');\n\n// process job\nnode.log(\"Process job: \" + msg.job.jobId);\n\n// set job#s storage dir\nmsg.job.storageFolder = msg.job.jobId + \"/\";\nnode.warn(medias);\nintegration.processJob(msg.job, medias.mediaList)\n.then(\n    result => {\n        msg.binderySignatures = result.binderySignatures\n        msg.assemblerTask = result.assemblerTask;\n    \n        if(msg.binderySignatures !== null) {\n            node.log(\"BinderySignatures have been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"A bindery signature has been created.\"\n                }  \n            );\n            node.send([msg, null]);\n        \n        } \n        \n        else if (msg.assemblerTask !== null) {\n            node.log(\"AssemblerTask has been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"Assembler task has been created.\"\n                }  \n            );\n            node.send([null, msg]);\n        } \n        \n        else {\n            processedJobs[msg.job.jobId].status = \"error\";\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"error\",\n                    on   : Date.now(),\n                    msg  : \"Job has invalid data format.\"\n                }  \n            );            \n            throw new Error(\"Invalid result for job \" + msg.job.jobId)\n        }\n    }\n)\n.catch(\n    errorMsg => {\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : errorMsg\n            }  \n        );\n        node.error(errorMsg);\n    }\n);",
         "outputs": 2,
         "noerr": 0,
         "x": 1150,
@@ -219,7 +219,7 @@
         "func": "const moveFile = context.global.get('MOVE_FILE');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\nconst storageDir = \"/data/storage/\" + msg.job.storageFolder;\n\n// create directory\nif (!fs.existsSync(storageDir)){\n    fs.mkdirSync(storageDir);\n}\n\n// move files\nnode.log(\"Move files of job '\" + msg.job.jobId + \"' to \" + storageDir + \" ...\");\n\nfunction moveFiles(filesList, index){\n    var source = filesList[index];\n    var target = path.join(storageDir, path.basename(source));\n    \n    (async () => {\n        await moveFile(source, target);\n        \n        //DONE\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"info\",\n                on   : Date.now(),\n                msg  : \"Move file '\" + source + \"' to \" + target\n            }\n        );\n        if(index + 1 < filesList.length){\n            index = index + 1;\n            moveFiles(filesList, index);\n        }\n        else{\n            node.send(msg);\n        }\n    })();    \n}\n\nmoveFiles(msg.job.files, 0);",
         "outputs": 1,
         "noerr": 0,
-        "x": 2470,
+        "x": 2500,
         "y": 300,
         "wires": [
             [
@@ -232,11 +232,11 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: processAssemblerTask",
-        "func": "\n// get request\nvar request = context.global.get('REQUEST');\n\n// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\n// define options\nnode.log(\"Prepare AssemblerTask for job \" + msg.job.jobId);\n\nvar options = {\n    method: 'POST',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/assembler/',\n    json: true,\n    body: msg.assemblerTask,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to connect Assembler for job '\" + msg.job.jobId + \"'. Reason: \" + JSON.stringify(error));\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Unable to connect Assembler.\"\n            }  \n        );\n        return;\n    \n    } else if (body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"Assembler Parse Exception for Job '\" + msg.job.jobId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message);\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Assembler parse exception.\"\n            }\n        );\n        return;\n        \n    } else {\n        if (body['assembler-Root'].exceptionInfo!==undefined) {\n            console.dir(body['assembler-Root']);\n            var errMessage = body['assembler-Root'].exceptionInfo.message;\n            node.error(\"Assembler Task Exception for Job '\" + msg.job.jobId + \"': \" + errMessage);\n            processedJobs[msg.job.jobId].status = \"error\";\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"error\",\n                    on   : Date.now(),\n                    msg  : \"Assembler task exception.\"\n                }\n            );\n          return;\n        } \n        \n        else {\n            msg.binderySignatures = body['assembler-Root'].result.binderySignatures.binderySignature;\n            node.log(\"Assembler has been executed sucessfully for job '\" + msg.job.jobId + \"'. Number BinderySignatures: \" + msg.binderySignatures.length);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"Assembler created \" + msg.binderySignatures.length + \" bindery signatures.\"\n                }\n            );\n            node.send(msg);\n        }\n    }\n});\n\n\n",
+        "func": "var processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\nnode.log(\"Prepare AssemblerTask for job \" + msg.job.jobId);\n\nflow.get('axiosSPO')({\n    method: 'POST',\n    url: 'assembler/',\n    data: msg.assemblerTask\n})\n.then(res => {\n    msg.binderySignatures = res.data['assembler-Root'].result.binderySignatures.binderySignature;\n    node.log(\"Assembler has been executed sucessfully for job '\" + msg.job.jobId + \"'. Number BinderySignatures: \" + msg.binderySignatures.length);\n    processedJobs[msg.job.jobId].audit.push(\n        {\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"Assembler created \" + msg.binderySignatures.length + \" bindery signatures.\"\n        }\n    );\n    node.send(msg);\n})\n.catch(err => {\n    node.send(err);\n    if (err.response) {\n        //server answered with a status code that is not in the range of 2xx\n    \n        if (err.response.data.hasOwnProperty('exception-Root')) {\n            var exception = err.response.data['exception-Root'];\n            node.error(\"Assembler Parse Exception for Job '\" + msg.job.jobId + \"': \" + exception.name + \" (statusCode: \" + exception.statusCode + \") - \" + exception.message);\n            processedJobs[msg.job.jobId].status = \"error\";\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"error\",\n                    on   : Date.now(),\n                    msg  : \"Assembler parse exception.\"\n                }\n            );\n            return msg;\n        } \n        \n        else if (err.response.data.hasOwnProperty('assembler-Root')) {\n            console.dir(err.response.data['assembler-Root']);\n            var errMessage = err.response.data['assembler-Root'].exceptionInfo.message;\n            node.error(\"Assembler Task Exception for Job '\" + msg.job.jobId + \"': \" + errMessage);\n            processedJobs[msg.job.jobId].status = \"error\";\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"error\",\n                    on   : Date.now(),\n                    msg  : \"Assembler task exception.\"\n                }\n            );\n            return msg;\n        } \n            \n        else {\n            node.error(\"Unknown Assembler error.\");\n            processedJobs[msg.job.jobId].status = \"error\";\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"error\",\n                    on   : Date.now(),\n                    msg  : \"Unknown Assembler error.\"\n                }\n            );\n            return msg;\n        }        \n    }\n    \n    else if (err.request) {\n      // The request was made but no response was received\n      // `error.request` is an instance of XMLHttpRequest in the browser and an instance of\n      // http.ClientRequest in node.js\n      node.error(\"The SPO server has not answered.\");\n    } \n    \n    else {\n      // Something happened in setting up the request that triggered an Error\n      node.error('Something happened in setting up the SPO request that triggered an Error.');\n    }\n    \n    //if error:\n    node.error(\"Unable to connect Assembler for job '\" + msg.job.jobId + \"'. Reason: \" + JSON.stringify(err.message));\n    processedJobs[msg.job.jobId].status = \"error\";\n    processedJobs[msg.job.jobId].audit.push(\n        {\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to connect to Assembler.\"\n        }  \n    );\n    return msg;\n});",
         "outputs": 1,
         "noerr": 0,
         "x": 1400,
-        "y": 360,
+        "y": 320,
         "wires": [
             [
                 "4aea9cdd.9cd1a4"
@@ -251,27 +251,11 @@
         "func": "\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// process jobs bindery signatures\nintegration.processJobBinderySignatures(msg.binderySignatures, msg.job).then((modifiedBinderySignatures) => {\n    if(modifiedBinderySignatures !== null) {\n        msg.binderySignatures = modifiedBinderySignatures;\n        node.log(\"Post-process BinderySignatures for job '\" + msg.job.jobId + \"'. Number of BinderySignatures: \" + msg.binderySignatures.length);\n    } else {\n        node.log(\"SKIP post-process of BinderySignatures for job \" + msg.job.jobId);\n    }\n\n    node.send(msg);\n});\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 1680,
+        "x": 1720,
         "y": 300,
         "wires": [
             [
                 "3ee48152.76281e"
-            ]
-        ]
-    },
-    {
-        "id": "b705eaad.ac0528",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "Flow: uploadBinderySignatures",
-        "func": "\n// get request\nvar request = context.global.get('REQUEST');\n\n// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\n// define options\nnode.log(\"Prepare upload of job \" + msg.job.jobId);\n\nvar body = { \"binderySignatures-Root\" : { \"binderySignature\" : msg.binderySignatures } };\n\nvar options = {\n    method: 'POST',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/binderySignatures/',\n    json: true,\n    body: body,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to upload Job '\" + msg.job.jobId + \"'. Reason: \" + JSON.stringify(error));\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Unable to upload: \" + JSON.stringify(error)\n            }\n        );        \n        return;\n        \n    } else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Upload Exception for Job '\" + msg.job.jobId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message);\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Upload exception: \" + (err.statusCode == 409 ? \"The ID is already in use.\" : err.message)\n            }\n        ); \n        return;\n    \n    } else {\n        node.log(\"Upload has been executed sucessfully for job '\" + msg.job.jobId + \"'. Number BinderySignatures: \" + msg.binderySignatures.length);\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"info\",\n                on   : Date.now(),\n                msg  : \"The bindery signature(s) has been successfully uploaded.\"\n            }\n        );\n        node.send(msg);\n    }\n});",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 2170,
-        "y": 300,
-        "wires": [
-            [
-                "71cf47d7.5118c8"
             ]
         ]
     },
@@ -352,7 +336,7 @@
         "func": "\n// get jobId\nvar jobId = msg.job.jobId;\n\nnode.log(\"Processing job '\" + jobId + \"' has been completed.\")\n\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\nprocessedJobs[msg.job.jobId].status = \"success\";\nprocessedJobs[msg.job.jobId].audit.push(\n    {\n        type : \"info\",\n        on   : Date.now(),\n        msg  : \"Order processing successfully completed.\"\n    }\n);\n\nnode.send(msg);",
         "outputs": 1,
         "noerr": 0,
-        "x": 2700,
+        "x": 2730,
         "y": 300,
         "wires": [
             []
@@ -1302,26 +1286,6 @@
         "wires": []
     },
     {
-        "id": "2e9d08df.d73ea8",
-        "type": "inject",
-        "z": "d4af305b.2ea44",
-        "name": "",
-        "topic": "Startup",
-        "payload": "",
-        "payloadType": "date",
-        "repeat": "",
-        "crontab": "",
-        "once": true,
-        "onceDelay": 0.1,
-        "x": 170,
-        "y": 2040,
-        "wires": [
-            [
-                "8414ee15.32b7d"
-            ]
-        ]
-    },
-    {
         "id": "74ab624d.ef1f9c",
         "type": "comment",
         "z": "d4af305b.2ea44",
@@ -1339,7 +1303,7 @@
         "func": "\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
-        "x": 2180,
+        "x": 2210,
         "y": 340,
         "wires": [
             [
@@ -1608,11 +1572,11 @@
         "func": "node.send(context.global.get('FLOW_CONFIG').getFlowOption(\"binderySignatureUpload\", \"createMultipleLayoutTasks\").enabled ? [null, msg] : [msg, null]);",
         "outputs": 2,
         "noerr": 0,
-        "x": 1940,
+        "x": 1970,
         "y": 300,
         "wires": [
             [
-                "b705eaad.ac0528"
+                "21f18674.48846a"
             ],
             [
                 "e90a6b9a.c2db58"
@@ -2015,7 +1979,8 @@
         "y": 140,
         "wires": [
             [
-                "b7422ae9.b328d8"
+                "b7422ae9.b328d8",
+                "ec83c8c7.8cfb58"
             ]
         ]
     },
@@ -2024,7 +1989,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "check services",
-        "func": "const cacheServices = context.global.get('CACHE_SERVICES');\nconst flowConfig = context.global.get('FLOW_CONFIG');\nconst axios = context.global.get('AXIOS');\nconst services = context.global.get('SERVICES');\nconst pjson = context.global.get('PACKAGE_JSON');\nconst wait = 1000;\n\nfunction checkService(expectedServices, index){\n    index = ((index + 1) <= (expectedServices.length - 1) ? index + 1 : 0);\n    var expectedServiceKey = expectedServices[index];\n    try{\n        var service = services.getService(expectedServiceKey);\n\n        switch(service.type){\n            case \"pibService\":\n                if(expectedServiceKey === \"websocket\"){\n                    service.status = flow.get(\"websocket\") ? \"online\" : \"offline\";\n                }\n                cacheServices[expectedServiceKey] = service;\n                setTimeout(function(){\n                    checkService(expectedServices, index);\n                },  wait);\n                break;\n                \n            case \"pibWebService\":\n                var url = service.location + '/version';\n                axios.get(url)\n                .then(response => {\n                    var data = response.data;\n                    //Imposition service (so far)\n                    if (data.hasOwnProperty('appName') && data['appName'] === service.name){\n                        service.status = 'online';\n                        service.version = data['appVersion'];\n                        service.description = \"\";\n                    }\n                    \n                    //other pibWebServices\n                    else if(data.hasOwnProperty('name') && data['name'] === service.name){\n                        service.status = 'online';\n                        service.version = data['versionNumber'];\n                        service.description = body['description'];\n                    }\n    \n                    else{\n                        node.warn(\"Wrong service name: Expected: '\" + service.name + \"', got: '\" + (data['appName'] || data['name']) + \"'.  Unable to connect to \" + service.title + \" at '\" + service.location + \"'\");\n                        node.log(data);\n                        service.status = \"offline\";\n                    }\n                })\n                .catch(err => {\n                    node.warn(\"Error: Unable to connect to \" + service.title + \" at '\" + service.location + \"'\");\n                    service.status = \"offline\";\n                })\n                .finally(function(){\n                    cacheServices[expectedServiceKey] = service;\n                    setTimeout(function(){\n                        checkService(expectedServices, index);\n                    },  wait);\n                    \n                });\n                break;\n                \n            default:\n                setTimeout(function(){\n                    checkService(expectedServices, index);\n                },  wait);\n                break;\n        }\n    }catch(e){\n        node.warn(\"Error at services...\");\n        node.warn(e.message);\n    }\n}\n\n//-------START--------\nexpectedServices = flowConfig.getExpectedServices();\n\nfor(var i = 0; i < expectedServices.length; i++){\n    var allowedServiceTypes = ['flow', 'pibService', 'pibWebService'];\n    var expectedServiceKey = expectedServices[i];\n    var service = services.getService(expectedServiceKey);\n    if(allowedServiceTypes.includes(service.type)) cacheServices[expectedServiceKey] = service;\n}\n//node.log(\"expectedServices:\" + expectedServices.join(\"|\"));\ncheckService(expectedServices, -1);\n\n",
+        "func": "const cacheServices = context.global.get('CACHE_SERVICES');\nconst flowConfig = context.global.get('FLOW_CONFIG');\nconst axios = context.global.get('AXIOS');\nconst services = context.global.get('SERVICES');\nconst pjson = context.global.get('PACKAGE_JSON');\nconst wait = 1000;\n\nfunction checkService(expectedServices, index){\n    index = ((index + 1) <= (expectedServices.length - 1) ? index + 1 : 0);\n    var expectedServiceKey = expectedServices[index];\n\n    try{\n        var service = services.getService(expectedServiceKey);\n\n        switch(service.type){\n            case \"pibService\":\n                if(expectedServiceKey === \"websocket\"){\n                    service.status = flow.get(\"websocket\") ? \"online\" : \"offline\";\n                }\n                cacheServices[expectedServiceKey] = service;\n                setTimeout(function(){\n                    checkService(expectedServices, index);\n                },  wait);\n                break;\n                \n            case \"pibWebService\":\n                var url = service.location + '/version';\n                axios.get(url)\n                .then(response => {\n                    var data = response.data;\n                    //Imposition service (so far)\n                    if (data.hasOwnProperty('appName') && data['appName'] === service.name){\n                        service.status = 'online';\n                        service.version = data['appVersion'];\n                        service.description = \"\";\n                    }\n                    \n                    //other pibWebServices\n                    else if(data.hasOwnProperty('name') && data['name'] === service.name){\n                        service.status = 'online';\n                        service.version = data['versionNumber'];\n                        service.description = body['description'];\n                    }\n    \n                    else{\n                        node.warn(\"Wrong service name: Expected: '\" + service.name + \"', got: '\" + (data['appName'] || data['name']) + \"'.  Unable to connect to \" + service.title + \" at '\" + service.location + \"'\");\n                        node.log(data);\n                        service.status = \"offline\";\n                    }\n                })\n                .catch(err => {\n                    node.warn(\"Error: Unable to connect to \" + service.title + \" at '\" + service.location + \"'\");\n                    service.status = \"offline\";\n                })\n                .finally(function(){\n                    cacheServices[expectedServiceKey] = service;\n                    setTimeout(function(){\n                        checkService(expectedServices, index);\n                    },  wait);\n                    \n                });\n                break;\n                \n            default:\n                setTimeout(function(){\n                    checkService(expectedServices, index);\n                },  wait);\n                break;\n        }\n    }catch(e){\n        node.warn(\"Error at services...\");\n        node.warn(e.message);\n    }\n}\n\n//-------START--------\nexpectedServices = flowConfig.getExpectedServices();\n\nfor(var i = 0; i < expectedServices.length; i++){\n    var allowedServiceTypes = ['flow', 'pibService', 'pibWebService'];\n    var expectedServiceKey = expectedServices[i];\n    var service = services.getService(expectedServiceKey);\n    if(allowedServiceTypes.includes(service.type)) cacheServices[expectedServiceKey] = service;\n}\n//node.log(\"expectedServices:\" + expectedServices.join(\"|\"));\ncheckService(expectedServices, -1);\n\n",
         "outputs": 1,
         "noerr": 0,
         "x": 500,
@@ -2179,6 +2144,99 @@
         "wires": [
             [
                 "6540c97b.74e5d8"
+            ]
+        ]
+    },
+    {
+        "id": "ec83c8c7.8cfb58",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "create axios instance",
+        "func": "var axios = context.global.get('AXIOS');\n\nconst axiosSPO = axios.create({\n    baseURL: 'https://' + env.get(\"SPO_URL\") + '/api/rest/',\n    timeout: 5000,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n});\nflow.set('axiosSPO',axiosSPO);\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 320,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "21f18674.48846a",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: uploadBinderySignatures",
+        "func": "// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\nnode.log(\"Prepare upload of job \" + msg.job.jobId);\n\nflow.get('axiosSPO')({\n    method: 'POST',\n    url: 'workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/binderySignatures/',\n    data: { \"binderySignatures-Root\" : { \"binderySignature\" : msg.binderySignatures } }\n})\n.then(res => {\n    //SUCCESS\n    node.log(\"Upload has been executed sucessfully for job '\" + msg.job.jobId + \"'. Number BinderySignatures: \" + msg.binderySignatures.length);\n    processedJobs[msg.job.jobId].audit.push(\n        {\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"The bindery signature(s) has been successfully uploaded.\"\n        }\n    );\n    node.send(msg);\n\n})\n.catch(err => {\n    if (err.response) {\n        //server answered with a status code that is not in the range of 2xx\n        node.error(\"SPO Upload Exception for Job '\" + msg.job.jobId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message);\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Upload exception: \" + (err.response.status == 409 ? \"The ID is already in use.\" : err.response.message)\n            }\n        ); \n        return;\n    } \n    \n    else if (err.request) {\n      // The request was made but no response was received\n      // `error.request` is an instance of XMLHttpRequest in the browser and an instance of\n      // http.ClientRequest in node.js\n      console.error(\"The SPO server has not answered.\");\n    } \n    \n    else {\n      // Something happened in setting up the request that triggered an Error\n      console.error('Something happened in setting up the SPO request that triggered an Error.');\n    }\n    \n    //console.log(error.config);\n    node.error(\"Unable to upload Job '\" + msg.job.jobId + \"'. Reason: \" + JSON.stringify(err.message));\n    processedJobs[msg.job.jobId].status = \"error\";\n    processedJobs[msg.job.jobId].audit.push(\n        {\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to upload: \" + JSON.stringify(err.message)\n        }\n    );        \n    node.error(err);\n    return;\n});",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 2200,
+        "y": 300,
+        "wires": [
+            [
+                "71cf47d7.5118c8"
+            ]
+        ]
+    },
+    {
+        "id": "b705eaad.ac0528",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: uploadBinderySignatures [OLD]",
+        "func": "\n// get request\nvar request = context.global.get('REQUEST');\n\n// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\n// define options\nnode.log(\"Prepare upload of job \" + msg.job.jobId);\n\nvar body = { \"binderySignatures-Root\" : { \"binderySignature\" : msg.binderySignatures } };\n\nvar options = {\n    method: 'POST',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/binderySignatures/',\n    json: true,\n    body: body,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to upload Job '\" + msg.job.jobId + \"'. Reason: \" + JSON.stringify(error));\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Unable to upload: \" + JSON.stringify(error)\n            }\n        );        \n        return;\n        \n    } else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Upload Exception for Job '\" + msg.job.jobId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message);\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Upload exception: \" + (err.statusCode == 409 ? \"The ID is already in use.\" : err.message)\n            }\n        ); \n        return;\n    \n    } else {\n        node.log(\"Upload has been executed sucessfully for job '\" + msg.job.jobId + \"'. Number BinderySignatures: \" + msg.binderySignatures.length);\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"info\",\n                on   : Date.now(),\n                msg  : \"The bindery signature(s) has been successfully uploaded.\"\n            }\n        );\n        node.send(msg);\n    }\n});",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 2220,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a7a89f47.35b28",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: processAssemblerTask [OLD]",
+        "func": "\n// get request\nvar request = context.global.get('REQUEST');\n\n// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\n// define options\nnode.log(\"Prepare AssemblerTask for job \" + msg.job.jobId);\n\nvar options = {\n    method: 'POST',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/assembler/',\n    json: true,\n    body: msg.assemblerTask,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to connect Assembler for job '\" + msg.job.jobId + \"'. Reason: \" + JSON.stringify(error));\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Unable to connect Assembler.\"\n            }  \n        );\n        return;\n    \n    } else if (body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"Assembler Parse Exception for Job '\" + msg.job.jobId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message);\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Assembler parse exception.\"\n            }\n        );\n        return;\n        \n    } else {\n        if (body['assembler-Root'].exceptionInfo!==undefined) {\n            console.dir(body['assembler-Root']);\n            var errMessage = body['assembler-Root'].exceptionInfo.message;\n            node.error(\"Assembler Task Exception for Job '\" + msg.job.jobId + \"': \" + errMessage);\n            processedJobs[msg.job.jobId].status = \"error\";\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"error\",\n                    on   : Date.now(),\n                    msg  : \"Assembler task exception.\"\n                }\n            );\n          return;\n        } \n        \n        else {\n            msg.binderySignatures = body['assembler-Root'].result.binderySignatures.binderySignature;\n            node.log(\"Assembler has been executed sucessfully for job '\" + msg.job.jobId + \"'. Number BinderySignatures: \" + msg.binderySignatures.length);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"Assembler created \" + msg.binderySignatures.length + \" bindery signatures.\"\n                }\n            );\n            node.send(msg);\n        }\n    }\n});\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1420,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9835cdfb.a8992",
+        "type": "debug",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "x": 1690,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "fee2b333.7f4b8",
+        "type": "inject",
+        "z": "d4af305b.2ea44",
+        "name": "start-up",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1",
+        "x": 120,
+        "y": 2040,
+        "wires": [
+            [
+                "8414ee15.32b7d"
             ]
         ]
     }
