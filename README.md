@@ -156,6 +156,9 @@ The function _moveFiles()_ requires the following input parameters:
 #### Output:
 The function _moveFiles()_ returns a error message on error containing a list of missing file ids.
 
+## Flow UI
+PIB Flow provides it's own user interface in the browser. This UI is automatically adapted to the configuration.
+
 ## Development Infos
 
 ```bash
