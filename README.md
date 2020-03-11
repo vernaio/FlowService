@@ -222,6 +222,11 @@ PIB Flow consists of three independent NodeRed flows, that each fullfill differe
 ### Flow _binderySignatureUpload_
 The purpose of this by an endpoint triggered flow is watching an input folder for print orders, which are being converted to bindery signatures and uploaded to sPrint One. In case the print order is a brochure, the sPrint One Assembler is used to disassemble the order into bindery signatures [always enabled].
 
+#### Customizing functions
+* **extractJobs()**
+* **processJob()**
+* **processJobBinderySignatures()**
+
 #### Options
 * **uploadToWorkspace:** Uploads the bindery signatures in a predefined sPrint One workspace [included, default: enabled]. 
 * **createMultipleLayoutTasks:** Optional service to receive the bindery signatures. See https://github.com/perfectpattern/multiple-layouttasks-service [webservice, default: disabled].
@@ -230,6 +235,11 @@ Exactly on of these options has to be enabled.
 
 ### Flow _notificationListener_
 This flow uses a websocket to listen to a predefined tenant for approved print jobs. Once a print job notification was received, the purpose of this flow is to download all information, PDF files, JSON files and JDF files needed into the out folder [dewfault: enabled].
+
+#### Customizing functions
+* **generateSheetId()** - Generate a sheetId for a sheet.
+* **processSheet()** - Post processing of a generated sheet.
+* **moveFiles()** - Move files from the storage folder to the sheet folder.
 
 #### Options
 * **writeGangJobEventJSON:** Write a JSON file containing the gangjob event [included, default: enabled].
@@ -242,6 +252,9 @@ Any of those options can be enabled.
 
 ### Flow _layoutTaskProcessor_
 This flow is also triggered by an endpoint. Once it received a LayoutTask ID its purpose is to download the LayoutTask including PDF and JDF files and move them into the out folder [default: disabled].
+
+#### Customizing functions
+none.
 
 #### Options
 * **writeLayoutTaskJSON:** Download and write a JSON file containing the LayoutTask [included, default: enabled].
