@@ -13,7 +13,7 @@ In order to achieve a maximum level of integration, the FlowService provides sev
 * **processSheet()** - Post processing of a generated sheet.
 * **moveFiles()** - Move files from the storage folder to the sheet folder.
 * **getVersion()** - Version details about this implementation.
-* **getFlowConfig()** - Configuration for PIb Flow (optional).
+* **getFlowConfig()** - Configuration for PIB Flow (optional).
 
 All customizations have to be done in an external node library which will be automatically imported to FlowService at start up.
 One reference implementation of such a customization is the "DefaultPdfIntegration" which is available on github: https://github.com/perfectpattern/DefaultPdfIntegration.
@@ -210,7 +210,12 @@ The function _getFlowConfig()_ has to return a configuration json in the followi
     }
 }
 ```
-This example json is a maximum example containing all possible configurations and also the default configuration which is used if no custom configuration is provided. 
+This example json is a maximum example containing all possible configurations and also the default configuration which is used if no custom configuration is provided. You can provide either the whole json or only parts of it, which are then merged with the default configuration. 
+You have to respect the following rules:
+* The flow _binderySignatureUpload_ has to be enabled
+* Within flow _binderySignatureUpload_, exactly one of the options _uploadToWorkspace_ and _createMultipleLayoutTasks_ has to be enabled.
+* Exactly one of the flows _notificationListener_ and _layoutTaskProcessor_ has to be enabled.
+* If you adress a option, you also have to provide the key _enabled_ whereas adressing key _params_ is optional.
 
 ## Development Infos
 
