@@ -1486,7 +1486,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "delete layouttasks by id",
-        "func": "const layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// get jobId\nvar ltId = msg.req.params.id;\n\n\nif(jobId !== undefined) {\n    \n    // reset specific job\n    delete layouttasks[ltId];\n    \n    node.warn(\"LayoutTask '\" + ltId + \"' has been deleted.\")\n} \nreturn msg;\n\n\n",
+        "func": "const layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// get jobId\nvar ltId = msg.req.params.id;\n\n\nif(ltId !== undefined) {\n    \n    // reset specific job\n    delete layouttasks[ltId];\n    \n    node.warn(\"LayoutTask '\" + ltId + \"' has been deleted.\")\n} \nreturn msg;\n\n\n",
         "outputs": 1,
         "noerr": 0,
         "x": 570,
