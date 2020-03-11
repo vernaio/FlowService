@@ -3,7 +3,6 @@ The FlowService is a workflow integration framework which integrates sPrintOne i
 takes print jobs from any source and prepares and imports them to sPrintOne. Further more, approved  
 gang forms are being received from sPrintOne and will be converted to PDF, so that they can be easily processed by subsequenting applications such as prepress workflows etc.
 
-
 ## Flow Customization
 In order to achieve a maximum level of integration, the FlowService provides several functions needed to be customized:
 
@@ -14,6 +13,7 @@ In order to achieve a maximum level of integration, the FlowService provides sev
 * **processSheet()** - Post processing of a generated sheet.
 * **moveFiles()** - Move files from the storage folder to the sheet folder.
 * **getVersion()** - Version details about this implementation.
+* **getFlowConfig()** - Configuration for PIb Flow (optional).
 
 All customizations have to be done in an external node library which will be automatically imported to FlowService at start up.
 One reference implementation of such a customization is the "DefaultPdfIntegration" which is available on github: https://github.com/perfectpattern/DefaultPdfIntegration.
@@ -156,6 +156,62 @@ The function _moveFiles()_ requires the following input parameters:
 #### Output:
 The function _moveFiles()_ returns a error message on error containing a list of missing file ids.
 
+### Function: getFlowConfig()
+The optional function _getFlowConfig()_ offers the possibility to adapt PIB Flow to custom needs by providing a custom configuration to it. If this is not done, PIB Flow will runin default configuration.
+
+#### Input:
+none.
+
+#### Output (JSON Object):
+The function _getFlowConfig()_ has to return a configuration json in the following format:
+
+```json 'flow config'
+{
+    flows : {
+        binderySignatureUpload : {
+            enabled : true,
+            options : {
+                uploadToWorkspace           : { enabled : true },
+                createMultipleLayoutTasks   : { enabled : false }
+            }
+        },
+
+        notificationListener : {
+            enabled : false,
+            options : { 
+                websocket                   : { enabled : true }, 
+                writeGangJobEventJSON       : { enabled : true },              
+                writeGangJobEventXML        : { enabled : false },
+                impose                      : { enabled : true },
+                generateJdfJobTicket        : { enabled : false },
+                generatePdfJobTicket        : { enabled : false }   
+            }
+        },
+
+        layoutTaskProcessor : {
+            enabled : false,
+            options : {
+                writeLayoutTaskJSON         : { enabled : true },
+                writeLayoutTaskXML          : { enabled : true },
+                writeReport                 : { 
+                    enabled : true,
+                    params : {
+                        urlParams : ""
+                    }
+                },
+                writeApogeeJDF              : { 
+                    enabled : true,
+                    params : {
+                        urlParams : "?jdfIdStrategy=FIRST_ORDER_REF&jdfBinderySignatureIdStrategy=LABEL"
+                    }
+                }
+            }
+        }
+    }
+}
+```
+This example json is a maximum example containing all possible configurations and also the default configuration which is used if no custom configuration is provided. 
+
 ## Development Infos
 
 ```bash
@@ -170,6 +226,7 @@ docker run -p 1881:1881 -v $PWD/lib/flow/src:/opt/flow/src pib:v1
 | ---------              | -----------          |
 | -p 1881:1881           | Port Forwarding von Container auf Host | 
 | -v [PATH]:[PATH] | Verbindet das Entwicklungsverzeichnis mit src Ordner im Container |
+
 
 ## Folder Interface
 TBD
