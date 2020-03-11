@@ -217,7 +217,7 @@ This example json is a maximum example containing all possible configurations an
 * If you adress a option, you also have to provide the key _enabled_ whereas adressing key _params_ is optional.
 
 ## Flow Configuration
-PIB Flow consists of three independent NodeRed flows, that each fullfill different tasks:
+PIB Flow consists of three independent NodeRed flows, each fullfills different tasks:
 
 ### Flow _binderySignatureUpload_
 The purpose of this by an endpoint triggered flow is watching an input folder for print orders, which are being converted to bindery signatures and uploaded to sPrint One. In case the print order is a brochure, the sPrint One Assembler is used to disassemble the order into bindery signatures [always enabled].
