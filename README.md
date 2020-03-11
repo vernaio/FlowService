@@ -264,6 +264,9 @@ none.
 
 Any of those options can be enabled.
 
+## Flow UI
+PIB Flow provides it's own user interface in the browser. This UI is automatically adapted to the configuration.
+
 ## Development Infos
 
 ```bash
