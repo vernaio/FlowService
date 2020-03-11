@@ -181,7 +181,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Integration: processJob",
-        "func": "\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\nvar medias = context.global.get('CACHE_MEDIAS');\n\n// process job\nnode.log(\"Process job: \" + msg.job.jobId);\n\n// set job#s storage dir\nmsg.job.storageFolder = msg.job.jobId + \"/\";\nnode.warn(medias);\nintegration.processJob(msg.job, medias.mediaList)\n.then(\n    result => {\n        msg.binderySignatures = result.binderySignatures\n        msg.assemblerTask = result.assemblerTask;\n    \n        if(msg.binderySignatures !== null) {\n            node.log(\"BinderySignatures have been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"A bindery signature has been created.\"\n                }  \n            );\n            node.send([msg, null]);\n        \n        } \n        \n        else if (msg.assemblerTask !== null) {\n            node.log(\"AssemblerTask has been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"Assembler task has been created.\"\n                }  \n            );\n            node.send([null, msg]);\n        } \n        \n        else {\n            processedJobs[msg.job.jobId].status = \"error\";\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"error\",\n                    on   : Date.now(),\n                    msg  : \"Job has invalid data format.\"\n                }  \n            );            \n            throw new Error(\"Invalid result for job \" + msg.job.jobId)\n        }\n    }\n)\n.catch(\n    errorMsg => {\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : errorMsg\n            }  \n        );\n        node.error(errorMsg);\n    }\n);",
+        "func": "\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\nvar medias = context.global.get('CACHE_MEDIAS');\n\n// process job\nnode.log(\"Process job: \" + msg.job.jobId);\n\n// set job#s storage dir\nmsg.job.storageFolder = msg.job.jobId + \"/\";\nintegration.processJob(msg.job, medias.mediaList)\n.then(\n    result => {\n        msg.binderySignatures = result.binderySignatures\n        msg.assemblerTask = result.assemblerTask;\n    \n        if(msg.binderySignatures !== null) {\n            node.log(\"BinderySignatures have been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"A bindery signature has been created.\"\n                }  \n            );\n            node.send([msg, null]);\n        \n        } \n        \n        else if (msg.assemblerTask !== null) {\n            node.log(\"AssemblerTask has been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"Assembler task has been created.\"\n                }  \n            );\n            node.send([null, msg]);\n        } \n        \n        else {\n            processedJobs[msg.job.jobId].status = \"error\";\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"error\",\n                    on   : Date.now(),\n                    msg  : \"Job has invalid data format.\"\n                }  \n            );            \n            throw new Error(\"Invalid result for job \" + msg.job.jobId)\n        }\n    }\n)\n.catch(\n    errorMsg => {\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : errorMsg\n            }  \n        );\n        node.error(errorMsg);\n    }\n);",
         "outputs": 2,
         "noerr": 0,
         "x": 1150,
@@ -548,7 +548,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: analyzeNotification",
-        "func": "\nif (msg.notification[\"resourceCreationNotification-Root\"] !== undefined) {\n    node.log(\"Notification 'resourceCreationNotification' has been received...\");\n    msg.resourceCreationNotification = msg.notification[\"resourceCreationNotification-Root\"];\n    return [msg,null];\n    \n} else if(msg.notification[\"resourceStateChangeNotification-Root\"] !== undefined) {\n    node.log(\"Notification 'resourceStateChangeNotification' has been received...\");\n    msg.resourceStateChangeNotification = msg.notification[\"resourceStateChangeNotification-Root\"];\n    return [null,msg];\n    \n} else if(msg.notification[\"handshakeNotification-Root\"] !== undefined) {\n    node.log(\"Notification 'handshakeNotification' has been received...\");\n    msg.handshakeNotification = msg.notification[\"handshakeNotification-Root\"];\n    return [null,msg];\n}\n\nreturn;",
+        "func": "\nif (msg.notification[\"resourceCreationNotification-Root\"] !== undefined) {\n    node.log(\"Notification 'resourceCreationNotification' has been received...\");\n    msg.resourceCreationNotification = msg.notification[\"resourceCreationNotification-Root\"];\n    \n    //only react to plannedEvents\n    if(msg.notification[\"resourceCreationNotification-Root\"].href.split(\"/\").includes(\"plannedEvents\")){\n        return [msg,null];\n    }\n    else{\n        return [null,msg];\n    }\n    \n} else if(msg.notification[\"resourceStateChangeNotification-Root\"] !== undefined) {\n    node.log(\"Notification 'resourceStateChangeNotification' has been received...\");\n    msg.resourceStateChangeNotification = msg.notification[\"resourceStateChangeNotification-Root\"];\n    return [null,msg];\n    \n} else if(msg.notification[\"handshakeNotification-Root\"] !== undefined) {\n    node.log(\"Notification 'handshakeNotification' has been received...\");\n    msg.handshakeNotification = msg.notification[\"handshakeNotification-Root\"];\n    return [null,msg];\n}\n\nreturn;",
         "outputs": 2,
         "noerr": 0,
         "x": 730,
@@ -757,7 +757,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: writeJDFJobTicket",
-        "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\nconst path = context.global.get('PATH');\nconst axios = context.global.get('AXIOS');\nconst fs = context.global.get('FS');\n\nvar url = env.get(\"JDF_JTG_URL\") + '/json/' + msg.sheetId;\n\naxios({\n    method: 'post',\n    //headers: { 'Content-Type': 'application/json' },\n    data:   msg.gangJobEventJson,\n})\n.then(res => {\n    if(res.ok === true){\n        node.log(\"Jobticket JDF retrieval with id='\"+ msg.sheetId +\"' has been successful.\");\n        res.text()\n        .then(data => {\n            var filename = path.join(msg.sheetDirectory, msg.sheetId + \"_apogeeV9_JobTicket.jdf\");\n            fs.writeFile(filename, data, (err) => {\n                if (err) throw err;\n                \n                receivedPrintJobs[msg.sheetId].audit.push({\n                    type : \"info\",\n                    on   : Date.now() + 1,\n                    msg  : \"Jobticket JDF was downloaded.\"\n                });        \n                \n                //send based on input\n                node.send(msg);\n            });                \n        })\n    }\n    \n    else{\n        node.log(\"Error: Jobticket JDF retrieval with id='\"+ msg.sheetId +\"' has NOT been successful.\");\n        receivedPrintJobs[msg.sheetId].status = \"error\";\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Jobticket JDF retrieval was unsuccessful.\"\n        });\n        node.send(msg);\n    }\n})\n\n.catch(err => {\n    console.error(err);\n    node.send(msg);\n});\n\n",
+        "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\nconst path = context.global.get('PATH');\nconst axios = context.global.get('AXIOS');\nconst fs = context.global.get('FS');\n\nvar url = env.get(\"JDF_JTG_URL\") + '/json/' + msg.sheetId;\n\naxios({\n    method: 'post',\n    url : url,\n    headers: { 'Content-Type': 'application/json' },\n    data:   msg.gangJobEventJson,\n})\n.then(res => {\n    if(res.status === 200){\n        node.log(\"Jobticket JDF retrieval with id='\"+ msg.sheetId +\"' has been successful.\");\n        var filename = path.join(msg.sheetDirectory, msg.sheetId + \"_apogeeV9_JobTicket.jdf\");\n        fs.writeFile(filename, res.data, (err) => {\n            if (err) throw err;\n            \n            receivedPrintJobs[msg.sheetId].audit.push({\n                type : \"info\",\n                on   : Date.now() + 1,\n                msg  : \"Jobticket JDF was downloaded.\"\n            });    \n            node.send(msg);\n        })\n    }\n    \n    else{\n        node.log(\"Error: Jobticket JDF retrieval with id='\"+ msg.sheetId +\"' has NOT been successful.\");\n        receivedPrintJobs[msg.sheetId].status = \"error\";\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Jobticket JDF retrieval was unsuccessful.\"\n        });        \n        node.send(msg);\n    }\n})\n\n.catch(err => {\n    node.log(\"Error: Jobticket JDF retrieval with id='\"+ msg.sheetId +\"' has NOT been successful.\");\n    receivedPrintJobs[msg.sheetId].status = \"error\";\n    receivedPrintJobs[msg.sheetId].audit.push({\n        type : \"error\",\n        on   : Date.now(),\n        msg  : \"Jobticket JDF retrieval was unsuccessful.\"\n    });    \n    console.warn(err);\n    node.send(msg);\n});",
         "outputs": 1,
         "noerr": 0,
         "x": 2590,
@@ -1246,7 +1246,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: retrieveMedias",
-        "func": "// get request\nvar request = context.global.get('REQUEST');\nvar medias = context.global.get('CACHE_MEDIAS');\nvar messages = context.global.get('CACHE_MESSAGES');\n\n// define options\nnode.log(\"Prepare media retrieval from workspace with id='\" + env.get('SPO_WORKSPACE_ID')+\"'\");\n\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/medias/',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve medias from workspace with id='\" + env.get('SPO_WORKSPACE_ID') + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for Medias in workspace with id='\" + env.get('SPO_WORKSPACE_ID') + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        return;\n    } \n    \n    else {\n        medias[\"mediaList\"] = body['medias-Root'].media;\n        node.log(\"Media retrieval from workspace with id='\"+env.get('SPO_WORKSPACE_ID')+\"' has been sucessful. Number Medias: \" + medias[\"mediaList\"].length);\n        messages.arr.push({\n            \"flow\" : \"upload\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Medias were updated (downloaded \" + medias[\"mediaList\"].length + \" medias).\" \n        });\n        \n        //send based on input\n        if(msg.hasOwnProperty(\"req\")) node.send(msg);\n    }\n});\n",
+        "func": "// get request\nvar request = context.global.get('REQUEST');\nvar medias = context.global.get('CACHE_MEDIAS');\nvar messages = context.global.get('CACHE_MESSAGES');\n\n// define options\nnode.log(\"Prepare media retrieval from workspace with id='\" + env.get('SPO_WORKSPACE_ID')+\"'\");\n\nflow.get('axiosSPO')({\n    url: 'api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/medias/'\n})\n.then(res => {\n    medias[\"mediaList\"] = res.data['medias-Root'].media;\n    node.log(\"Media retrieval from workspace with id='\"+env.get('SPO_WORKSPACE_ID')+\"' has been sucessful. Number Medias: \" + medias[\"mediaList\"].length);\n    messages.arr.push({\n        \"flow\" : \"upload\",\n        \"type\" : \"info\",\n        \"on\" : Date.now(),\n        \"msg\" : \"Medias were updated (downloaded \" + medias[\"mediaList\"].length + \" medias).\" \n    });\n    \n    //send based on input\n    if(msg.hasOwnProperty(\"req\")) node.send(msg); \n})\n.catch(err => {\n    if(err.response){\n        let statusCode = err.response.status;\n        let exception = err.response.data[\"exception-Root\"];\n        let errorName = err.response.statusText + \"/\" + exception.name;\n        let message = exception.message; \n        node.error(\"SPO Download Exception for Medias in workspace with id='\" + env.get('SPO_WORKSPACE_ID') + \"': \" + errorName + \", statusCode: \" + statusCode + \") - \" + message);\n    }\n    else{\n        node.error(\"Unable to retrieve medias from workspace with id='\" + env.get('SPO_WORKSPACE_ID') + \"'. Reason: \" + JSON.stringify(err));\n    }\n});",
         "outputs": 1,
         "noerr": 0,
         "x": 560,
@@ -1671,7 +1671,8 @@
         "wires": [
             [
                 "16fcf376.f2c6dd",
-                "6ba2e6e8.ddb6d8"
+                "6ba2e6e8.ddb6d8",
+                "d5c46bad.168e48"
             ]
         ]
     },
@@ -1680,10 +1681,10 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: loadLayoutTaskXML",
-        "func": "// get request\nvar request = context.global.get('REQUEST');\nvar messages = context.global.get('CACHE_MESSAGES');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// define options\nvar url = 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '?_nodeVisibility=%24LAYOUT_TASK_COMPLETE&_formatted=true&_download=true';\nvar options = {\n    method: 'GET',\n    url: url,\n    //json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/xml\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve layouttask with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for layouttask with id='\" + msg.req.params.ltId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        return;\n    } \n    \n    else {\n        msg.layoutTaskXML = body;\n        node.log(\"Layouttask retrieval with id='\"+ msg.req.params.ltId +\"' has been sucessful.\");\n        messages.arr.push({\n            \"flow\" : \"layoutTaskProcessor\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Layouttask XML was downloaded.\" \n        });\n        \n        layouttasks[msg.req.params.ltId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"Layouttask XML was downloaded.\"\n        });        \n        \n        //send based on input\n        node.send(msg);\n    }\n});\n",
+        "func": "// get request\nvar messages = context.global.get('CACHE_MESSAGES');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// define options\nflow.get('axiosSPOxml')({\n    url: 'api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '?_nodeVisibility=%24LAYOUT_TASK_COMPLETE&_formatted=true&_download=true'\n})\n.then(res => {\n    msg.layoutTaskXML = res.data;\n    node.log(\"Layouttask retrieval with id='\"+ msg.req.params.ltId +\"' has been sucessful.\");\n    messages.arr.push({\n        \"flow\" : \"layoutTaskProcessor\",\n        \"type\" : \"info\",\n        \"on\" : Date.now(),\n        \"msg\" : \"Layouttask XML was downloaded.\" \n    });\n    \n    layouttasks[msg.req.params.ltId].audit.push({\n        type : \"info\",\n        on   : Date.now() + 1,\n        msg  : \"Layouttask XML was downloaded.\"\n    });        \n    \n    //send based on input\n    node.send(msg);\n})\n.catch(err => {\n    if(err.response){\n        let statusCode = err.response.status;\n        let exception = err.response.data[\"exception-Root\"];\n        let errorName = err.response.statusText + \"/\" + exception.name;\n        let message = exception.message; \n        node.error(\"SPO Download Exception for layouttask XML with id='\" + msg.req.params.ltId + \"': \" + errorName + \", statusCode: \" + statusCode + \") - \" + message);\n    }  \n    \n    else{\n        node.error(\"Unable to retrieve layouttask XML with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(err));\n    }\n});",
         "outputs": 1,
         "noerr": 0,
-        "x": 950,
+        "x": 1110,
         "y": 1060,
         "wires": [
             [
@@ -1699,11 +1700,11 @@
         "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// save GangJobEvent XML to output directory\nvar filename = path.join(msg.directories.ltDir, \"LayoutTask.xml\");\n\nfs.writeFile(filename, msg.layoutTaskXML, (err) => {\n    if (err) throw err;\n    \n    node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\");\n    layouttasks[msg.req.params.ltId].audit.push({\n        type : \"info\",\n        on   : Date.now() + 1,\n        msg  : \"Layouttask XML was written to file '\" + filename + \"'.\"\n    });     \n    node.send(msg);\n});",
         "outputs": 1,
         "noerr": 0,
-        "x": 1400,
-        "y": 1080,
+        "x": 1580,
+        "y": 1060,
         "wires": [
             [
-                "d5c46bad.168e48"
+                "f30a9704.752fc8"
             ]
         ]
     },
@@ -1715,11 +1716,11 @@
         "func": "node.send(context.global.get('FLOW_CONFIG').getFlowOption(\"layoutTaskProcessor\", \"writeLayoutTaskXML\").enabled ? [null, msg] : [msg, null]);",
         "outputs": 2,
         "noerr": 0,
-        "x": 1180,
+        "x": 1360,
         "y": 1060,
         "wires": [
             [
-                "d5c46bad.168e48"
+                "f30a9704.752fc8"
             ],
             [
                 "f8c430b7.29fd9"
@@ -1735,11 +1736,11 @@
         "func": "node.send(context.global.get('FLOW_CONFIG').getFlowOption(\"layoutTaskProcessor\", \"writeReport\").enabled ? [null, msg] : [msg, null]);",
         "outputs": 2,
         "noerr": 0,
-        "x": 1620,
-        "y": 1060,
+        "x": 920,
+        "y": 980,
         "wires": [
             [
-                "f30a9704.752fc8"
+                "326c033e.f663bc"
             ],
             [
                 "b33757e7.7912e8"
@@ -1752,14 +1753,14 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: writeLayoutTask Report",
-        "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\nconst request = context.global.get('REQUEST');\nconst messages = context.global.get('CACHE_MESSAGES');\n\n// define options\nvar options = {\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '/result/report?_download=true',\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/pdf\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    },\n    encoding: null //because we get a buffer then. Otherwise body has to go into Buffer first before erotomng to file\n};\n\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve layouttask with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for layouttask with id='\" + msg.req.params.ltId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        return;\n    } \n    \n    else {\n        var filename = path.join(msg.directories.ltDir, \"LayoutTask.pdf\");\n        fs.writeFileSync(filename, body,'binary');\n        \n        node.log(\"Report retrieval with id='\"+ msg.req.params.ltId +\"' has been sucessful.\");\n        messages.arr.push({\n            \"flow\" : \"layoutTaskProcessor\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Report was downloaded.\" \n        });\n        \n        layouttasks[msg.req.params.ltId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"Report was downloaded.\"\n        });        \n        \n        //send based on input\n        node.send(msg);\n    }\n});\n",
+        "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\nconst messages = context.global.get('CACHE_MESSAGES');\n\nflow.get('axiosSPOpdf')({\n    url : 'api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '/result/report?_download=true',\n})\n.then(res => {\n    var filename = path.join(msg.directories.ltDir, \"LayoutTask.pdf\");\n    const dest = fs.createWriteStream(filename);\n    res.data.pipe(dest)\n    .on(\"finish\", () => {\n        node.log(\"Report retrieval with id='\"+ msg.req.params.ltId +\"' has been sucessful.\");\n        messages.arr.push({\n            \"flow\" : \"layoutTaskProcessor\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Report was downloaded.\" \n        });\n        \n        layouttasks[msg.req.params.ltId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"Report was downloaded.\"\n        });\n        node.send(msg);\n    })\n    .on(\"error\", (error) => {\n        node.error(\"Unable to write layouttask report with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(error));\n        node.send(msg);\n    });\n})\n.catch(err => {\n    if(err.response){\n        let statusCode = err.response.status;\n        let exception = err.response.data[\"exception-Root\"];\n        let errorName = err.response.statusText + \"/\" + exception.name;\n        let message = exception.message; \n        node.error(\"SPO Download Exception for layouttask report with id='\" + msg.req.params.ltId + \"': \" + errorName + \", statusCode: \" + statusCode + \") - \" + message);\n    }  \n    \n    else{\n        node.error(\"Unable to retrieve layouttask report with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(err));\n    }\n    node.send(msg);\n});\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 1830,
-        "y": 1080,
+        "x": 1130,
+        "y": 1000,
         "wires": [
             [
-                "f30a9704.752fc8"
+                "326c033e.f663bc"
             ]
         ]
     },
@@ -1768,10 +1769,10 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: loadLayoutTaskJSON",
-        "func": "// get request\nvar request = context.global.get('REQUEST');\nvar messages = context.global.get('CACHE_MESSAGES');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// define options\nnode.log(\"Prepare media retrieval from workspace with id='\" + env.get('SPO_WORKSPACE_ID')+\"'\");\n\nvar options = {\n    method: 'GET',\n    json : true,\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '?_nodeVisibility=%24LAYOUT_TASK_COMPLETE&_formatted=true&_download=true',\n    //json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve layouttask with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for layouttask with id='\" + msg.req.params.ltId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        return;\n    } \n    \n    else {\n        msg.layoutTaskJSON = body;\n        node.log(\"Layouttask retrieval with id='\"+ msg.req.params.ltId +\"' has been sucessful.\");\n        messages.arr.push({\n            \"flow\" : \"layoutTaskProcessor\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Layouttask JSON was downloaded.\" \n        });\n        \n        layouttasks[msg.req.params.ltId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"Layouttask JSON was downloaded.\"\n        });        \n        \n        //send based on input\n        node.send(msg);\n    }\n});\n",
+        "func": "// get request\nvar messages = context.global.get('CACHE_MESSAGES');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// define options\nnode.log(\"Prepare media retrieval from workspace with id='\" + env.get('SPO_WORKSPACE_ID')+\"'\");\n\nflow.get('axiosSPO')({\n    url: 'api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '?_nodeVisibility=%24LAYOUT_TASK_COMPLETE&_formatted=true&_download=true',\n})\n.then(res => {\n    msg.layoutTaskJSON = res.data;\n    node.log(\"Layouttask retrieval with id='\"+ msg.req.params.ltId +\"' has been sucessful.\");\n    messages.arr.push({\n        \"flow\" : \"layoutTaskProcessor\",\n        \"type\" : \"info\",\n        \"on\" : Date.now(),\n        \"msg\" : \"Layouttask JSON was downloaded.\" \n    });\n    \n    layouttasks[msg.req.params.ltId].audit.push({\n        type : \"info\",\n        on   : Date.now() + 1,\n        msg  : \"Layouttask JSON was downloaded.\"\n    });        \n    \n    //send based on input\n    node.send(msg);\n})\n.catch(err => {\n    if(err.response){\n        let statusCode = err.response.status;\n        let exception = err.response.data[\"exception-Root\"];\n        let errorName = err.response.statusText + \"/\" + exception.name;\n        let message = exception.message; \n        node.error(\"SPO Download Exception for layouttask JSON with id='\" + msg.req.params.ltId + \"': \" + errorName + \", statusCode: \" + statusCode + \") - \" + message);\n    }\n    else{\n        node.error(\"Unable to retrieve layouttask JSON with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(err));\n    }\n});",
         "outputs": 1,
         "noerr": 0,
-        "x": 960,
+        "x": 1120,
         "y": 1120,
         "wires": [
             [
@@ -1787,7 +1788,7 @@
         "func": "node.send(context.global.get('FLOW_CONFIG').getFlowOption(\"layoutTaskProcessor\", \"writeLayoutTaskJSON\").enabled ? [null, msg] : [msg, null]);",
         "outputs": 2,
         "noerr": 0,
-        "x": 1180,
+        "x": 1360,
         "y": 1120,
         "wires": [
             [
@@ -1807,11 +1808,11 @@
         "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// save GangJobEvent XML to output directory\nvar filename = path.join(msg.directories.ltDir, \"LayoutTask.json\");\n\nfs.writeFile(filename, JSON.stringify(msg.layoutTaskJSON), (err) => {\n    if (err) throw err;\n    \n    node.log(\"Write file '\" + filename + \"' (\" + pb(fs.statSync(filename).size) + \").\");\n    layouttasks[msg.req.params.ltId].audit.push({\n        type : \"info\",\n        on   : Date.now() + 1,\n        msg  : \"Layouttask JSON was written to file '\" + filename + \"'.\"\n    });     \n    node.send(msg);\n});",
         "outputs": 1,
         "noerr": 0,
-        "x": 1400,
-        "y": 1140,
+        "x": 1580,
+        "y": 1120,
         "wires": [
             [
-                "326c033e.f663bc"
+                "f30a9704.752fc8"
             ]
         ]
     },
@@ -1820,11 +1821,11 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: finish",
-        "func": "var layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n//add on to finished\nlayouttasks[msg.req.params.ltId].finished = layouttasks[msg.req.params.ltId].finished + 1;\n        \nif(layouttasks[msg.req.params.ltId].finished === 2){\n    layouttasks[msg.req.params.ltId].status = \"success\";\n    layouttasks[msg.req.params.ltId].audit.push({\n        type : \"info\",\n        on   : Date.now() + 200,\n        msg  : \"finished.\"\n    });\n}\nreturn msg;",
+        "func": "var layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n//add on to finished\nlayouttasks[msg.req.params.ltId].finished = layouttasks[msg.req.params.ltId].finished + 1;\n        \nif(layouttasks[msg.req.params.ltId].finished === 3){\n    layouttasks[msg.req.params.ltId].status = \"success\";\n    layouttasks[msg.req.params.ltId].audit.push({\n        type : \"info\",\n        on   : Date.now() + 200,\n        msg  : \"finished.\"\n    });\n}\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
-        "x": 2130,
-        "y": 1120,
+        "x": 1850,
+        "y": 1060,
         "wires": [
             []
         ]
@@ -1834,11 +1835,11 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: writeJDFJobticket",
-        "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\nconst request = context.global.get('REQUEST');\nconst messages = context.global.get('CACHE_MESSAGES');\n\n// define options\nvar url = 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '/result/events/apogeeJdfV9_0' + (msg.optionParams.params['urlParams'] || \"\");\nvar options = {\n    url: url,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/jdf\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n};\n\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve layouttask with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for layouttask with id='\" + msg.req.params.ltId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        return;\n    } \n    \n    else {\n        var filename = path.join(msg.directories.ltDir, \"Apogee_V9.0.jdf\");\n        \n        fs.writeFile(filename, body, (err) => {\n            if (err) throw err;\n        \n        \n            node.log(\"Apogee JDF retrieval with id='\"+ msg.req.params.ltId +\"' has been successful. URL: \" + url);\n            messages.arr.push({\n                \"flow\" : \"layoutTaskProcessor\",\n                \"type\" : \"info\",\n                \"on\" : Date.now(),\n                \"msg\" : \"Apogee JDF was downloaded.\" \n            });\n            \n            layouttasks[msg.req.params.ltId].audit.push({\n                type : \"info\",\n                on   : Date.now() + 1,\n                msg  : \"Apogee JDF was downloaded.\"\n            });        \n            \n            //send based on input\n            node.send(msg);\n        });\n    }\n});\n",
+        "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\nconst messages = context.global.get('CACHE_MESSAGES');\n\n// define options\n\nflow.get('axiosSPOjdf')({\n    url : 'api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '/result/events/apogeeJdfV9_0'// + (msg.optionParams.params['urlParams'] || \"\")\n})\n.then(res => {\n    var filename = path.join(msg.directories.ltDir, \"Apogee_V9.0.jdf\");\n    \n    fs.writeFile(filename, res.data, (err) => {\n        if (err) throw err;\n    \n        node.log(\"Apogee JDF retrieval with id='\"+ msg.req.params.ltId +\"' has been successful.\");\n        messages.arr.push({\n            \"flow\" : \"layoutTaskProcessor\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Apogee JDF was downloaded.\" \n        });\n        \n        layouttasks[msg.req.params.ltId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"Apogee JDF was downloaded.\"\n        });        \n        \n        //send based on input\n        node.send(msg);\n    });\n})\n.catch(err => {\n    if(err.response){\n        let statusCode = err.response.status;\n        let exception = err.response.data[\"exception-Root\"];\n        let errorName = err.response.statusText + \"/\" + exception.name;\n        let message = exception.message; \n        node.error(\"SPO Download Exception for layouttask JDF with id='\" + msg.req.params.ltId + \"': \" + errorName + \", statusCode: \" + statusCode + \") - \" + message);\n    }  \n    \n    else{\n        node.error(\"Unable to retrieve layouttask JDF with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(err));\n    }\n});\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 1810,
-        "y": 1160,
+        "x": 1570,
+        "y": 1000,
         "wires": [
             [
                 "f30a9704.752fc8"
@@ -1853,8 +1854,8 @@
         "func": "node.send(context.global.get('FLOW_CONFIG').getFlowOption(\"layoutTaskProcessor\", \"writeApogeeJDF\").enabled ? [null, msg] : [msg, null]);",
         "outputs": 2,
         "noerr": 0,
-        "x": 1620,
-        "y": 1140,
+        "x": 1360,
+        "y": 980,
         "wires": [
             [
                 "f30a9704.752fc8"
@@ -1916,26 +1917,10 @@
                 "f035f4de.0e7098"
             ],
             [
-                "1b4d43fd.48031c"
+                "d556d5ab.36bb88"
             ]
         ],
         "icon": "font-awesome/fa-sun-o"
-    },
-    {
-        "id": "1b4d43fd.48031c",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "Flow: writePDFJobTicket",
-        "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\nconst path = context.global.get('PATH');\nconst fetch = context.global.get('NODEFETCH');\nconst fs = context.global.get('FS');\n\nvar url = env.get(\"PDF_JTG_URL\") + '/';\n\nfetch(url, {\n        method: 'post',\n        headers: { 'Content-Type': 'application/json' },\n        body:    JSON.stringify(msg.gangJobEventJson),\n})\n    .then(res => {\n        if(res.ok === true){\n            node.log(\"Jobticket PDF retrieval with id='\"+ msg.sheetId +\"' has been successful.\");\n        \n            var filename = path.join(msg.sheetDirectory, msg.sheetId + \"_JobTicket.pdf\");\n            const dest = fs.createWriteStream(filename);\n            res.body.pipe(dest);\n            \n            receivedPrintJobs[msg.sheetId].audit.push({\n                type : \"info\",\n                on   : Date.now() + 1,\n                msg  : \"Jobticket PDF was downloaded.\"\n            });        \n            \n            //send based on input\n            node.send(msg);\n        }\n        \n        else{\n            node.log(\"Error: Jobticket PDF retrieval with id='\"+ msg.sheetId +\"' has NOT been successful.\");\n            receivedPrintJobs[msg.sheetId].status = \"error\";\n            receivedPrintJobs[msg.sheetId].audit.push({\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Jobticket PDF retrieval was unsuccessful.\"\n            });\n            node.send(msg);\n        }\n    })\n\n    .catch(err => {\n        console.error(err);\n        node.send(msg);\n    });\n  ",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 3030,
-        "y": 860,
-        "wires": [
-            [
-                "f035f4de.0e7098"
-            ]
-        ]
     },
     {
         "id": "d666dc39.68ba4",
@@ -1989,7 +1974,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "check services",
-        "func": "const cacheServices = context.global.get('CACHE_SERVICES');\nconst flowConfig = context.global.get('FLOW_CONFIG');\nconst axios = context.global.get('AXIOS');\nconst services = context.global.get('SERVICES');\nconst pjson = context.global.get('PACKAGE_JSON');\nconst wait = 2000;\n\nfunction updateServiceStatus(service){\n    return new Promise(function(resolve, reject){\n        if(service.type === \"pibService\"){\n            if(service.name === \"websocket\"){\n                service.status = flow.get(\"websocket\") ? \"online\" : \"offline\";\n                resolve(service);\n            }else{\n                console.log(\"ERROR at websocket\");\n                resolve(service);\n            }\n        }\n            \n        else if(service.type === \"pibWebService\"){\n            var url = (service.location + (service.location.endsWith(\"/\") ? \"\" : \"/\") + 'version');\n            axios({\n                method : \"get\",\n                url : url\n            })\n            .then(response => {\n                var data = response.data;\n\n                //Imposition service (so far)\n                if (data.hasOwnProperty('appName') && data['appName'] === service.name){\n                    service.status = 'online';\n                    service.version = data['appVersion'];\n                    service.description = \"\";\n                    resolve(service);\n                }\n                \n                //other pibWebServices\n                else if(data.hasOwnProperty('name') && data['name'] === service.name){\n                    service.status = 'online';\n                    service.version = data['versionNumber'];\n                    service.description = data['description'];\n                    resolve(service);\n                }\n                \n                else{\n                    node.warn(\"Wrong service name: Expected: '\" + service.name + \"', got: '\" + (data['appName'] || data['name']) + \"'.  Unable to connect to \" + service.title + \" at '\" + service.location + \"'\");\n                    node.log(data);\n                    service.status = \"offline\";\n                    resolve(service);\n                }\n\n                resolve(service);\n            })\n            .catch(err => {\n                node.warn(\"Error: Unable to connect to \" + service.title + \" at '\" + url + \"'\");\n                service.status = \"offline\";\n                resolve(service);\n            });\n        }\n        \n        else{\n            resolve(service);\n        }\n    })\n}\n\nfunction checkService(serviceKeys, index){\n    index = ((index + 1) <= (serviceKeys.length - 1) ? index + 1 : 0); //resets after keys length is reached\n\n    var serviceKey = serviceKeys[index];\n    var service = cacheServices[serviceKey];\n    \n    updateServiceStatus(service)\n    .then(service => {\n        cacheServices[serviceKey] = service;\n        \n        //recall itself\n        setTimeout(function(){\n            checkService(serviceKeys, index);\n        },  wait);\n    })\n}\n\n//-------ENTRY POINT--------\n//get expected services\nexpectedServices = flowConfig.getExpectedServices();\n\n//init serviceCache\nfor(var i = 0; i < expectedServices.length; i++){\n    var allowedServiceTypes = ['flow', 'pibService', 'pibWebService'];\n    var expectedServiceKey = expectedServices[i];\n    var service = services.getService(expectedServiceKey);\n    if(allowedServiceTypes.includes(service.type)) cacheServices[expectedServiceKey] = service;\n}\n\n//start\nserviceKeys = Object.keys(cacheServices);\ncheckService(serviceKeys, -1);\n",
+        "func": "const cacheServices = context.global.get('CACHE_SERVICES');\nconst flowConfig = context.global.get('FLOW_CONFIG');\nconst axios = context.global.get('AXIOS');\nconst services = context.global.get('SERVICES');\nconst pjson = context.global.get('PACKAGE_JSON');\nconst wait = 2000;\n\nfunction updateServiceStatus(service){\n    return new Promise(function(resolve, reject){\n        if(service.type === \"pibService\"){\n            if(service.name === \"websocket\"){\n                service.status = flow.get(\"websocket\") ? \"online\" : \"offline\";\n                resolve(service);\n            }else{\n                console.log(\"ERROR at websocket\");\n                resolve(service);\n            }\n        }\n            \n        else if(service.type === \"pibWebService\"){\n            var url = (service.location + (service.location.endsWith(\"/\") ? \"\" : \"/\") + 'version');\n            axios({\n                method : \"get\",\n                url : url\n            })\n            .then(response => {\n                var data = response.data;\n\n                //Imposition service (so far)\n                if (data.hasOwnProperty('appName') && data['appName'] === service.name){\n                    service.status = 'online';\n                    service.version = data['appVersion'];\n                    service.description = \"\";\n                    resolve(service);\n                }\n                \n                //other pibWebServices\n                else if(data.hasOwnProperty('name') && data['name'] === service.name){\n                    service.status = 'online';\n                    service.version = data['versionNumber'];\n                    service.description = data['description'];\n                    resolve(service);\n                }\n                \n                else{\n                    node.warn(\"Wrong service name: Expected: '\" + service.name + \"', got: '\" + (data['appName'] || data['name']) + \"'.  Unable to connect to \" + service.title + \" at '\" + service.location + \"'\");\n                    node.log(data);\n                    service.status = \"offline\";\n                    resolve(service);\n                }\n\n                resolve(service);\n            })\n            .catch(err => {\n                node.warn(\"Error: Unable to connect to \" + service.title + \" at '\" + url + \"'\");\n                service.status = \"offline\";\n                resolve(service);\n            });\n        }\n        \n        else{\n            resolve(service);\n        }\n    })\n}\n\nfunction checkService(serviceKeys, index){\n    index = ((index + 1) <= (serviceKeys.length - 1) ? index + 1 : 0); //resets after keys length is reached\n\n    var serviceKey = serviceKeys[index];\n    var service = cacheServices[serviceKey];\n    \n    updateServiceStatus(service)\n    .then(service => {\n        cacheServices[serviceKey] = service;\n        \n        //recall itself\n        setTimeout(function(){\n            checkService(serviceKeys, index);\n        },  wait);\n    })\n}\n\n//-------ENTRY POINT--------\n//get expected services\nexpectedServices = flowConfig.getExpectedServices();\n\n//init serviceCache\nfor(var i = 0; i < expectedServices.length; i++){\n    var allowedServiceTypes = ['flow', 'pibService', 'pibWebService'];\n    var expectedServiceKey = expectedServices[i];\n    var service = services.getService(expectedServiceKey);\n    if(allowedServiceTypes.includes(service.type)) cacheServices[expectedServiceKey] = service;\n}\n\n//start\nserviceKeys = Object.keys(cacheServices);\nif(serviceKeys.length > 0) checkService(serviceKeys, -1);\n",
         "outputs": 1,
         "noerr": 0,
         "x": 500,
@@ -2152,7 +2137,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "create axios instance",
-        "func": "var axios = context.global.get('AXIOS');\nvar baseUrl = 'https://' + env.get(\"SPO_URL\") + '/';\nvar timeout = 5000;\nvar authorization = 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64');\nvar xtenant = env.get(\"SPO_TENANT\");\n\nconst axiosSPO = axios.create({\n    baseURL: baseUrl,\n    timeout: timeout,\n    headers: {\n        \"X-Tenant\" : xtenant,\n        \"accept\" : \"application/json\",\n        'Authorization': authorization\n    }\n});\nflow.set('axiosSPO',axiosSPO);\n\nconst axiosSPOxml = axios.create({\n    baseURL: baseUrl,\n    timeout: timeout,\n    headers: {\n        \"X-Tenant\" : xtenant,\n        \"accept\" : \"application/xml\",\n        'Authorization': authorization\n    }\n});\nflow.set('axiosSPOxml',axiosSPOxml);\n\nreturn msg;",
+        "func": "var axios = context.global.get('AXIOS');\nvar baseUrl = 'https://' + env.get(\"SPO_URL\") + '/';\nvar timeout = 5000;\nvar authorization = 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64');\nvar xtenant = env.get(\"SPO_TENANT\");\n\nconst axiosSPO = axios.create({\n    baseURL: baseUrl,\n    timeout: timeout,\n    headers: {\n        \"X-Tenant\" : xtenant,\n        \"accept\" : \"application/json\",\n        'Authorization': authorization\n    }\n});\nflow.set('axiosSPO',axiosSPO);\n\nconst axiosSPOxml = axios.create({\n    baseURL: baseUrl,\n    timeout: timeout,\n    headers: {\n        \"X-Tenant\" : xtenant,\n        \"accept\" : \"application/xml\",\n        'Authorization': authorization\n    }\n});\nflow.set('axiosSPOxml',axiosSPOxml);\n\nconst axiosSPOpdf = axios.create({\n    baseURL: baseUrl,\n    timeout: timeout,\n    responseType : 'stream',\n    headers: {\n        \"X-Tenant\" : xtenant,\n        \"accept\" : \"application/pdf\",\n        'Authorization': authorization\n    }\n});\nflow.set('axiosSPOpdf',axiosSPOpdf);\n\nconst axiosSPOjdf = axios.create({\n    baseURL: baseUrl,\n    timeout: timeout,\n    headers: {\n        \"X-Tenant\" : xtenant,\n        \"accept\" : \"application/jdf\",\n        'Authorization': authorization\n    }\n});\nflow.set('axiosSPOjdf',axiosSPOjdf);\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "x": 320,
@@ -2297,6 +2282,112 @@
         "noerr": 0,
         "x": 2610,
         "y": 920,
+        "wires": [
+            []
+        ],
+        "icon": "node-red/alert.svg"
+    },
+    {
+        "id": "fa204702.1d92d8",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: writePDFJobTicket [OLD]",
+        "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\nconst path = context.global.get('PATH');\nconst fetch = context.global.get('NODEFETCH');\nconst fs = context.global.get('FS');\n\nvar url = env.get(\"PDF_JTG_URL\") + '/';\n\nfetch(url, {\n        method: 'post',\n        headers: { 'Content-Type': 'application/json' },\n        body:    JSON.stringify(msg.gangJobEventJson),\n})\n    .then(res => {\n        if(res.ok === true){\n            node.log(\"Jobticket PDF retrieval with id='\"+ msg.sheetId +\"' has been successful.\");\n        \n            var filename = path.join(msg.sheetDirectory, msg.sheetId + \"_JobTicket.pdf\");\n            const dest = fs.createWriteStream(filename);\n            res.body.pipe(dest);\n            \n            receivedPrintJobs[msg.sheetId].audit.push({\n                type : \"info\",\n                on   : Date.now() + 1,\n                msg  : \"Jobticket PDF was downloaded.\"\n            });        \n            \n            //send based on input\n            node.send(msg);\n        }\n        \n        else{\n            node.log(\"Error: Jobticket PDF retrieval with id='\"+ msg.sheetId +\"' has NOT been successful.\");\n            receivedPrintJobs[msg.sheetId].status = \"error\";\n            receivedPrintJobs[msg.sheetId].audit.push({\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Jobticket PDF retrieval was unsuccessful.\"\n            });\n            node.send(msg);\n        }\n    })\n\n    .catch(err => {\n        console.error(err);\n        node.send(msg);\n    });\n  ",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 3050,
+        "y": 920,
+        "wires": [
+            []
+        ],
+        "icon": "node-red/alert.svg"
+    },
+    {
+        "id": "d556d5ab.36bb88",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: writePDFJobTicket",
+        "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\nconst path = context.global.get('PATH');\nconst axios = context.global.get('AXIOS');\nconst fs = context.global.get('FS');\n\nvar url = env.get(\"PDF_JTG_URL\") + '/';\n\naxios({\n        method: 'post',\n        url : url,\n        headers: { 'Content-Type': 'application/json' },\n        data:    msg.gangJobEventJson,\n        responseType : \"stream\"\n})\n.then(res => {\n    if(res.status == 200){\n        node.log(\"Jobticket PDF retrieval with id='\"+ msg.sheetId +\"' has been successful.\");\n    \n        var filename = path.join(msg.sheetDirectory, msg.sheetId + \"_JobTicket.pdf\");\n        const dest = fs.createWriteStream(filename);\n        res.data.pipe(dest)\n        .on(\"finish\", () => {\n            receivedPrintJobs[msg.sheetId].audit.push({\n                type : \"info\",\n                on   : Date.now() + 1,\n                msg  : \"Jobticket PDF was downloaded.\"\n            });  \n            node.send(msg);\n        })\n        .on(\"error\", (error) => {\n            node.log(\"Error: Jobticket PDF retrieval with id='\"+ msg.sheetId +\"' has NOT been successful.\");\n            receivedPrintJobs[msg.sheetId].status = \"error\";\n            receivedPrintJobs[msg.sheetId].audit.push({\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Jobticket PDF retrieval was unsuccessful.\"\n            });\n            node.send(msg);\n        });\n    }\n    \n    else{\n        node.log(\"Error: Jobticket PDF retrieval with id='\"+ msg.sheetId +\"' has NOT been successful.\");\n        receivedPrintJobs[msg.sheetId].status = \"error\";\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Jobticket PDF retrieval was unsuccessful.\"\n        });\n        node.send(msg);\n    }\n})\n\n.catch(err => {\n    node.log(\"Error: Jobticket PDF retrieval with id='\"+ msg.sheetId +\"' has NOT been successful.\");\n    receivedPrintJobs[msg.sheetId].status = \"error\";\n    receivedPrintJobs[msg.sheetId].audit.push({\n        type : \"error\",\n        on   : Date.now(),\n        msg  : \"Jobticket PDF retrieval was unsuccessful.\"\n    });        \n    console.error(err);\n    node.send(msg);\n});\n  ",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 3030,
+        "y": 860,
+        "wires": [
+            [
+                "f035f4de.0e7098"
+            ]
+        ]
+    },
+    {
+        "id": "3a9931d9.1deb5e",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: loadLayoutTaskXML [OLD]",
+        "func": "// get request\nvar request = context.global.get('REQUEST');\nvar messages = context.global.get('CACHE_MESSAGES');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// define options\nvar url = 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '?_nodeVisibility=%24LAYOUT_TASK_COMPLETE&_formatted=true&_download=true';\nvar options = {\n    method: 'GET',\n    url: url,\n    //json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/xml\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve layouttask with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for layouttask with id='\" + msg.req.params.ltId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        return;\n    } \n    \n    else {\n        msg.layoutTaskXML = body;\n        node.log(\"Layouttask retrieval with id='\"+ msg.req.params.ltId +\"' has been sucessful.\");\n        messages.arr.push({\n            \"flow\" : \"layoutTaskProcessor\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Layouttask XML was downloaded.\" \n        });\n        \n        layouttasks[msg.req.params.ltId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"Layouttask XML was downloaded.\"\n        });        \n        \n        //send based on input\n        node.send(msg);\n    }\n});\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1130,
+        "y": 1080,
+        "wires": [
+            []
+        ],
+        "icon": "node-red/alert.svg"
+    },
+    {
+        "id": "ff226327.19ba2",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: loadLayoutTaskJSON [OLD]",
+        "func": "// get request\nvar request = context.global.get('REQUEST');\nvar messages = context.global.get('CACHE_MESSAGES');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// define options\nnode.log(\"Prepare media retrieval from workspace with id='\" + env.get('SPO_WORKSPACE_ID')+\"'\");\n\nvar options = {\n    method: 'GET',\n    json : true,\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '?_nodeVisibility=%24LAYOUT_TASK_COMPLETE&_formatted=true&_download=true',\n    //json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve layouttask with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for layouttask with id='\" + msg.req.params.ltId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        return;\n    } \n    \n    else {\n        msg.layoutTaskJSON = body;\n        node.log(\"Layouttask retrieval with id='\"+ msg.req.params.ltId +\"' has been sucessful.\");\n        messages.arr.push({\n            \"flow\" : \"layoutTaskProcessor\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Layouttask JSON was downloaded.\" \n        });\n        \n        layouttasks[msg.req.params.ltId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"Layouttask JSON was downloaded.\"\n        });        \n        \n        //send based on input\n        node.send(msg);\n    }\n});\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1140,
+        "y": 1160,
+        "wires": [
+            []
+        ],
+        "icon": "node-red/alert.svg"
+    },
+    {
+        "id": "67104e47.66ad9",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: writeLayoutTask Report [OLD]",
+        "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\nconst request = context.global.get('REQUEST');\nconst messages = context.global.get('CACHE_MESSAGES');\n\n// define options\nvar options = {\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '/result/report?_download=true',\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/pdf\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    },\n    encoding: null //because we get a buffer then. Otherwise body has to go into Buffer first before erotomng to file\n};\n\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve layouttask with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for layouttask with id='\" + msg.req.params.ltId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        return;\n    } \n    \n    else {\n        var filename = path.join(msg.directories.ltDir, \"LayoutTask.pdf\");\n        fs.writeFileSync(filename, body,'binary');\n        \n        node.log(\"Report retrieval with id='\"+ msg.req.params.ltId +\"' has been sucessful.\");\n        messages.arr.push({\n            \"flow\" : \"layoutTaskProcessor\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Report was downloaded.\" \n        });\n        \n        layouttasks[msg.req.params.ltId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"Report was downloaded.\"\n        });        \n        \n        //send based on input\n        node.send(msg);\n    }\n});\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1150,
+        "y": 940,
+        "wires": [
+            []
+        ],
+        "icon": "node-red/alert.svg"
+    },
+    {
+        "id": "eb5e1bb5.8d4fc8",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: writeJDFJobticket [OLD]",
+        "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\nconst request = context.global.get('REQUEST');\nconst messages = context.global.get('CACHE_MESSAGES');\n\n// define options\nvar url = 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '/result/events/apogeeJdfV9_0' + (msg.optionParams.params['urlParams'] || \"\");\nvar options = {\n    url: url,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/jdf\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n};\n\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve layouttask with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for layouttask with id='\" + msg.req.params.ltId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        return;\n    } \n    \n    else {\n        var filename = path.join(msg.directories.ltDir, \"Apogee_V9.0.jdf\");\n        \n        fs.writeFile(filename, body, (err) => {\n            if (err) throw err;\n        \n        \n            node.log(\"Apogee JDF retrieval with id='\"+ msg.req.params.ltId +\"' has been successful. URL: \" + url);\n            messages.arr.push({\n                \"flow\" : \"layoutTaskProcessor\",\n                \"type\" : \"info\",\n                \"on\" : Date.now(),\n                \"msg\" : \"Apogee JDF was downloaded.\" \n            });\n            \n            layouttasks[msg.req.params.ltId].audit.push({\n                type : \"info\",\n                on   : Date.now() + 1,\n                msg  : \"Apogee JDF was downloaded.\"\n            });        \n            \n            //send based on input\n            node.send(msg);\n        });\n    }\n});\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1590,
+        "y": 960,
+        "wires": [
+            []
+        ],
+        "icon": "node-red/alert.svg"
+    },
+    {
+        "id": "b3d59a64.d5f9c8",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "Flow: retrieveMedias [OLD]",
+        "func": "// get request\nvar request = context.global.get('REQUEST');\nvar medias = context.global.get('CACHE_MEDIAS');\nvar messages = context.global.get('CACHE_MESSAGES');\n\n// define options\nnode.log(\"Prepare media retrieval from workspace with id='\" + env.get('SPO_WORKSPACE_ID')+\"'\");\n\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/medias/',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve medias from workspace with id='\" + env.get('SPO_WORKSPACE_ID') + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for Medias in workspace with id='\" + env.get('SPO_WORKSPACE_ID') + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        return;\n    } \n    \n    else {\n        medias[\"mediaList\"] = body['medias-Root'].media;\n        node.log(\"Media retrieval from workspace with id='\"+env.get('SPO_WORKSPACE_ID')+\"' has been sucessful. Number Medias: \" + medias[\"mediaList\"].length);\n        messages.arr.push({\n            \"flow\" : \"upload\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Medias were updated (downloaded \" + medias[\"mediaList\"].length + \" medias).\" \n        });\n        \n        //send based on input\n        if(msg.hasOwnProperty(\"req\")) node.send(msg);\n    }\n});\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 580,
+        "y": 2040,
         "wires": [
             []
         ],
