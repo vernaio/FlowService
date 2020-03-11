@@ -92,7 +92,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "log details",
-        "func": "pjson = context.global.get('PACKAGE_JSON');\n\nnode.warn(pjson.name + \" has started.\");\n\n// log package.json details\nnode.log(\"Application: \" + pjson.name + \" \" + pjson.version);\nnode.log(\"License: \" + pjson.license);\n\n// log credentials\nnode.log(\"SPO Tenant: \" + env.get(\"SPO_TENANT\"));\nnode.log(\"SPO URL: \" + env.get(\"SPO_URL\"));\nnode.log(\"SPO Workspace ID: \" + env.get(\"SPO_WORKSPACE_ID\"));\n\n// log input logic details\nintegrationVersion = context.global.get('INTEGRATION').getVersion();\nnode.log(\"Integration Name: \" + integrationVersion.name + \" \" + integrationVersion.versionNumber);\nnode.log(\"Integration Location: \" + env.get(\"INTEGRATION_LOCATION\"));\n\nreturn msg;\n",
+        "func": "pjson = context.global.get('PACKAGE_JSON');\n\nnode.log(pjson.name + \" has started.\");\n\n// log package.json details\nnode.log(\"Application: \" + pjson.name + \" \" + pjson.version);\nnode.log(\"License: \" + pjson.license);\n\n// log credentials\nnode.log(\"SPO Tenant: \" + env.get(\"SPO_TENANT\"));\nnode.log(\"SPO URL: \" + env.get(\"SPO_URL\"));\nnode.log(\"SPO Workspace ID: \" + env.get(\"SPO_WORKSPACE_ID\"));\n\n// log input logic details\nintegrationVersion = context.global.get('INTEGRATION').getVersion();\nnode.log(\"Integration Name: \" + integrationVersion.name + \" \" + integrationVersion.versionNumber);\nnode.log(\"Integration Location: \" + env.get(\"INTEGRATION_LOCATION\"));\n\nreturn msg;\n",
         "outputs": 1,
         "noerr": 0,
         "x": 320,
@@ -349,42 +349,8 @@
         "name": "RESTful Controller API",
         "info": "",
         "x": 160,
-        "y": 2000,
+        "y": 1960,
         "wires": []
-    },
-    {
-        "id": "6fd34592.eb8f2c",
-        "type": "inject",
-        "z": "d4af305b.2ea44",
-        "name": "health-check",
-        "topic": "",
-        "payload": "",
-        "payloadType": "date",
-        "repeat": "60",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "x": 140,
-        "y": 1880,
-        "wires": [
-            [
-                "cdee81a6.8fba1"
-            ]
-        ]
-    },
-    {
-        "id": "cdee81a6.8fba1",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "health-check",
-        "func": "node.log(\"Process health check...\")\n\n// check active jobs for timeout\nconst TIMEOUT_ACTIVE_JOBS = 60 * 1000; // 1 minute\n\nvar activeJobs = context.global.get('CACHE_ACTIVE_JOBS');\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\nfor(var key in activeJobs) {\n    if(activeJobs[key] < Date.now() - TIMEOUT_ACTIVE_JOBS) {\n        node.warn(\"Timeout of active job: \" + key)\n        \n        if(processedJobs[key].status == \"pending\"){\n            processedJobs[key].status = \"canceled\";\n            processedJobs[key].audit.push(\n                {\n                    type : \"error\",\n                    on   : Date.now(),\n                    msg  : \"Time out.\"\n                }  \n            );           \n        }\n    }\n    \n\n}",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 330,
-        "y": 1880,
-        "wires": [
-            []
-        ]
     },
     {
         "id": "77d56e74.1d37",
@@ -406,7 +372,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 180,
-        "y": 2120,
+        "y": 2080,
         "wires": [
             [
                 "b2ed4347.33229"
@@ -422,7 +388,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 550,
-        "y": 2120,
+        "y": 2080,
         "wires": [
             [
                 "b7ef0e77.c2a41"
@@ -437,7 +403,7 @@
         "statusCode": "",
         "headers": {},
         "x": 770,
-        "y": 2120,
+        "y": 2080,
         "wires": []
     },
     {
@@ -450,7 +416,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 170,
-        "y": 2160,
+        "y": 2120,
         "wires": [
             [
                 "b4918ad2.0b3cc8"
@@ -465,7 +431,7 @@
         "statusCode": "",
         "headers": {},
         "x": 770,
-        "y": 2160,
+        "y": 2120,
         "wires": []
     },
     {
@@ -477,7 +443,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 540,
-        "y": 2160,
+        "y": 2120,
         "wires": [
             [
                 "18df55e5.bb2d6a"
@@ -1250,7 +1216,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 560,
-        "y": 2080,
+        "y": 2040,
         "wires": [
             [
                 "f14f1775.6456f8"
@@ -1267,7 +1233,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 190,
-        "y": 2080,
+        "y": 2040,
         "wires": [
             [
                 "8414ee15.32b7d"
@@ -1282,7 +1248,7 @@
         "statusCode": "204",
         "headers": {},
         "x": 780,
-        "y": 2080,
+        "y": 2040,
         "wires": []
     },
     {
@@ -1753,7 +1719,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: writeLayoutTask Report",
-        "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\nconst messages = context.global.get('CACHE_MESSAGES');\n\nflow.get('axiosSPOpdf')({\n    url : 'api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '/result/report?_download=true',\n})\n.then(res => {\n    var filename = path.join(msg.directories.ltDir, \"LayoutTask.pdf\");\n    const dest = fs.createWriteStream(filename);\n    res.data.pipe(dest)\n    .on(\"finish\", () => {\n        node.log(\"Report retrieval with id='\"+ msg.req.params.ltId +\"' has been sucessful.\");\n        messages.arr.push({\n            \"flow\" : \"layoutTaskProcessor\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Report was downloaded.\" \n        });\n        \n        layouttasks[msg.req.params.ltId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"Report was downloaded.\"\n        });\n        node.send(msg);\n    })\n    .on(\"error\", (error) => {\n        node.error(\"Unable to write layouttask report with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(error));\n        node.send(msg);\n    });\n})\n.catch(err => {\n    if(err.response){\n        let statusCode = err.response.status;\n        let exception = err.response.data[\"exception-Root\"];\n        let errorName = err.response.statusText + \"/\" + exception.name;\n        let message = exception.message; \n        node.error(\"SPO Download Exception for layouttask report with id='\" + msg.req.params.ltId + \"': \" + errorName + \", statusCode: \" + statusCode + \") - \" + message);\n    }  \n    \n    else{\n        node.error(\"Unable to retrieve layouttask report with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(err));\n    }\n    node.send(msg);\n});\n",
+        "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\nconst messages = context.global.get('CACHE_MESSAGES');\nconst option = context.global.get('FLOW_CONFIG').getFlowOption(\"layoutTaskProcessor\", \"writeReport\");\n\nflow.get('axiosSPOpdf')({\n    url : 'api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '/result/report?_download=true' + option.params['urlParams'],\n})\n.then(res => {\n    var filename = path.join(msg.directories.ltDir, \"LayoutTask.pdf\");\n    const dest = fs.createWriteStream(filename);\n    res.data.pipe(dest)\n    .on(\"finish\", () => {\n        node.log(\"Report retrieval with id='\"+ msg.req.params.ltId +\"' has been sucessful.\");\n        messages.arr.push({\n            \"flow\" : \"layoutTaskProcessor\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Report was downloaded.\" \n        });\n        \n        layouttasks[msg.req.params.ltId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"Report was downloaded.\"\n        });\n        node.send(msg);\n    })\n    .on(\"error\", (error) => {\n        node.error(\"Unable to write layouttask report with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(error));\n        node.send(msg);\n    });\n})\n.catch(err => {\n    if(err.response){\n        let statusCode = err.response.status;\n        let exception = err.response.data[\"exception-Root\"];\n        let errorName = err.response.statusText + \"/\" + exception.name;\n        let message = exception.message; \n        node.error(\"SPO Download Exception for layouttask report with id='\" + msg.req.params.ltId + \"': \" + errorName + \", statusCode: \" + statusCode + \") - \" + message);\n    }  \n    \n    else{\n        node.error(\"Unable to retrieve layouttask report with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(err));\n    }\n    node.send(msg);\n});\n",
         "outputs": 1,
         "noerr": 0,
         "x": 1130,
@@ -1835,7 +1801,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: writeJDFJobticket",
-        "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\nconst messages = context.global.get('CACHE_MESSAGES');\n\n// define options\n\nflow.get('axiosSPOjdf')({\n    url : 'api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '/result/events/apogeeJdfV9_0'// + (msg.optionParams.params['urlParams'] || \"\")\n})\n.then(res => {\n    var filename = path.join(msg.directories.ltDir, \"Apogee_V9.0.jdf\");\n    \n    fs.writeFile(filename, res.data, (err) => {\n        if (err) throw err;\n    \n        node.log(\"Apogee JDF retrieval with id='\"+ msg.req.params.ltId +\"' has been successful.\");\n        messages.arr.push({\n            \"flow\" : \"layoutTaskProcessor\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Apogee JDF was downloaded.\" \n        });\n        \n        layouttasks[msg.req.params.ltId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"Apogee JDF was downloaded.\"\n        });        \n        \n        //send based on input\n        node.send(msg);\n    });\n})\n.catch(err => {\n    if(err.response){\n        let statusCode = err.response.status;\n        let exception = err.response.data[\"exception-Root\"];\n        let errorName = err.response.statusText + \"/\" + exception.name;\n        let message = exception.message; \n        node.error(\"SPO Download Exception for layouttask JDF with id='\" + msg.req.params.ltId + \"': \" + errorName + \", statusCode: \" + statusCode + \") - \" + message);\n    }  \n    \n    else{\n        node.error(\"Unable to retrieve layouttask JDF with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(err));\n    }\n});\n",
+        "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\nconst messages = context.global.get('CACHE_MESSAGES');\nconst option = context.global.get('FLOW_CONFIG').getFlowOption(\"layoutTaskProcessor\", \"writeApogeeJDF\");\n\nflow.get('axiosSPOjdf')({\n    url : 'api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '/result/events/apogeeJdfV9_0' + option.params['urlParams']\n})\n.then(res => {\n    var filename = path.join(msg.directories.ltDir, \"Apogee_V9.0.jdf\");\n    \n    fs.writeFile(filename, res.data, (err) => {\n        if (err) throw err;\n    \n        node.log(\"Apogee JDF retrieval with id='\"+ msg.req.params.ltId +\"' has been successful.\");\n        messages.arr.push({\n            \"flow\" : \"layoutTaskProcessor\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Apogee JDF was downloaded.\" \n        });\n        \n        layouttasks[msg.req.params.ltId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"Apogee JDF was downloaded.\"\n        });        \n        \n        //send based on input\n        node.send(msg);\n    });\n})\n.catch(err => {\n    if(err.response){\n        let statusCode = err.response.status;\n        let exception = err.response.data[\"exception-Root\"];\n        let errorName = err.response.statusText + \"/\" + exception.name;\n        let message = exception.message; \n        node.error(\"SPO Download Exception for layouttask JDF with id='\" + msg.req.params.ltId + \"': \" + errorName + \", statusCode: \" + statusCode + \") - \" + message);\n    }  \n    \n    else{\n        node.error(\"Unable to retrieve layouttask JDF with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(err));\n    }\n});\n",
         "outputs": 1,
         "noerr": 0,
         "x": 1570,
@@ -1929,7 +1895,7 @@
         "name": "Get Flow Configuration & Services",
         "info": "",
         "x": 200,
-        "y": 100,
+        "y": 60,
         "wires": []
     },
     {
@@ -1937,11 +1903,11 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "load flow config",
-        "func": "var flowConfig = context.global.get('FLOW_CONFIG');\n\n//check for config from integration\ntry{\n    var customFlowConfig = context.global.get('INTEGRATION').getFlowConfig();\n    flowConfig.set(customFlowConfig);\n    node.log(\"Successfully fetched custom flow config.\");\n}\n\ncatch(e){\n    node.warn(\"Found no custom flow config. Using default flow config.\");\n    //node.log(e);\n}\n\nnode.send(msg);",
+        "func": "var flowConfig = context.global.get('FLOW_CONFIG');\n\n//check for config from integration\ntry{\n    var customFlowConfig = context.global.get('INTEGRATION').getFlowConfig();\n    flowConfig.set(customFlowConfig);\n    node.log(\"Custom flowConfig: successfully fetched.\");\n}\n\ncatch(e){\n    node.error(e);\n    node.warn(\"Got no custom flow config. Using default flow config as fallback.\");\n}\n\nnode.send(msg);",
         "outputs": 1,
         "noerr": 0,
         "x": 300,
-        "y": 140,
+        "y": 100,
         "wires": [
             [
                 "17cbfb4d.e7b6a5"
@@ -1961,7 +1927,7 @@
         "once": true,
         "onceDelay": 0.1,
         "x": 120,
-        "y": 140,
+        "y": 100,
         "wires": [
             [
                 "b7422ae9.b328d8",
@@ -1978,7 +1944,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 500,
-        "y": 140,
+        "y": 100,
         "wires": [
             []
         ]
@@ -1993,7 +1959,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 180,
-        "y": 2200,
+        "y": 2160,
         "wires": [
             [
                 "608942ad.24f4fc"
@@ -2009,7 +1975,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 560,
-        "y": 2200,
+        "y": 2160,
         "wires": [
             [
                 "e6406efd.a5bc3"
@@ -2024,7 +1990,7 @@
         "statusCode": "",
         "headers": {},
         "x": 770,
-        "y": 2200,
+        "y": 2160,
         "wires": []
     },
     {
@@ -2037,7 +2003,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 180,
-        "y": 2240,
+        "y": 2200,
         "wires": [
             [
                 "f7da5c68.0a8ca"
@@ -2053,7 +2019,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 550,
-        "y": 2240,
+        "y": 2200,
         "wires": [
             [
                 "575a86bc.8a1888"
@@ -2068,7 +2034,7 @@
         "statusCode": "",
         "headers": {},
         "x": 770,
-        "y": 2240,
+        "y": 2200,
         "wires": []
     },
     {
@@ -2081,7 +2047,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 190,
-        "y": 2280,
+        "y": 2240,
         "wires": [
             [
                 "f34ac274.88b4b"
@@ -2097,7 +2063,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 550,
-        "y": 2280,
+        "y": 2240,
         "wires": [
             [
                 "742af2f7.0f8b9c"
@@ -2112,25 +2078,8 @@
         "statusCode": "",
         "headers": {},
         "x": 770,
-        "y": 2280,
+        "y": 2240,
         "wires": []
-    },
-    {
-        "id": "3ad707b6.501ec8",
-        "type": "http in",
-        "z": "d4af305b.2ea44",
-        "name": "",
-        "url": "*",
-        "method": "get",
-        "upload": false,
-        "swaggerDoc": "",
-        "x": 110,
-        "y": 2420,
-        "wires": [
-            [
-                "6540c97b.74e5d8"
-            ]
-        ]
     },
     {
         "id": "ec83c8c7.8cfb58",
@@ -2141,7 +2090,7 @@
         "outputs": 1,
         "noerr": 0,
         "x": 320,
-        "y": 180,
+        "y": 140,
         "wires": [
             []
         ]
@@ -2163,36 +2112,6 @@
         ]
     },
     {
-        "id": "b705eaad.ac0528",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "Flow: uploadBinderySignatures [OLD]",
-        "func": "\n// get request\nvar request = context.global.get('REQUEST');\n\n// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\n// define options\nnode.log(\"Prepare upload of job \" + msg.job.jobId);\n\nvar body = { \"binderySignatures-Root\" : { \"binderySignature\" : msg.binderySignatures } };\n\nvar options = {\n    method: 'POST',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/binderySignatures/',\n    json: true,\n    body: body,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to upload Job '\" + msg.job.jobId + \"'. Reason: \" + JSON.stringify(error));\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Unable to upload: \" + JSON.stringify(error)\n            }\n        );        \n        return;\n        \n    } else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Upload Exception for Job '\" + msg.job.jobId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message);\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Upload exception: \" + (err.statusCode == 409 ? \"The ID is already in use.\" : err.message)\n            }\n        ); \n        return;\n    \n    } else {\n        node.log(\"Upload has been executed sucessfully for job '\" + msg.job.jobId + \"'. Number BinderySignatures: \" + msg.binderySignatures.length);\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"info\",\n                on   : Date.now(),\n                msg  : \"The bindery signature(s) has been successfully uploaded.\"\n            }\n        );\n        node.send(msg);\n    }\n});",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 2220,
-        "y": 260,
-        "wires": [
-            []
-        ],
-        "icon": "node-red/alert.svg"
-    },
-    {
-        "id": "a7a89f47.35b28",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "Flow: processAssemblerTask [OLD]",
-        "func": "\n// get request\nvar request = context.global.get('REQUEST');\n\n// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\n\n// define options\nnode.log(\"Prepare AssemblerTask for job \" + msg.job.jobId);\n\nvar options = {\n    method: 'POST',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/assembler/',\n    json: true,\n    body: msg.assemblerTask,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to connect Assembler for job '\" + msg.job.jobId + \"'. Reason: \" + JSON.stringify(error));\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Unable to connect Assembler.\"\n            }  \n        );\n        return;\n    \n    } else if (body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"Assembler Parse Exception for Job '\" + msg.job.jobId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message);\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Assembler parse exception.\"\n            }\n        );\n        return;\n        \n    } else {\n        if (body['assembler-Root'].exceptionInfo!==undefined) {\n            console.dir(body['assembler-Root']);\n            var errMessage = body['assembler-Root'].exceptionInfo.message;\n            node.error(\"Assembler Task Exception for Job '\" + msg.job.jobId + \"': \" + errMessage);\n            processedJobs[msg.job.jobId].status = \"error\";\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"error\",\n                    on   : Date.now(),\n                    msg  : \"Assembler task exception.\"\n                }\n            );\n          return;\n        } \n        \n        else {\n            msg.binderySignatures = body['assembler-Root'].result.binderySignatures.binderySignature;\n            node.log(\"Assembler has been executed sucessfully for job '\" + msg.job.jobId + \"'. Number BinderySignatures: \" + msg.binderySignatures.length);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"Assembler created \" + msg.binderySignatures.length + \" bindery signatures.\"\n                }\n            );\n            node.send(msg);\n        }\n    }\n});\n\n\n",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 1420,
-        "y": 360,
-        "wires": [
-            []
-        ],
-        "icon": "node-red/alert.svg"
-    },
-    {
         "id": "fee2b333.7f4b8",
         "type": "inject",
         "z": "d4af305b.2ea44",
@@ -2205,102 +2124,12 @@
         "once": true,
         "onceDelay": "1",
         "x": 120,
-        "y": 2040,
+        "y": 2000,
         "wires": [
             [
                 "8414ee15.32b7d"
             ]
         ]
-    },
-    {
-        "id": "c21efdc5.05724",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "Flow: loadSheetDetails [OLD]",
-        "func": "const request = context.global.get('REQUEST');\n\n// extract planned event id\nvar plannedEventId = msg.resourceCreationNotification.href.match(\"[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}\");\nnode.log(\"Load event details for plannedEvent '\" + plannedEventId + \"'...\")\n\n\n// define options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.resourceCreationNotification.href + '?_nodeVisibility=*/href:VISIBLE',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to connect SPO for plannedEvent '\" + plannedEventId + \"'. Reason: \" + JSON.stringify(error));\n    } \n    \n    else if (body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Exception for plannedEvent '\" + plannedEventId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message);\n    } \n    \n    else if (body['events-Root'] !== undefined) {\n        var events = body['events-Root'];\n        node.log(\"Event details has been loaded sucessfully for PlannedEvent '\" + plannedEventId + \"'. Number of Events: \" + events.event.length);\n        \n        for(var i = 0; i < events.event.length; i ++) {\n            node.log(\"Process PlannedEvent '\" + plannedEventId + \"'...\")\n            node.send({event:  events.event[i]});\n        }\n    }\n});\n\n\n",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 1010,
-        "y": 620,
-        "wires": [
-            []
-        ],
-        "icon": "node-red/alert.svg"
-    },
-    {
-        "id": "c2296b47.f6b148",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "Flow: loadGangJobEventXML [OLD]",
-        "func": "const request = context.global.get('REQUEST');\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent?_nodeVisibility=$GANG_JOB_EVENT_COMPLETE',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/xml\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        receivedPrintJobs[msg.sheetId].status = \"error\";\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to load GangJobEvent.\"\n        });\n        \n        node.error(\"Unable to load GangJobEvent for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n    } \n    \n    else {\n        // append GangJobEvent to message\n        msg.gangJobEventXml = body;\n        \n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"GangJobEvent XML has been received.\"\n        });\n        \n        node.log('GangJobEvent XML has been received for sheet \\'' + msg.sheetId + '\\'.');\n        node.send(msg);\n    \n    }\n        \n});",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 1790,
-        "y": 640,
-        "wires": [
-            []
-        ],
-        "icon": "node-red/alert.svg"
-    },
-    {
-        "id": "5da1777d.0a8518",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "Flow: loadGangJobEventJSON [OLD]",
-        "func": "const request = context.global.get('REQUEST');\n\n// define request options\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/' + msg.event.href + '/@GangJobEvent?_nodeVisibility=/auditLog:VISIBLE&_nodeVisibility=$GANG_JOB_EVENT_COMPLETE',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        \"Authorization\" : 'Basic ' + new Buffer(env.get(\"SPO_USER\") + \":\" + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to load GangJobEvent JSON for '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(error));\n    \n    } else {\n        // append GangJobEvent to message\n        msg.gangJobEventJson = body;\n        node.log('GangJobEvent JSON has been received for sheet \\'' + msg.sheetId + '\\'.');\n        node.send(msg);\n    \n    }\n        \n});",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 1710,
-        "y": 840,
-        "wires": [
-            []
-        ],
-        "icon": "node-red/alert.svg"
-    },
-    {
-        "id": "bf36b7e6.433678",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "Flow: imposeSheet [OLD]",
-        "func": "const request = context.global.get('REQUEST');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst pb = context.global.get('PRETTY_BYTES');\nconst unzipper = context.global.get('UNZIPPER');\nvar receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\n\n// define request options\nvar options = {\n    method: 'POST',\n    url: env.get(\"IMPOSITION_URL\") + '/impose/sheet',\n    body: msg.gangJobEventXml,\n}\n\n// execute request\n\nrequest(options)\n    .on('error', function(err) {\n        node.error(\"Unable to impose sheet '\" + msg.sheetId + \"'. Reason: \" + JSON.stringify(err));\n        \n        receivedPrintJobs[msg.sheetId].status = \"error\";\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to impose sheet.\"\n        });\n    })\n    .pipe(unzipper.Parse())\n    .on('entry', function (entry) {\n        const fileName = entry.path;\n        const targetPath = path.join(msg.sheetDirectory, path.basename(fileName));\n        entry.pipe(fs.createWriteStream(targetPath));\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"Wrote file \" + path.basename(fileName) + \".\"\n        });        \n    })\n    .on('finish', () => {\n        \n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"Sheet imposition finished.\"\n        });\n        \n        /*if(receivedPrintJobs[msg.sheetId].status === \"pending\"){\n            receivedPrintJobs[msg.sheetId].status = \"success\";\n        }\n        receivedPrintJobs[msg.sheetId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"finished.\"\n        });*/\n\n        node.send(msg);\n    });\n",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 2710,
-        "y": 660,
-        "wires": [
-            []
-        ],
-        "icon": "node-red/alert.svg"
-    },
-    {
-        "id": "ec8643db.06135",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "Flow: writeJDFJobTicket [OLD]",
-        "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\nconst path = context.global.get('PATH');\nconst fetch = context.global.get('NODEFETCH');\nconst fs = context.global.get('FS');\n\nvar url = env.get(\"JDF_JTG_URL\") + '/json/' + msg.sheetId;\n\nfetch(url, {\n        method: 'post',\n        headers: { 'Content-Type': 'application/json' },\n        body:    JSON.stringify(msg.gangJobEventJson),\n    })\n    .then(res => {\n        if(res.ok === true){\n            node.log(\"Jobticket JDF retrieval with id='\"+ msg.sheetId +\"' has been successful.\");\n            res.text()\n            .then(data => {\n                var filename = path.join(msg.sheetDirectory, msg.sheetId + \"_apogeeV9_JobTicket.jdf\");\n                fs.writeFile(filename, data, (err) => {\n                    if (err) throw err;\n                    \n                    receivedPrintJobs[msg.sheetId].audit.push({\n                        type : \"info\",\n                        on   : Date.now() + 1,\n                        msg  : \"Jobticket JDF was downloaded.\"\n                    });        \n                    \n                    //send based on input\n                    node.send(msg);\n                });                \n            })\n        }\n        \n        else{\n            node.log(\"Error: Jobticket JDF retrieval with id='\"+ msg.sheetId +\"' has NOT been successful.\");\n            receivedPrintJobs[msg.sheetId].status = \"error\";\n            receivedPrintJobs[msg.sheetId].audit.push({\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Jobticket JDF retrieval was unsuccessful.\"\n            });\n            node.send(msg);\n        }\n    })\n\n    .catch(err => {\n        console.error(err);\n        node.send(msg);\n    });\n\n",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 2610,
-        "y": 920,
-        "wires": [
-            []
-        ],
-        "icon": "node-red/alert.svg"
-    },
-    {
-        "id": "fa204702.1d92d8",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "Flow: writePDFJobTicket [OLD]",
-        "func": "var receivedPrintJobs = context.global.get('CACHE_RECEIVED_PRINTJOBS');\nconst path = context.global.get('PATH');\nconst fetch = context.global.get('NODEFETCH');\nconst fs = context.global.get('FS');\n\nvar url = env.get(\"PDF_JTG_URL\") + '/';\n\nfetch(url, {\n        method: 'post',\n        headers: { 'Content-Type': 'application/json' },\n        body:    JSON.stringify(msg.gangJobEventJson),\n})\n    .then(res => {\n        if(res.ok === true){\n            node.log(\"Jobticket PDF retrieval with id='\"+ msg.sheetId +\"' has been successful.\");\n        \n            var filename = path.join(msg.sheetDirectory, msg.sheetId + \"_JobTicket.pdf\");\n            const dest = fs.createWriteStream(filename);\n            res.body.pipe(dest);\n            \n            receivedPrintJobs[msg.sheetId].audit.push({\n                type : \"info\",\n                on   : Date.now() + 1,\n                msg  : \"Jobticket PDF was downloaded.\"\n            });        \n            \n            //send based on input\n            node.send(msg);\n        }\n        \n        else{\n            node.log(\"Error: Jobticket PDF retrieval with id='\"+ msg.sheetId +\"' has NOT been successful.\");\n            receivedPrintJobs[msg.sheetId].status = \"error\";\n            receivedPrintJobs[msg.sheetId].audit.push({\n                type : \"error\",\n                on   : Date.now(),\n                msg  : \"Jobticket PDF retrieval was unsuccessful.\"\n            });\n            node.send(msg);\n        }\n    })\n\n    .catch(err => {\n        console.error(err);\n        node.send(msg);\n    });\n  ",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 3050,
-        "y": 920,
-        "wires": [
-            []
-        ],
-        "icon": "node-red/alert.svg"
     },
     {
         "id": "d556d5ab.36bb88",
@@ -2319,78 +2148,64 @@
         ]
     },
     {
-        "id": "3a9931d9.1deb5e",
-        "type": "function",
+        "id": "621c209e.873cb",
+        "type": "http in",
         "z": "d4af305b.2ea44",
-        "name": "Flow: loadLayoutTaskXML [OLD]",
-        "func": "// get request\nvar request = context.global.get('REQUEST');\nvar messages = context.global.get('CACHE_MESSAGES');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// define options\nvar url = 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '?_nodeVisibility=%24LAYOUT_TASK_COMPLETE&_formatted=true&_download=true';\nvar options = {\n    method: 'GET',\n    url: url,\n    //json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/xml\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve layouttask with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for layouttask with id='\" + msg.req.params.ltId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        return;\n    } \n    \n    else {\n        msg.layoutTaskXML = body;\n        node.log(\"Layouttask retrieval with id='\"+ msg.req.params.ltId +\"' has been sucessful.\");\n        messages.arr.push({\n            \"flow\" : \"layoutTaskProcessor\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Layouttask XML was downloaded.\" \n        });\n        \n        layouttasks[msg.req.params.ltId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"Layouttask XML was downloaded.\"\n        });        \n        \n        //send based on input\n        node.send(msg);\n    }\n});\n",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 1130,
-        "y": 1080,
+        "name": "",
+        "url": "/controller/flowConfig",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 170,
+        "y": 2280,
         "wires": [
-            []
-        ],
-        "icon": "node-red/alert.svg"
+            [
+                "817e357c.fa8268"
+            ]
+        ]
     },
     {
-        "id": "ff226327.19ba2",
+        "id": "817e357c.fa8268",
         "type": "function",
         "z": "d4af305b.2ea44",
-        "name": "Flow: loadLayoutTaskJSON [OLD]",
-        "func": "// get request\nvar request = context.global.get('REQUEST');\nvar messages = context.global.get('CACHE_MESSAGES');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\n\n// define options\nnode.log(\"Prepare media retrieval from workspace with id='\" + env.get('SPO_WORKSPACE_ID')+\"'\");\n\nvar options = {\n    method: 'GET',\n    json : true,\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '?_nodeVisibility=%24LAYOUT_TASK_COMPLETE&_formatted=true&_download=true',\n    //json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve layouttask with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for layouttask with id='\" + msg.req.params.ltId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        return;\n    } \n    \n    else {\n        msg.layoutTaskJSON = body;\n        node.log(\"Layouttask retrieval with id='\"+ msg.req.params.ltId +\"' has been sucessful.\");\n        messages.arr.push({\n            \"flow\" : \"layoutTaskProcessor\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Layouttask JSON was downloaded.\" \n        });\n        \n        layouttasks[msg.req.params.ltId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"Layouttask JSON was downloaded.\"\n        });        \n        \n        //send based on input\n        node.send(msg);\n    }\n});\n",
+        "name": "read flowConfig",
+        "func": "msg.payload = context.global.get('FLOW_CONFIG').getAll();\nnode.send(msg);",
         "outputs": 1,
         "noerr": 0,
-        "x": 1140,
-        "y": 1160,
+        "x": 540,
+        "y": 2280,
         "wires": [
-            []
-        ],
-        "icon": "node-red/alert.svg"
+            [
+                "8c8712e0.3e664"
+            ]
+        ]
     },
     {
-        "id": "67104e47.66ad9",
-        "type": "function",
+        "id": "8c8712e0.3e664",
+        "type": "http response",
         "z": "d4af305b.2ea44",
-        "name": "Flow: writeLayoutTask Report [OLD]",
-        "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\nconst request = context.global.get('REQUEST');\nconst messages = context.global.get('CACHE_MESSAGES');\n\n// define options\nvar options = {\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '/result/report?_download=true',\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/pdf\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    },\n    encoding: null //because we get a buffer then. Otherwise body has to go into Buffer first before erotomng to file\n};\n\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve layouttask with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for layouttask with id='\" + msg.req.params.ltId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        return;\n    } \n    \n    else {\n        var filename = path.join(msg.directories.ltDir, \"LayoutTask.pdf\");\n        fs.writeFileSync(filename, body,'binary');\n        \n        node.log(\"Report retrieval with id='\"+ msg.req.params.ltId +\"' has been sucessful.\");\n        messages.arr.push({\n            \"flow\" : \"layoutTaskProcessor\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Report was downloaded.\" \n        });\n        \n        layouttasks[msg.req.params.ltId].audit.push({\n            type : \"info\",\n            on   : Date.now() + 1,\n            msg  : \"Report was downloaded.\"\n        });        \n        \n        //send based on input\n        node.send(msg);\n    }\n});\n",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 1150,
-        "y": 940,
-        "wires": [
-            []
-        ],
-        "icon": "node-red/alert.svg"
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 770,
+        "y": 2280,
+        "wires": []
     },
     {
-        "id": "eb5e1bb5.8d4fc8",
-        "type": "function",
+        "id": "1ac67978.d03a57",
+        "type": "http in",
         "z": "d4af305b.2ea44",
-        "name": "Flow: writeJDFJobticket [OLD]",
-        "func": "const pb = context.global.get('PRETTY_BYTES');\nconst path = context.global.get('PATH');\nconst fs = context.global.get('FS');\nconst layouttasks = context.global.get('CACHE_RECEIVED_LAYOUTTASKS');\nconst request = context.global.get('REQUEST');\nconst messages = context.global.get('CACHE_MESSAGES');\n\n// define options\nvar url = 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/layoutTasks/id=' + msg.req.params.ltId + '/result/events/apogeeJdfV9_0' + (msg.optionParams.params['urlParams'] || \"\");\nvar options = {\n    url: url,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/jdf\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n};\n\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve layouttask with id='\" + msg.req.params.ltId + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for layouttask with id='\" + msg.req.params.ltId + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        return;\n    } \n    \n    else {\n        var filename = path.join(msg.directories.ltDir, \"Apogee_V9.0.jdf\");\n        \n        fs.writeFile(filename, body, (err) => {\n            if (err) throw err;\n        \n        \n            node.log(\"Apogee JDF retrieval with id='\"+ msg.req.params.ltId +\"' has been successful. URL: \" + url);\n            messages.arr.push({\n                \"flow\" : \"layoutTaskProcessor\",\n                \"type\" : \"info\",\n                \"on\" : Date.now(),\n                \"msg\" : \"Apogee JDF was downloaded.\" \n            });\n            \n            layouttasks[msg.req.params.ltId].audit.push({\n                type : \"info\",\n                on   : Date.now() + 1,\n                msg  : \"Apogee JDF was downloaded.\"\n            });        \n            \n            //send based on input\n            node.send(msg);\n        });\n    }\n});\n",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 1590,
-        "y": 960,
+        "name": "",
+        "url": "*",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 110,
+        "y": 2420,
         "wires": [
-            []
-        ],
-        "icon": "node-red/alert.svg"
-    },
-    {
-        "id": "b3d59a64.d5f9c8",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "Flow: retrieveMedias [OLD]",
-        "func": "// get request\nvar request = context.global.get('REQUEST');\nvar medias = context.global.get('CACHE_MEDIAS');\nvar messages = context.global.get('CACHE_MESSAGES');\n\n// define options\nnode.log(\"Prepare media retrieval from workspace with id='\" + env.get('SPO_WORKSPACE_ID')+\"'\");\n\nvar options = {\n    method: 'GET',\n    url: 'https://' + env.get(\"SPO_URL\") + '/api/rest/workspaces/id=' + env.get(\"SPO_WORKSPACE_ID\") + '/medias/',\n    json: true,\n    headers: {\n        \"X-Tenant\" : env.get(\"SPO_TENANT\"),\n        \"accept\" : \"application/json\",\n        'Authorization': 'Basic ' + Buffer.from(env.get(\"SPO_USER\") + ':' + env.get(\"SPO_PASSWORD\")).toString('base64')\n    }\n}\n\n// execute request\nrequest(options, (error, response, body) => {\n    if (error) {\n        node.error(\"Unable to retrieve medias from workspace with id='\" + env.get('SPO_WORKSPACE_ID') + \"'. Reason: \" + JSON.stringify(error));\n        return;\n    } \n    \n    else if (body !== undefined && body['exception-Root'] !== undefined) {\n        var err = body['exception-Root'];\n        node.error(\"SPO Download Exception for Medias in workspace with id='\" + env.get('SPO_WORKSPACE_ID') + \"': \" + err.name + \" (statusCode: \" + err.statusCode + \") - \" + err.message + \"[\" + options.url + \"]\");\n        return;\n    } \n    \n    else {\n        medias[\"mediaList\"] = body['medias-Root'].media;\n        node.log(\"Media retrieval from workspace with id='\"+env.get('SPO_WORKSPACE_ID')+\"' has been sucessful. Number Medias: \" + medias[\"mediaList\"].length);\n        messages.arr.push({\n            \"flow\" : \"upload\",\n            \"type\" : \"info\",\n            \"on\" : Date.now(),\n            \"msg\" : \"Medias were updated (downloaded \" + medias[\"mediaList\"].length + \" medias).\" \n        });\n        \n        //send based on input\n        if(msg.hasOwnProperty(\"req\")) node.send(msg);\n    }\n});\n",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 580,
-        "y": 2040,
-        "wires": [
-            []
-        ],
-        "icon": "node-red/alert.svg"
+            [
+                "6540c97b.74e5d8"
+            ]
+        ]
     }
 ]
