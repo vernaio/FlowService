@@ -25,7 +25,7 @@ ENV SPO_WORKSPACE_ID=undefined
 
 # settings
 ENV INTEGRATION_NAME=default-flow-logic
-ENV INTEGRATION_LOCATION=https://github.com/perfectpattern/DefaultFlowLogic/archive/0.5.tar.gz
+ENV INTEGRATION_LOCATION=https://github.com/perfectpattern/DefaultPdfIntegration/archive/1.0.2.tar.gz
 ENV IMPOSITION_URL=http://imposition:4200
 
 # create folder interface
