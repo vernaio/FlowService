@@ -203,7 +203,7 @@ header a.selected, .header-menu-item:hover a.selected{
 #quick-menu div.quick-menu-item a{
     display: block;
     color: white;
-    background: rgb(82, 144, 202);
+    background: rgb(117, 173, 224);
     margin: 0px 1px;
     position: relative;
     padding: 2px 7px 2px 20px;
@@ -215,7 +215,7 @@ header a.selected, .header-menu-item:hover a.selected{
 #quick-menu div.quick-menu-item a:active{background: rgb(67, 110, 151);}
 
 #quick-menu div.quick-menu-item.selected a{
-	background: rgb(210, 210, 210);
+	background: rgb(56, 127, 194);
 }
 
 

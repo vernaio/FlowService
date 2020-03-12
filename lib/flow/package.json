@@ -12,7 +12,8 @@
         "path": "*",
         "unzipper": "^0.10.5",
         "ws": "*",
-        "properties-reader": "*"
+        "properties-reader": "*",
+        "url-join" : "^4.0.1"
     },
     "repository": {
         "type": "git",
