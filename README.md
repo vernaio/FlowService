@@ -176,7 +176,7 @@ The function _getFlowConfig()_ has to return a configuration json in the followi
         },
 
         notificationListener : {
-            enabled : false,
+            enabled : true,
             options : {
                 writeGangJobEventJSON       : { enabled : true },              
                 writeGangJobEventXML        : { enabled : false },
