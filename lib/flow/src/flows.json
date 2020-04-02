@@ -181,7 +181,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Integration: processJob",
-        "func": "\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\nvar medias = context.global.get('CACHE_MEDIAS');\n\n// process job\nnode.log(\"Process job: \" + msg.job.jobId);\n\n// set job#s storage dir\nmsg.job.storageFolder = msg.job.jobId + \"/\";\nintegration.processJob(msg.job, medias.mediaList)\n.then(\n    result => {\n        msg.binderySignatures = result.binderySignatures\n        msg.assemblerTask = result.assemblerTask;\n    \n        if(msg.binderySignatures !== null) {\n            node.log(\"BinderySignatures have been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"A bindery signature has been created.\"\n                }  \n            );\n            node.send([msg, null]);\n        \n        } \n        \n        else if (msg.assemblerTask !== null) {\n            node.log(\"AssemblerTask has been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"Assembler task has been created.\"\n                }  \n            );\n            node.send([null, msg]);\n        } \n        \n        else {\n            processedJobs[msg.job.jobId].status = \"error\";\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"error\",\n                    on   : Date.now(),\n                    msg  : \"Job has invalid data format.\"\n                }  \n            );            \n            throw new Error(\"Invalid result for job \" + msg.job.jobId)\n        }\n    }\n)\n.catch(\n    errorMsg => {\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : errorMsg\n            }  \n        );\n        node.error(errorMsg);\n    }\n);",
+        "func": "\n// get input logic\nvar integration = context.global.get('INTEGRATION');\n\n// get jobs caches\nvar processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\nvar medias = context.global.get('CACHE_MEDIAS');\n\n// process job\nnode.log(\"Process job: \" + msg.job.jobId);\n\n// set job#s storage dir\nmsg.job.storageFolder = msg.job.jobId + \"/\";\nintegration.processJob(msg.job, medias.mediaList)\n.then(\n    result => {\n        msg.binderySignatures = result.binderySignatures\n        msg.assemblerTask = result.assemblerTask;\n    \n        if(msg.binderySignatures !== null) {\n            node.log(\"BinderySignatures have been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : msg.binderySignatures.length + \" bindery signature have been created.\"\n                }  \n            );\n            node.send([msg, null]);\n        \n        } \n        \n        else if (msg.assemblerTask !== null) {\n            node.log(\"AssemblerTask has been created for job \" + msg.job.jobId);\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"info\",\n                    on   : Date.now(),\n                    msg  : \"Assembler task has been created.\"\n                }  \n            );\n            node.send([null, msg]);\n        } \n        \n        else {\n            processedJobs[msg.job.jobId].status = \"error\";\n            processedJobs[msg.job.jobId].audit.push(\n                {\n                    type : \"error\",\n                    on   : Date.now(),\n                    msg  : \"Job has invalid data format.\"\n                }  \n            );            \n            throw new Error(\"Invalid result for job \" + msg.job.jobId)\n        }\n    }\n)\n.catch(\n    errorMsg => {\n        processedJobs[msg.job.jobId].status = \"error\";\n        processedJobs[msg.job.jobId].audit.push(\n            {\n                type : \"error\",\n                on   : Date.now(),\n                msg  : errorMsg\n            }  \n        );\n        node.error(errorMsg);\n    }\n);",
         "outputs": 2,
         "noerr": 0,
         "x": 1150,
@@ -1266,7 +1266,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: multpipleLayoutTasksService",
-        "func": "\nreturn msg;",
+        "func": "var processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\nconst axios = context.global.get('AXIOS');\nconst urljoin = context.global.get('URL_JOIN');\n\nnode.log(\"Prepare upload of job \" + msg.job.jobId + \" to MultipleLayoutTasksService\");\n\nlet url = urljoin(env.get(\"MULTI_LAYOUTTASKS_SERVICE_URL\"), '/job/' , msg.job.jobId);\nlet data = { \"binderySignatures-Root\" : { \"binderySignature\" :  msg.binderySignatures } };\n\nnode.send(data);\n\naxios({\n    method: 'post',\n    url : url,\n    timeout : 30000,\n    headers: { 'Content-Type': 'application/json' },\n    data: data\n})\n.then(res => {\n    //SUCCESS\n    node.log(\"Upload has been executed sucessfully for job '\" + msg.job.jobId + \"'. Number BinderySignatures: \" + msg.binderySignatures.length);\n    processedJobs[msg.job.jobId].audit.push(\n        {\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"The bindery signature(s) has been successfully uploaded.\"\n        }\n    );\n    node.send(msg);\n\n})\n.catch(err => {\n    //ERROR HANDLING\n    node.error(\"Not reached url: \" + url);\n    node.error(err.hasOwnProperty(\"request\") ? // `error.request` is an instance of http.ClientRequest in node.js\n        \"The request was made but no response was received.\" :\n        \"Something happened in setting up the SPO request that triggered an Error.\");\n    node.error(\"Unable to upload Job '\" + msg.job.jobId + \"'.\");\n    node.error(err.config);\n    processedJobs[msg.job.jobId].status = \"error\";\n    processedJobs[msg.job.jobId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to upload: \" + err.message\n    });        \n    node.error(err);\n    return;\n});",
         "outputs": 1,
         "noerr": 0,
         "x": 2210,
@@ -1940,7 +1940,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "check services",
-        "func": "const cacheServices = context.global.get('CACHE_SERVICES');\nconst flowConfig = context.global.get('FLOW_CONFIG');\nconst axios = context.global.get('AXIOS');\nconst services = context.global.get('SERVICES');\nconst pjson = context.global.get('PACKAGE_JSON');\nconst urljoin = context.global.get('URL_JOIN');\nconst wait = 1000;\n\nfunction updateServiceStatus(service){\n    return new Promise(function(resolve, reject){\n        if(service.type === \"pibService\"){\n            if(service.name === \"websocket\"){\n                service.status = flow.get(\"websocket\") ? \"online\" : \"offline\";\n                resolve(service);\n            }else{\n                console.log(\"ERROR at websocket\");\n                resolve(service);\n            }\n        }\n            \n        else if(service.type === \"pibWebService\"){\n                    \n            //if no location for the service is found\n            if(!service.location){\n                service.status = \"offline\";\n                node.error(\"Deployment error: Got no environment variable for location of service \" + service.name);\n                resolve(service);\n            }\n            \n            var url = urljoin(service.location,'version');\n            axios({\n                method : \"get\",\n                url : url\n            })\n            .then(response => {\n                var data = response.data;\n\n                //Imposition service (so far)\n                if (data.hasOwnProperty('appName') && data['appName'] === service.name){\n                    service.status = 'online';\n                    service.version = data['appVersion'];\n                    service.description = \"\";\n                    resolve(service);\n                }\n                \n                //other pibWebServices\n                else if(data.hasOwnProperty('name') && data['name'] === service.name){\n                    service.status = 'online';\n                    service.version = data['versionNumber'];\n                    service.description = data['description'];\n                    resolve(service);\n                }\n                \n                else{\n                    node.warn(\"Wrong service name: Expected: '\" + service.name + \"', got: '\" + (data['appName'] || data['name']) + \"'.  Unable to connect to \" + service.title + \" at '\" + service.location + \"'\");\n                    node.log(data);\n                    service.status = \"offline\";\n                    resolve(service);\n                }\n\n                resolve(service);\n            })\n            .catch(err => {\n                node.warn(\"Error: Unable to connect to \" + service.title + \" at '\" + url + \"'\");\n                service.status = \"offline\";\n                resolve(service);\n            });\n        }\n        \n        else{\n            resolve(service);\n        }\n    })\n}\n\nfunction checkService(serviceKeys, index){\n    index = ((index + 1) <= (serviceKeys.length - 1) ? index + 1 : 0); //resets after keys length is reached\n\n    var serviceKey = serviceKeys[index];\n    var service = cacheServices[serviceKey];\n    \n    updateServiceStatus(service)\n    .then(service => {\n        cacheServices[serviceKey] = service;\n        \n        //recall itself\n        setTimeout(function(){\n            checkService(serviceKeys, index);\n        },  wait);\n    })\n}\n\n//-------ENTRY POINT--------\n//get expected services\nexpectedServices = flowConfig.getExpectedServices();\n\n//init serviceCache\nfor(var i = 0; i < expectedServices.length; i++){\n    var allowedServiceTypes = ['flow', 'pibService', 'pibWebService'];\n    var expectedServiceKey = expectedServices[i];\n    var service = services.getService(expectedServiceKey);\n    if(allowedServiceTypes.includes(service.type)) cacheServices[expectedServiceKey] = service;\n}\n\n//start\nserviceKeys = Object.keys(cacheServices);\nif(serviceKeys.length > 0) checkService(serviceKeys, -1);\n",
+        "func": "const cacheServices = context.global.get('CACHE_SERVICES');\nconst flowConfig = context.global.get('FLOW_CONFIG');\nconst axios = context.global.get('AXIOS');\nconst services = context.global.get('SERVICES');\nconst pjson = context.global.get('PACKAGE_JSON');\nconst urljoin = context.global.get('URL_JOIN');\nconst wait = 1000;\n\nfunction updateServiceStatus(service){\n    return new Promise(function(resolve, reject){\n        if(service.type === \"pibService\"){\n            if(service.name === \"websocket\"){\n                service.status = flow.get(\"websocket\") ? \"online\" : \"offline\";\n                resolve(service);\n            }else{\n                console.log(\"ERROR at websocket\");\n                resolve(service);\n            }\n        }\n            \n        else if(service.type === \"pibWebService\"){\n                    \n            //if no location for the service is found\n            if(!service.location){\n                service.status = \"offline\";\n                node.error(\"Deployment error: Got no environment variable for location of service \" + service.name);\n                resolve(service);\n            }\n            \n            var url = urljoin(service.location,'version');\n            axios({\n                method : \"get\",\n                url : url,\n                timeout : 3000\n            })\n            .then(response => {\n                var data = response.data;\n\n                //Imposition service (so far)\n                if (data.hasOwnProperty('appName') && data['appName'] === service.name){\n                    service.status = 'online';\n                    service.version = data['appVersion'];\n                    service.description = \"\";\n                    resolve(service);\n                }\n                \n                //other pibWebServices\n                else if(data.hasOwnProperty('name') && data['name'] === service.name){\n                    service.status = 'online';\n                    service.version = data['versionNumber'];\n                    service.description = data['description'];\n                    resolve(service);\n                }\n                \n                else{\n                    node.warn(\"Wrong service name: Expected: '\" + service.name + \"', got: '\" + (data['appName'] || data['name']) + \"'.  Unable to connect to \" + service.title + \" at '\" + service.location + \"'\");\n                    node.log(data);\n                    service.status = \"offline\";\n                    resolve(service);\n                }\n\n                resolve(service);\n            })\n            .catch(err => {\n                node.warn(\"Error: Unable to connect to \" + service.title + \" at '\" + url + \"'\");\n                service.status = \"offline\";\n                resolve(service);\n            });\n        }\n        \n        else{\n            resolve(service);\n        }\n    })\n}\n\nfunction checkService(serviceKeys, index){\n    index = ((index + 1) <= (serviceKeys.length - 1) ? index + 1 : 0); //resets after keys length is reached\n\n    var serviceKey = serviceKeys[index];\n    var service = cacheServices[serviceKey];\n    \n    updateServiceStatus(service)\n    .then(service => {\n        cacheServices[serviceKey] = service;\n        \n        //recall itself\n        setTimeout(function(){\n            checkService(serviceKeys, index);\n        },  wait);\n    })\n}\n\n//-------ENTRY POINT--------\n//get expected services\nexpectedServices = flowConfig.getExpectedServices();\n\n//init serviceCache\nfor(var i = 0; i < expectedServices.length; i++){\n    var allowedServiceTypes = ['flow', 'pibService', 'pibWebService'];\n    var expectedServiceKey = expectedServices[i];\n    var service = services.getService(expectedServiceKey);\n    if(allowedServiceTypes.includes(service.type)) cacheServices[expectedServiceKey] = service;\n}\n\n//start\nserviceKeys = Object.keys(cacheServices);\nif(serviceKeys.length > 0) checkService(serviceKeys, -1);\n",
         "outputs": 1,
         "noerr": 0,
         "x": 500,
@@ -2207,5 +2207,56 @@
                 "6540c97b.74e5d8"
             ]
         ]
+    },
+    {
+        "id": "a672c368.a0dd4",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "func": "const axios = context.global.get('AXIOS');\nconst urljoin = context.global.get('URL_JOIN');\n\nlet url = urljoin(env.get(\"MULTI_LAYOUTTASKS_SERVICE_URL\"), '/job/' , \"tset\");\n\naxios({\n    method: 'post',\n    url : url,\n    timeout : 10000,\n    headers: { 'Content-Type': 'application/json' },\n    data: { \"binderySignatures-Root\" : { \"binderySignature\" : null } }\n})\n.then(res => {\n    node.warn(\"success\");\n    node.send(msg);\n})\n.catch(err => {\n    node.warn(\"error\"); \n    node.warn(err);\n    msg.error = err;\n    node.send(msg);\n});",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 2260,
+        "y": 160,
+        "wires": [
+            [
+                "ce9786f9.f7ae98"
+            ]
+        ]
+    },
+    {
+        "id": "be02b2c3.1974d",
+        "type": "inject",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 2080,
+        "y": 160,
+        "wires": [
+            [
+                "a672c368.a0dd4"
+            ]
+        ]
+    },
+    {
+        "id": "ce9786f9.f7ae98",
+        "type": "debug",
+        "z": "d4af305b.2ea44",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "x": 2430,
+        "y": 160,
+        "wires": []
     }
 ]
