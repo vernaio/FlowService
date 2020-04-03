@@ -1266,7 +1266,7 @@
         "type": "function",
         "z": "d4af305b.2ea44",
         "name": "Flow: multpipleLayoutTasksService",
-        "func": "var processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\nconst axios = context.global.get('AXIOS');\nconst urljoin = context.global.get('URL_JOIN');\n\nnode.log(\"Prepare upload of job \" + msg.job.jobId + \" to MultipleLayoutTasksService\");\n\nlet url = urljoin(env.get(\"MULTI_LAYOUTTASKS_SERVICE_URL\"), '/job/' , msg.job.jobId);\nlet data = { \"binderySignatures-Root\" : { \"binderySignature\" :  msg.binderySignatures } };\n\nnode.send(data);\n\naxios({\n    method: 'post',\n    url : url,\n    timeout : 30000,\n    headers: { 'Content-Type': 'application/json' },\n    data: data\n})\n.then(res => {\n    //SUCCESS\n    node.log(\"Upload has been executed sucessfully for job '\" + msg.job.jobId + \"'. Number BinderySignatures: \" + msg.binderySignatures.length);\n    processedJobs[msg.job.jobId].audit.push(\n        {\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"The bindery signature(s) has been successfully uploaded.\"\n        }\n    );\n    node.send(msg);\n\n})\n.catch(err => {\n    //ERROR HANDLING\n    node.error(\"Not reached url: \" + url);\n    node.error(err.hasOwnProperty(\"request\") ? // `error.request` is an instance of http.ClientRequest in node.js\n        \"The request was made but no response was received.\" :\n        \"Something happened in setting up the SPO request that triggered an Error.\");\n    node.error(\"Unable to upload Job '\" + msg.job.jobId + \"'.\");\n    node.error(err.config);\n    processedJobs[msg.job.jobId].status = \"error\";\n    processedJobs[msg.job.jobId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to upload: \" + err.message\n    });        \n    node.error(err);\n    return;\n});",
+        "func": "var processedJobs = context.global.get('CACHE_PROCESSED_JOBS');\nconst axios = context.global.get('AXIOS');\nconst urljoin = context.global.get('URL_JOIN');\n\nnode.log(\"Prepare upload of job \" + msg.job.jobId + \" to MultipleLayoutTasksService\");\n\nlet url = urljoin(env.get(\"MULTI_LAYOUTTASKS_SERVICE_URL\"), '/job/' , msg.job.jobId);\nlet data = { \"binderySignatures-Root\" : { \"binderySignature\" :  msg.binderySignatures } };\n\nnode.send(data);\n\naxios({\n    method: 'post',\n    url : url,\n    timeout : 30000,\n    headers: { 'Content-Type': 'application/json' },\n    data: data\n})\n.then(res => {\n    //SUCCESS\n    node.log(\"Upload has been executed sucessfully for job '\" + msg.job.jobId + \"'. Number BinderySignatures: \" + msg.binderySignatures.length);\n    processedJobs[msg.job.jobId].audit.push(\n        {\n            type : \"info\",\n            on   : Date.now(),\n            msg  : \"The bindery signature(s) has been successfully uploaded.\"\n        }\n    );\n    node.send(msg);\n\n})\n.catch(err => {\n    //ERROR HANDLING\n    node.error(\"Not reached url: \" + url);\n    node.error(err.hasOwnProperty(\"request\") ? // `error.request` is an instance of http.ClientRequest in node.js\n        \"The request was made but no response was received.\" :\n        \"Something happened in setting up the SPO request that triggered an Error.\");\n    node.error(\"Unable to upload Job '\" + msg.job.jobId + \"'.\");\n    node.error(err.config);\n    processedJobs[msg.job.jobId].status = \"error\";\n    processedJobs[msg.job.jobId].audit.push({\n            type : \"error\",\n            on   : Date.now(),\n            msg  : \"Unable to upload: \" + err.message\n    });        \n    node.error(err);\n    node.send(msg);\n});",
         "outputs": 1,
         "noerr": 0,
         "x": 2210,
@@ -2207,56 +2207,5 @@
                 "6540c97b.74e5d8"
             ]
         ]
-    },
-    {
-        "id": "a672c368.a0dd4",
-        "type": "function",
-        "z": "d4af305b.2ea44",
-        "name": "",
-        "func": "const axios = context.global.get('AXIOS');\nconst urljoin = context.global.get('URL_JOIN');\n\nlet url = urljoin(env.get(\"MULTI_LAYOUTTASKS_SERVICE_URL\"), '/job/' , \"tset\");\n\naxios({\n    method: 'post',\n    url : url,\n    timeout : 10000,\n    headers: { 'Content-Type': 'application/json' },\n    data: { \"binderySignatures-Root\" : { \"binderySignature\" : null } }\n})\n.then(res => {\n    node.warn(\"success\");\n    node.send(msg);\n})\n.catch(err => {\n    node.warn(\"error\"); \n    node.warn(err);\n    msg.error = err;\n    node.send(msg);\n});",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 2260,
-        "y": 160,
-        "wires": [
-            [
-                "ce9786f9.f7ae98"
-            ]
-        ]
-    },
-    {
-        "id": "be02b2c3.1974d",
-        "type": "inject",
-        "z": "d4af305b.2ea44",
-        "name": "",
-        "topic": "",
-        "payload": "",
-        "payloadType": "date",
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "x": 2080,
-        "y": 160,
-        "wires": [
-            [
-                "a672c368.a0dd4"
-            ]
-        ]
-    },
-    {
-        "id": "ce9786f9.f7ae98",
-        "type": "debug",
-        "z": "d4af305b.2ea44",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "x": 2430,
-        "y": 160,
-        "wires": []
     }
 ]
