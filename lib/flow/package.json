@@ -7,13 +7,13 @@
         "node-red": "^1.0.0",
         "pretty-bytes": "*",
         "ftp": "*",
-        "request": "*",
+        "axios": "^0.19.2",
         "move-file": "*",
         "path": "*",
         "unzipper": "^0.10.5",
         "ws": "*",
-        "job-ticket-generator" : "./jobTicketGenerator",
-        "properties-reader": "*"
+        "properties-reader": "*",
+        "url-join" : "^4.0.1"
     },
     "repository": {
         "type": "git",

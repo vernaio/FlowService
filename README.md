@@ -3,7 +3,6 @@ The FlowService is a workflow integration framework which integrates sPrintOne i
 takes print jobs from any source and prepares and imports them to sPrintOne. Further more, approved  
 gang forms are being received from sPrintOne and will be converted to PDF, so that they can be easily processed by subsequenting applications such as prepress workflows etc.
 
-
 ## Flow Customization
 In order to achieve a maximum level of integration, the FlowService provides several functions needed to be customized:
 
@@ -14,6 +13,7 @@ In order to achieve a maximum level of integration, the FlowService provides sev
 * **processSheet()** - Post processing of a generated sheet.
 * **moveFiles()** - Move files from the storage folder to the sheet folder.
 * **getVersion()** - Version details about this implementation.
+* **getFlowConfig()** - Configuration for PIB Flow (optional).
 
 All customizations have to be done in an external node library which will be automatically imported to FlowService at start up.
 One reference implementation of such a customization is the "DefaultPdfIntegration" which is available on github: https://github.com/perfectpattern/DefaultPdfIntegration.
@@ -156,6 +156,114 @@ The function _moveFiles()_ requires the following input parameters:
 #### Output:
 The function _moveFiles()_ returns a error message on error containing a list of missing file ids.
 
+### Function: getFlowConfig()
+The optional function _getFlowConfig()_ offers the possibility to adapt PIB Flow to custom needs by providing a custom configuration to it. If this is not done, PIB Flow will runin default configuration.
+
+#### Input:
+none.
+
+#### Output (JSON Object):
+The function _getFlowConfig()_ has to return a configuration json in the following format:
+
+```json 'flow config'
+{
+    flows : {
+        binderySignatureUpload : {
+            options : {
+                uploadToWorkspace           : { enabled : true },
+                createMultipleLayoutTasks   : { enabled : false }
+            }
+        },
+
+        notificationListener : {
+            enabled : true,
+            options : {
+                writeGangJobEventJSON       : { enabled : true },              
+                writeGangJobEventXML        : { enabled : false },
+                impose                      : { enabled : true },
+                generateJdfJobTicket        : { enabled : false },
+                generatePdfJobTicket        : { enabled : false }   
+            }
+        },
+
+        layoutTaskProcessor : {
+            enabled : false,
+            options : {
+                writeLayoutTaskJSON         : { enabled : true },
+                writeLayoutTaskXML          : { enabled : false },
+                writeReport                 : { 
+                    enabled : true,
+                    params : {
+                        urlParams : ""
+                    }
+                },
+                writeApogeeJDF              : { 
+                    enabled : false,
+                    params : {
+                        urlParams : "?jdfIdStrategy=FIRST_ORDER_REF&jdfBinderySignatureIdStrategy=LABEL"
+                    }
+                }
+            }
+        }
+    }
+}
+```
+This example json is a maximum example containing all possible configurations and also the default configuration which is used if no custom configuration is provided. You can provide either the whole json or only parts of it, which are then merged with the default configuration. You have to respect the following rules. More infos about the configuration in section _Flow Configuration_.
+
+##### Rules
+* Provide either the whole json or parts of it.
+* Within flow _binderySignatureUpload_, exactly one of the options _uploadToWorkspace_ and _createMultipleLayoutTasks_ has to be enabled.
+* Exactly one of the flows _notificationListener_ and _layoutTaskProcessor_ has to be enabled.
+* If you adress a option, you also have to provide the key _enabled_ whereas adressing key _params_ is optional.
+
+## Flow Configuration
+PIB Flow consists of three independent NodeRed flows, each fullfills different tasks:
+
+### Flow _binderySignatureUpload_
+The purpose of this by an endpoint triggered flow is watching an input folder for print orders, which are being converted to bindery signatures and uploaded to sPrint One. In case the print order is a brochure, the sPrint One Assembler is used to disassemble the order into bindery signatures [always enabled].
+
+#### Customizing functions
+* **extractJobs()**
+* **processJob()**
+* **processJobBinderySignatures()**
+
+#### Options
+* **uploadToWorkspace:** Uploads the bindery signatures in a predefined sPrint One workspace [included, default: enabled]. 
+* **createMultipleLayoutTasks:** Optional service to receive the bindery signatures. See https://github.com/perfectpattern/multiple-layouttasks-service [webservice, default: disabled].
+
+Exactly on of these options has to be enabled.
+
+### Flow _notificationListener_
+This flow uses a websocket to listen to a predefined tenant for approved print jobs. Once a print job notification was received, the purpose of this flow is to download all information, PDF files, JSON files and JDF files needed into the out folder [dewfault: enabled].
+
+#### Customizing functions
+* **generateSheetId()** - Generate a sheetId for a sheet.
+* **processSheet()** - Post processing of a generated sheet.
+* **moveFiles()** - Move files from the storage folder to the sheet folder.
+
+#### Options
+* **writeGangJobEventJSON:** Write a JSON file containing the gangjob event [included, default: enabled].
+* **writeGangJobEventXML:** Write a XML file containing the gangjob event [included, default: disabled].
+* **impose:** Impose the print job and create a sheet pdf with default marks. See https://github.com/perfectpattern/ImpositionService.  This service alos provides a _PPF file_ for cutting, a _JPEG preview file_, a basic _XJDF file_ and an _Identification PDF file_ for the sheet [webservice, default: enabled].
+* **generateJdfJobTicket:** This service creates a JDF jobticket accompanying the sheet PDF, that can be used to create a job in the following expositioning workflow. See https://github.com/perfectpattern/JdfJobTicketGenerator [webservice, default: disabled].
+* **generatePdfJobTicket:** This service creates a PDF jobticket, see https://github.com/perfectpattern/PdfJobTicketGenerator [webservice, default: disabled].
+
+Any of those options can be enabled.
+
+### Flow _layoutTaskProcessor_
+This flow is also triggered by an endpoint. Once it received a LayoutTask ID its purpose is to download the LayoutTask including PDF and JDF files and move them into the out folder [default: disabled].
+
+#### Customizing functions
+none.
+
+#### Options
+* **writeLayoutTaskJSON:** Download and write a JSON file containing the LayoutTask [included, default: enabled].
+* **writeLayoutTaskXML:** Download and write a XML file containing the LayoutTask [included, default: disabled].
+* **writeReport:** Download and write the LayoutTask Report file. Optional parameter _urlParams_ can be set which is added to the download URL [included, default: enabled].
+* **writeApogeeJDF:** Download and write the LayoutTask Apogee JDF file. Optional parameter _urlParams_ can be set which is added to the download URL [included, default: disabled].
+
+Any of those options can be enabled.
+
 ## Flow UI
 PIB Flow provides it's own user interface in the browser. This UI is automatically adapted to the configuration.
 
@@ -173,6 +281,7 @@ docker run -p 1881:1881 -v $PWD/lib/flow/src:/opt/flow/src pib:v1
 | ---------              | -----------          |
 | -p 1881:1881           | Port Forwarding von Container auf Host | 
 | -v [PATH]:[PATH] | Verbindet das Entwicklungsverzeichnis mit src Ordner im Container |
+
 
 ## Folder Interface
 TBD

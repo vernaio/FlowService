@@ -1,3 +1,8 @@
+:root {
+	--main-bg-color: rgb(46,117,182);
+	--main-h-color: #2e75b6;
+}
+
 html,body{
 	font-family: 'Open Sans', sans-serif;
 	box-sizing: border-box;
@@ -13,12 +18,12 @@ body{
 header{
 	position: relative;
 	height: 60px;
-	background-color: rgb(46,117,182);
+	background-color: var(--main-bg-color);
 	color: #fff;
 }
 
 h1,h2,h3,h4{
-	color: #2e75b6;
+	color: var(--main-h-color);
 	font-weight: 400;
 	margin-top: 0px;
 	margin-bottom: 10px;
@@ -61,6 +66,13 @@ p{
 	font-size: 1.5rem;
 	line-height: 50px;
 	font-weight: 600;
+}
+
+.header-title-text > span {
+    font-weight: 100;
+    font-size: 0.8rem;
+    margin-left: 10px;
+    color: #d6d6d6;
 }
 
 .header-title-subtext{
@@ -110,7 +122,7 @@ p{
 .header-menu{
 	position: absolute;
 	text-align: left;
-	z-index: 2;
+	z-index: 3;
 	right: 0;
 	top: 0;
 	width: 0px;
@@ -125,7 +137,7 @@ p{
 
 .header-menu-wrapper{
 	position: relative;
-	background-color: rgb(46,117,182);
+	background-color: var(--main-bg-color);
 	min-height: calc(100vh - 120px);
 	padding: 60px 0;
 	width: 350px;
@@ -153,7 +165,7 @@ header a{
 }
 
 .header-menu-item:hover a{
-	color: rgb(46,117,182);
+	color: var(--main-h-color);
 }
 
 header a.selected, .header-menu-item:hover a.selected{
@@ -166,7 +178,7 @@ header a.selected, .header-menu-item:hover a.selected{
 }
 
 .header-menu-active-layer{
-	z-index: 2;
+	z-index: 3;
 	position: fixed;
 	display: none;
 	width: 100vw;
@@ -196,7 +208,7 @@ header a.selected, .header-menu-item:hover a.selected{
 #quick-menu div.quick-menu-item a{
     display: block;
     color: white;
-    background: rgb(82, 144, 202);
+    background: rgb(117, 173, 224);
     margin: 0px 1px;
     position: relative;
     padding: 2px 7px 2px 20px;
@@ -208,7 +220,7 @@ header a.selected, .header-menu-item:hover a.selected{
 #quick-menu div.quick-menu-item a:active{background: rgb(67, 110, 151);}
 
 #quick-menu div.quick-menu-item.selected a{
-	background: rgb(210, 210, 210);
+	background: rgb(56, 127, 194);
 }
 
 
@@ -225,7 +237,7 @@ header a.selected, .header-menu-item:hover a.selected{
 }
 #quick-menu div.quick-menu-item.data-in a:before{background-image: url("/img/up-arrow-white.svg");}
 #quick-menu div.quick-menu-item.data-out a:before{background-image: url("/img/down-arrow-white.svg");}
-
+#quick-menu div.quick-menu-item.data-out-lt a:before{background-image: url("/img/down-arrow-white.svg");}
 
 
 
@@ -253,7 +265,7 @@ header a.selected, .header-menu-item:hover a.selected{
 
 footer{
 	text-align: center;
-	background-color: rgb(46,117,182);
+	background-color: var(--main-bg-color);
 	color: #fff;
 	font-size: 0.7rem;
 	line-height: 30px;
@@ -416,3 +428,37 @@ h1.icon:before{
 }
 h1.icon.upload:before{background-image: url("/img/up-arrow.svg");}
 h1.icon.download:before{background-image: url("/img/down-arrow.svg");}
+
+.service-wrapper {
+    color: #555;
+    font-size: 0.9rem;
+    margin-top: 0;
+    margin-bottom: 7px;
+	line-height: 1.3rem;
+	padding: 15px 10px 20px 10px;
+	margin-bottom: 20px;
+	background: #f9f9f9;
+	border: solid 1px rgb(177, 201, 224);
+}
+
+.service-wrapper.offline {
+	background-color: rgb(255, 219, 219);
+	border: solid 1px rgb(223, 131, 131);
+}
+
+.service-wrapper.online {
+	background-color: rgb(224, 255, 230);
+}
+
+.service-wrapper table{
+	width: 100%;
+}
+
+.service-wrapper table tr td{
+	padding: 2px 0px;
+}
+
+.service-wrapper table tr td:first-child{
+	padding-right: 30px;
+	width: 160px;	
+}

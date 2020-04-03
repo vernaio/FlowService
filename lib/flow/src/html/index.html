@@ -3,37 +3,61 @@
 	<head>
 		<title>PIB Flow</title>
 		<meta charset="utf-8"/>
-		
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
+
+		<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700&display=swap" rel="stylesheet">
+		<link rel="stylesheet" type="text/css" href="/css/MyDataTable.css"/>
+		<link rel="stylesheet" type="text/css" href="/css/MsgBar.css"/>
+		<link rel="stylesheet" type="text/css" href="/css/main.css"/>
+
 		<script src="/js/jquery-3.4.1.min.js"></script>
 		<script src="/js/util.js"></script>
+		<script src="/js/MyDataTable.js"></script>
+		<script src="/js/MsgBar.js"></script>
+		<script src="/js/PibConnection.js"></script>
+		<script src="/js/locale.js"></script>
+		<script src="/js/initNavigation.js"></script>
+		<script src="/js/initHTML.js"></script>
+		<script src="/js/init.js"></script>
 	</head>
 	<body>
         <script>
-
-
-			function isValidLanguage(lan){
-				return (lan == "de" || lan == "en");
-			}
-
-			var lan = null;
-
-			//check cookie for language
-			if(isValidLanguage(Cookie.Read("language")))
-				lan = Cookie.Read("language");
-
-			//check browser language
-			if (lan == null){
-				var browserLan = (navigator.language || navigator.userLanguage).substr(0,2);
-				if(isValidLanguage(browserLan))
-					lan = browserLan;
-			}
-
-			//default, if still not decided
-			if (lan == null)
-            	lan = "en";
+			//global variables
+			var target, lan, msgBar, allowedLanguages, allowedTargets, pibConnection;
+			init(); //init.js, get language and target
 			
-			//redirect
-           	window.location.href = "/" + lan;
-        </script>
+		</script>
+		
+		<!-- HEADER AND NAVIGATION-->
+		<header></header>
+		<script>
+			$('header').load('/navigation.html', function(){
+				initNavigation($(this)); //initNavigation.js
+				pibConnection = new PibConnection();
+			});
+		</script>
+
+		<!--MAIN SECTION-->
+		<section id="main">
+			<div id="page" class="page"></div>
+		</section>
+		<script>
+			$('#page').load('/content/' + target + '.html', function(){
+				initHTML($(this)); //initHTML.js
+
+				//load page specific javascript if available
+				if(["config", "data-in", "data-out", "data-out-lt", "services"].includes(target))
+					$.get("/js/pagespecific/" + target + ".js")
+			});
+
+		</script>
+
+		<!--FOOTER-->
+		<footer>powered by <a href="https://www.perfectpattern.de" target="_blank">PerfectPattern</a></footer>
+		<script>
+			$.get('/controller/flowConfig').then(data=> {
+				//console.log(data);
+			})
+		</script>
 	</body>
 </html>
