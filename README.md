@@ -3,6 +3,10 @@ The FlowService is a workflow integration framework which integrates sPrintOne i
 takes print jobs from any source and prepares and imports them to sPrintOne. Further more, approved  
 gang forms are being received from sPrintOne and will be converted to PDF, so that they can be easily processed by subsequenting applications such as prepress workflows etc.
 
+## Content
+- [Flow Customization](#flow-customization)
+- [Flow Configuration](#flow-configuration)
+
 ## Flow Customization
 In order to achieve a maximum level of integration, the FlowService provides several functions needed to be customized:
 
@@ -229,7 +233,7 @@ The purpose of this by an endpoint triggered flow is watching an input folder fo
 
 #### Options
 * **uploadToWorkspace:** Uploads the bindery signatures in a predefined sPrint One workspace [included, default: enabled]. 
-* **createMultipleLayoutTasks:** Optional service to receive the bindery signatures. See https://github.com/perfectpattern/multiple-layouttasks-service [webservice, default: disabled].
+* **createMultipleLayoutTasks:** Optional service to receive the bindery signatures. See https://github.com/perfectpattern/multiple-layouttasks-service [webservice, default: disabled]. Environment variable in flow: MULTI_LAYOUTTASKS_SERVICE_URL
 
 Exactly on of these options has to be enabled.
 
@@ -244,9 +248,9 @@ This flow uses a websocket to listen to a predefined tenant for approved print j
 #### Options
 * **writeGangJobEventJSON:** Write a JSON file containing the gangjob event [included, default: enabled].
 * **writeGangJobEventXML:** Write a XML file containing the gangjob event [included, default: disabled].
-* **impose:** Impose the print job and create a sheet pdf with default marks. See https://github.com/perfectpattern/ImpositionService.  This service alos provides a _PPF file_ for cutting, a _JPEG preview file_, a basic _XJDF file_ and an _Identification PDF file_ for the sheet [webservice, default: enabled].
-* **generateJdfJobTicket:** This service creates a JDF jobticket accompanying the sheet PDF, that can be used to create a job in the following expositioning workflow. See https://github.com/perfectpattern/JdfJobTicketGenerator [webservice, default: disabled].
-* **generatePdfJobTicket:** This service creates a PDF jobticket, see https://github.com/perfectpattern/PdfJobTicketGenerator [webservice, default: disabled].
+* **impose:** Impose the print job and create a sheet pdf with default marks. See https://github.com/perfectpattern/ImpositionService.  This service alos provides a _PPF file_ for cutting, a _JPEG preview file_, a basic _XJDF file_ and an _Identification PDF file_ for the sheet [webservice, default: enabled]. Environment variable in flow: IMPOSITION_URL
+* **generateJdfJobTicket:** This service creates a JDF jobticket accompanying the sheet PDF, that can be used to create a job in the following expositioning workflow. See https://github.com/perfectpattern/JdfJobTicketGenerator [webservice, default: disabled]. Environment variable in flow: JDF_JOBTICKET_GENERATOR_URL
+* **generatePdfJobTicket:** This service creates a PDF jobticket, see https://github.com/perfectpattern/PdfJobTicketGenerator [webservice, default: disabled]. Environment variable in flow: PDF_JOBTICKET_GENERATOR_URL
 
 Any of those options can be enabled.
 
