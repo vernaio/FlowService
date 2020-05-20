@@ -2207,5 +2207,39 @@
                 "6540c97b.74e5d8"
             ]
         ]
+    },
+    {
+        "id": "527346ff.6dfc38",
+        "type": "inject",
+        "z": "d4af305b.2ea44",
+        "name": "is alive",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "60",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 120,
+        "y": 1600,
+        "wires": [
+            [
+                "7470bf41.341a8"
+            ]
+        ]
+    },
+    {
+        "id": "7470bf41.341a8",
+        "type": "function",
+        "z": "d4af305b.2ea44",
+        "name": "log 'alive'",
+        "func": "node.log(\"alive\");\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 280,
+        "y": 1600,
+        "wires": [
+            []
+        ]
     }
 ]
